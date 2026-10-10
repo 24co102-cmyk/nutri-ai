@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -61,6 +61,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
   collapsed,
   setCollapsed,
 }) => {
+  // Prevent body scrolling when mobile sidebar is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileOpen]);
+
+  // Close sidebar on Escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && mobileOpen) {
+        setMobileOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [mobileOpen, setMobileOpen]);
   return (
     <>
       {/* Mobile Drawer Backdrop */}
@@ -75,7 +97,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <aside
         className={`fixed top-0 left-0 bottom-0 bg-white border-r border-neutral-200/90 z-50 flex flex-col transition-all duration-300 ease-in-out ${
           collapsed ? 'lg:w-20' : 'lg:w-64'
-        } ${mobileOpen ? 'w-64 tranneutral-x-0' : '-tranneutral-x-full lg:tranneutral-x-0'}`}
+        } ${mobileOpen ? 'w-64 translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         {/* Brand Logo Header */}
         <div className="h-18 flex items-center justify-between px-4 border-b border-neutral-100">
@@ -134,7 +156,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     {({ isActive }) => (
                       <>
                         {isActive && !collapsed && (
-                          <span className="absolute left-0 top-1/2 -tranneutral-y-1/2 w-1 h-5 bg-emerald-600 rounded-r-full" />
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-emerald-600 rounded-r-full" />
                         )}
                         <Icon
                           className={`w-4 h-4 shrink-0 transition-colors ${

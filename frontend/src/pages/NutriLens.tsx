@@ -259,7 +259,7 @@ const NutriLens: React.FC = () => {
                 Manual Barcode Entry
               </label>
               <div className="relative">
-                <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -tranneutral-y-1/2" />
+                <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   inputMode="numeric"

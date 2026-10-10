@@ -478,7 +478,7 @@ const ScanFoodBarcode: React.FC<ScanFoodBarcodeProps> = ({ initialBarcode, onMea
               <form onSubmit={handleManualSubmit} className="space-y-3">
                 <label className="block text-xs font-bold text-neutral-700">Enter Barcode Digits</label>
                 <div className="relative">
-                  <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -tranneutral-y-1/2" />
+                  <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     placeholder="e.g. 890100000001..."
