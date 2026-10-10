@@ -8,3 +8,4 @@ python-multipart
 aiofiles
 httpx
 google-genai
+email-validator
