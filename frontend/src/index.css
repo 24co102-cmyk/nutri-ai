@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #059669; /* Deep emerald */
+  --color-primary-hover: #047857;
+  --color-secondary: #dcfce7; /* Soft mint */
+  
+  --color-bg-body: #faf9f8; /* Very light warm gray */
+  --color-bg-card: #ffffff;
+  
+  --color-text-main: #27272a; /* Dark charcoal */
+  --color-text-muted: #71717a; /* Muted gray */
+
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+  --color-info: #2563eb;
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-sans);
+    background-color: var(--color-bg-body);
+    color: var(--color-text-main);
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Elegant minimal scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #e4e4e7;
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #d4d4d8;
+  }
+}
+
+@layer components {
+  /* Common UI components classes to be reused */
+  .premium-card {
+    @apply bg-white rounded-2xl border border-neutral-200/60 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_24px_-6px_rgba(0,0,0,0.06)] transition-all duration-300;
+  }
+
+  .premium-btn-primary {
+    @apply bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl px-4 py-2.5 transition-all duration-200 active:scale-[0.98] shadow-sm;
+  }
+
+  .premium-btn-secondary {
+    @apply bg-white hover:bg-neutral-50 text-neutral-800 font-medium border border-neutral-200 rounded-xl px-4 py-2.5 transition-all duration-200 active:scale-[0.98] shadow-sm;
+  }
+  
+  .premium-btn-danger {
+    @apply bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-xl px-4 py-2.5 transition-all duration-200 active:scale-[0.98];
+  }
+
+  .premium-input {
+    @apply w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 text-neutral-800;
+  }
+  
+  .premium-heading {
+    @apply font-semibold text-neutral-900 tracking-tight;
+  }
+  
+  .premium-subheading {
+    @apply text-sm text-neutral-500 font-medium;
+  }
+}

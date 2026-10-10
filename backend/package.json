@@ -1,0 +1,8 @@
+{
+  "name": "nutri-ai-backend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start:dev": "python -m uvicorn app.main:app --host 127.0.0.1 --port 8001 --reload"
+  }
+}

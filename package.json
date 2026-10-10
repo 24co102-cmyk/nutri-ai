@@ -1,0 +1,11 @@
+{
+  "name": "nutri-ai",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run start:dev --prefix backend\"",
+    "install": "npm install --prefix frontend && pip install -r backend/requirements.txt"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}
