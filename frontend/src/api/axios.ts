@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const getBaseUrl = () => {
   const envUrl = import.meta.env.VITE_API_URL;
-  if (!envUrl) return 'http://127.0.0.1:8001/api';
+  if (!envUrl) return 'https://nutri-ai-y70w.onrender.com/api';
   return envUrl.endsWith('/api') ? envUrl : `${envUrl}/api`;
 };
 
