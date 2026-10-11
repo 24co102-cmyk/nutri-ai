@@ -2,10 +2,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
-import { User, Activity, Heart, Save, CheckCircle2 } from 'lucide-react';
+import { User, Activity, Heart, Save, CheckCircle2, Moon, Sun, Edit2, Check, X } from 'lucide-react';
+import { useUser, useTheme } from '../utils/theme';
 
 const Onboarding: React.FC = () => {
   const navigate = useNavigate();
+  const { userName, initials, updateName } = useUser();
+  const { isDark, toggleTheme } = useTheme();
+
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [tempName, setTempName] = useState(userName);
 
   const [profile, setProfile] = useState<any>({
     age: '26',
@@ -53,6 +59,14 @@ const Onboarding: React.FC = () => {
     setProfile((prev: any) => ({ ...prev, [name]: value }));
   };
 
+  const handleSaveName = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (tempName.trim()) {
+      updateName(tempName.trim());
+      setIsEditingName(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -83,15 +97,57 @@ const Onboarding: React.FC = () => {
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-12">
       {/* Profile Avatar Card */}
-      <div className="premium-card p-6 flex flex-col sm:flex-row items-center justify-between gap-5">
+      <div className="premium-card p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
         <div className="flex items-center gap-5">
           <div className="w-20 h-20 rounded-2xl bg-neutral-900 text-white font-black text-2xl flex items-center justify-center shadow-md shadow-neutral-900/20 shrink-0">
-            AS
+            {initials}
           </div>
 
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-2xl font-extrabold text-neutral-900">AHAD SHAIKH</h2>
+            <div className="flex flex-wrap items-center gap-2">
+              {isEditingName ? (
+                <form onSubmit={handleSaveName} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={tempName}
+                    onChange={(e) => setTempName(e.target.value)}
+                    className="px-2.5 py-1 text-base font-bold rounded-lg border border-emerald-500 bg-white text-neutral-900 focus:outline-none"
+                    autoFocus
+                  />
+                  <button
+                    type="submit"
+                    className="p-1 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700"
+                    title="Save"
+                  >
+                    <Check className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTempName(userName);
+                      setIsEditingName(false);
+                    }}
+                    className="p-1 rounded-lg border border-neutral-300 text-neutral-500 hover:bg-neutral-100"
+                    title="Cancel"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </form>
+              ) : (
+                <>
+                  <h2 className="text-2xl font-extrabold text-neutral-900">{userName}</h2>
+                  <button
+                    onClick={() => {
+                      setTempName(userName);
+                      setIsEditingName(true);
+                    }}
+                    className="p-1 text-neutral-400 hover:text-neutral-700 transition-colors"
+                    title="Edit Name"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                </>
+              )}
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold">
                 Pro Member
               </span>
@@ -100,6 +156,32 @@ const Onboarding: React.FC = () => {
               Goal: <span className="font-bold text-neutral-800">{profile.health_goal}</span> | BMI: <span className="font-bold text-emerald-600">{bmiVal}</span>
             </p>
           </div>
+        </div>
+
+        {/* Real Working Dark Mode Toggle on Profile Card */}
+        <div className="flex items-center gap-2 self-stretch sm:self-auto justify-end">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border shadow-xs ${
+              isDark
+                ? 'bg-indigo-950/80 text-indigo-200 border-indigo-700 hover:bg-indigo-900'
+                : 'bg-neutral-100 text-neutral-800 border-neutral-200 hover:bg-neutral-200'
+            }`}
+            title="Toggle Dark Mode Theme"
+          >
+            {isDark ? (
+              <>
+                <Moon className="w-4 h-4 text-indigo-400" />
+                <span>Dark Mode: ON</span>
+              </>
+            ) : (
+              <>
+                <Sun className="w-4 h-4 text-amber-500" />
+                <span>Dark Mode: OFF</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 

@@ -14,6 +14,8 @@ import {
   ChevronRight,
   X,
 } from 'lucide-react';
+import { useTranslation } from '../utils/i18n';
+import { useUser } from '../utils/theme';
 
 interface SidebarProps {
   mobileOpen: boolean;
@@ -22,44 +24,47 @@ interface SidebarProps {
   setCollapsed: (collapsed: boolean) => void;
 }
 
-const navCategories = [
-  {
-    name: 'OVERVIEW',
-    items: [
-      { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    ],
-  },
-  {
-    name: 'NUTRITION',
-    items: [
-      { path: '/diet-plan', label: 'Diet Plan', icon: UtensilsCrossed },
-      { path: '/add-meal', label: 'Add Meal', icon: PlusCircle },
-      { path: '/meals', label: 'Meal History', icon: History },
-    ],
-  },
-  {
-    name: 'SMART TOOLS',
-    items: [
-      { path: '/scan/photo', label: 'Photo Scanner', icon: Camera },
-      { path: '/scan/barcode', label: 'Barcode Scanner', icon: Barcode, badge: '50-SLOT' },
-      { path: '/chat', label: 'AI Assistant', icon: MessageSquare, badge: 'PRO' },
-    ],
-  },
-  {
-    name: 'SYSTEM',
-    items: [
-      { path: '/onboarding', label: 'My Profile', icon: User },
-      { path: '/settings', label: 'Settings', icon: Settings },
-    ],
-  },
-];
-
 export const Sidebar: React.FC<SidebarProps> = ({
   mobileOpen,
   setMobileOpen,
   collapsed,
   setCollapsed,
 }) => {
+  const { t } = useTranslation();
+  const { userName, initials } = useUser();
+
+  const navCategories = [
+    {
+      name: t('cat_overview'),
+      items: [
+        { path: '/dashboard', label: t('nav_dashboard'), icon: LayoutDashboard },
+      ],
+    },
+    {
+      name: t('cat_nutrition'),
+      items: [
+        { path: '/diet-plan', label: t('nav_diet_plan'), icon: UtensilsCrossed },
+        { path: '/add-meal', label: t('nav_add_meal'), icon: PlusCircle },
+        { path: '/meals', label: t('nav_meals'), icon: History },
+      ],
+    },
+    {
+      name: t('cat_smart_tools'),
+      items: [
+        { path: '/scan/photo', label: t('nav_photo'), icon: Camera },
+        { path: '/scan/barcode', label: t('nav_barcode'), icon: Barcode, badge: '50-SLOT' },
+        { path: '/chat', label: t('nav_chat'), icon: MessageSquare, badge: 'PRO' },
+      ],
+    },
+    {
+      name: t('cat_system'),
+      items: [
+        { path: '/onboarding', label: t('nav_profile'), icon: User },
+        { path: '/settings', label: t('nav_settings'), icon: Settings },
+      ],
+    },
+  ];
+
   // Prevent body scrolling when mobile sidebar is open
   useEffect(() => {
     if (mobileOpen) {
@@ -82,6 +87,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [mobileOpen, setMobileOpen]);
+
   return (
     <>
       {/* Mobile Drawer Backdrop */}
@@ -206,11 +212,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }`}
           >
             <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-2xs">
-              AS
+              {initials}
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0 text-left">
-                <p className="text-xs font-bold text-neutral-900 truncate">{localStorage.getItem('username') || 'AHAD SHAIKH'}</p>
+                <p className="text-xs font-bold text-neutral-900 truncate">{userName}</p>
                 <p className="text-[10px] font-medium text-neutral-400 truncate">Target: 2,000 kcal</p>
               </div>
             )}

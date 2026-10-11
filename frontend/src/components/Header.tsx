@@ -1,4 +1,3 @@
-// src/components/Header.tsx
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -9,6 +8,7 @@ import {
   CheckCircle2,
   X,
 } from 'lucide-react';
+import { useUser } from '../utils/theme';
 
 interface HeaderProps {
   setMobileOpen: (open: boolean) => void;
@@ -31,6 +31,7 @@ const routeTitles: Record<string, { title: string; subtitle: string }> = {
 export const Header: React.FC<HeaderProps> = ({ setMobileOpen }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { initials } = useUser();
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -146,7 +147,7 @@ export const Header: React.FC<HeaderProps> = ({ setMobileOpen }) => {
           title="Account Settings"
         >
           <div className="w-8 h-8 rounded-lg bg-neutral-900 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
-            AM
+            {initials}
           </div>
         </button>
       </div>

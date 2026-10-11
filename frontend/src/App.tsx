@@ -25,6 +25,14 @@ const App: React.FC = () => {
     if (!localStorage.getItem('username')) {
       localStorage.setItem('username', 'AHAD SHAIKH');
     }
+    // Initialize Dark Mode according to stored preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia?.('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+
     // Clear any obsolete locks or flags
     localStorage.removeItem('unlocked_prototype');
 

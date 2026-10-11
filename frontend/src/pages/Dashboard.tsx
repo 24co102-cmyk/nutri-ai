@@ -31,6 +31,8 @@ import {
 import { ProgressRing } from '../components/ui/ProgressRing';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import { EmptyState } from '../components/ui/EmptyState';
+import { useUser } from '../utils/theme';
+import { useTranslation } from '../utils/i18n';
 
 interface ProfileData {
   age?: number;
@@ -121,13 +123,23 @@ const Dashboard: React.FC = () => {
     };
   }, []);
 
+  const { userName } = useUser();
+  const { t } = useTranslation();
+
   // Time of day greeting (memoized)
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
-    if (hour < 12) return { text: 'Good morning, Alex 👋', icon: Sun };
-    if (hour < 18) return { text: 'Good afternoon, Alex 👋', icon: Sunset };
-    return { text: 'Good evening, Alex 👋', icon: Moon };
-  }, []);
+    let text = t('greeting_morning');
+    let icon = Sun;
+    if (hour >= 12 && hour < 18) {
+      text = t('greeting_afternoon');
+      icon = Sunset;
+    } else if (hour >= 18) {
+      text = t('greeting_evening');
+      icon = Moon;
+    }
+    return { text: `${text}, ${userName} 👋`, icon };
+  }, [userName, t]);
   const GreetingIcon = greeting.icon;
 
   // Memoized nutrition totals
