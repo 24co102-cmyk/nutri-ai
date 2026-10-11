@@ -78,31 +78,4 @@
   .premium-subheading {
     @apply text-sm text-neutral-500 font-medium;
   }
-
-  /* Cyberpunk Hacker HUD Utilities */
-  .cyber-glow {
-    box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.4), 0 0 10px -2px rgba(16, 185, 129, 0.2);
-  }
-  .cyber-glow-cyan {
-    box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.4), 0 0 10px -2px rgba(6, 182, 212, 0.2);
-  }
-  .cyber-glow-amber {
-    box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.4), 0 0 10px -2px rgba(245, 158, 11, 0.2);
-  }
-  .cyber-grid-bg {
-    background-size: 32px 32px;
-    background-image: 
-      linear-gradient(to right, rgba(16, 185, 129, 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(16, 185, 129, 0.05) 1px, transparent 1px);
-  }
 }
-
-@keyframes scanline {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(1000%); }
-}
-
-.animate-scanline {
-  animation: scanline 8s linear infinite;
-}
-

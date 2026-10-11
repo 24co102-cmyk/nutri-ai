@@ -17,12 +17,6 @@ import {
   Sunset,
   Award,
   ArrowUpRight,
-  Terminal,
-  Cpu,
-  Activity,
-  Zap,
-  Radio,
-  Layers,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -35,6 +29,8 @@ import {
   CartesianGrid,
 } from 'recharts';
 import { ProgressRing } from '../components/ui/ProgressRing';
+import { ProgressBar } from '../components/ui/ProgressBar';
+import { EmptyState } from '../components/ui/EmptyState';
 
 interface ProfileData {
   age?: number;
@@ -90,18 +86,6 @@ const Dashboard: React.FC = () => {
   });
   const [syncing, setSyncing] = useState<boolean>(false);
   const [waterCount, setWaterCount] = useState<number>(5); // 5/8 glasses default
-  const [clock, setClock] = useState<string>('');
-
-  // Live ticking hacker timestamp
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setClock(now.toLocaleTimeString() + ' // ' + (now.getMilliseconds() % 999).toString().padStart(3, '0') + 'ms');
-    };
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -140,9 +124,9 @@ const Dashboard: React.FC = () => {
   // Time of day greeting (memoized)
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
-    if (hour < 12) return { text: 'DIURNAL_CYCLE // MORNING_ONLINE', icon: Sun };
-    if (hour < 18) return { text: 'SOLAR_PEAK // AFTERNOON_ONLINE', icon: Sunset };
-    return { text: 'NOCTURNAL_CYCLE // EVENING_ONLINE', icon: Moon };
+    if (hour < 12) return { text: 'Good morning, Alex 👋', icon: Sun };
+    if (hour < 18) return { text: 'Good afternoon, Alex 👋', icon: Sunset };
+    return { text: 'Good evening, Alex 👋', icon: Moon };
   }, []);
   const GreetingIcon = greeting.icon;
 
@@ -186,7 +170,7 @@ const Dashboard: React.FC = () => {
     };
   }, [profile, meals]);
 
-  // BMI calculation
+  // BMI calculation (memoized)
   const { bmiValue, bmiBadge } = useMemo(() => {
     let val = profile?.bmi;
     if (!val && profile?.height_cm && profile?.weight_kg) {
@@ -196,16 +180,16 @@ const Dashboard: React.FC = () => {
     const finalVal = val || 22.4;
 
     const getBadge = (b: number) => {
-      if (b < 18.5) return { label: 'LOW_MASS_INDEX', color: 'text-amber-400 border-amber-500/40 bg-amber-500/10' };
-      if (b < 25) return { label: 'OPTIMAL_BIOMETRIC', color: 'text-emerald-400 border-emerald-500/40 bg-emerald-500/10' };
-      if (b < 30) return { label: 'MASS_SURPLUS', color: 'text-orange-400 border-orange-500/40 bg-orange-500/10' };
-      return { label: 'ELEVATED_INDEX', color: 'text-rose-400 border-rose-500/40 bg-rose-500/10' };
+      if (b < 18.5) return { label: 'Underweight', color: 'bg-amber-50 text-amber-700 border-amber-200' };
+      if (b < 25) return { label: 'Optimal / Normal', color: 'bg-emerald-50 text-emerald-800 border-emerald-200' };
+      if (b < 30) return { label: 'Overweight', color: 'bg-orange-50 text-orange-700 border-orange-200' };
+      return { label: 'High BMI', color: 'bg-rose-50 text-rose-700 border-rose-200' };
     };
 
     return { bmiValue: finalVal, bmiBadge: getBadge(finalVal) };
   }, [profile]);
 
-  // Nutrition Quality Score calculation
+  // Nutrition Quality Score calculation (memoized)
   const nutritionScore = useMemo(() => {
     let score = 75;
     if (consumedCalories > 0 && consumedCalories <= targetCalories) score += 10;
@@ -214,225 +198,138 @@ const Dashboard: React.FC = () => {
     return Math.min(96, Math.max(60, score));
   }, [consumedCalories, targetCalories, consumedProtein, targetProtein, waterCount]);
 
-  // Recharts hacker-formatted data
+  // Weekly / Daily chart data (memoized)
   const chartData = useMemo(() => [
-    { name: 'PROTEIN', Consumed: Math.round(consumedProtein), Target: targetProtein },
-    { name: 'CARBS', Consumed: Math.round(consumedCarbs), Target: targetCarbs },
-    { name: 'LIPIDS', Consumed: Math.round(consumedFat), Target: targetFat },
+    { name: 'Protein', Consumed: Math.round(consumedProtein), Target: targetProtein },
+    { name: 'Carbs', Consumed: Math.round(consumedCarbs), Target: targetCarbs },
+    { name: 'Healthy Fats', Consumed: Math.round(consumedFat), Target: targetFat },
   ], [consumedProtein, targetProtein, consumedCarbs, targetCarbs, consumedFat, targetFat]);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-16 font-mono text-neutral-200">
-      
-      {/* ━━━ TOP CYBER SYSTEM STATUS STRIP ━━━ */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-[#090d0a] border border-emerald-500/25 shadow-lg cyber-glow text-xs">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 text-emerald-400 font-bold tracking-wider">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span className="text-[11px] uppercase">[SYSTEM_ONLINE: ROOT_ACCESS]</span>
-          </div>
-          <span className="hidden sm:inline text-neutral-600">//</span>
-          <div className="hidden sm:flex items-center gap-2 text-neutral-400 text-[11px]">
-            <Cpu className="w-3.5 h-3.5 text-emerald-500" />
-            <span>NEURAL_ENGINE: ACTIVE</span>
-          </div>
-          <span className="hidden md:inline text-neutral-600">//</span>
-          <div className="hidden md:flex items-center gap-2 text-neutral-400 text-[11px]">
-            <Activity className="w-3.5 h-3.5 text-cyan-400" />
-            <span>TELEMETRY_LATENCY: 12ms</span>
-          </div>
-        </div>
+    <div className="space-y-6 max-w-7xl mx-auto pb-16">
+      {/* ━━━ 1. Health Summary Top Area (Premium Dark Hero) ━━━ */}
+      <div className="relative overflow-hidden rounded-[2rem] bg-[#111111] text-white shadow-2xl p-6 sm:p-10 border border-neutral-800/60 transition-all">
+        {/* Subtle Ambient Glows */}
+        <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[60%] rounded-full bg-emerald-600/20 blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[40%] h-[50%] rounded-full bg-teal-600/10 blur-[80px] pointer-events-none" />
 
-        <div className="flex items-center gap-3 text-[11px] text-emerald-400/90 font-mono">
-          <span className="px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/30">
-            {clock || 'UTC_TICKING // 00:00:00'}
-          </span>
-          {syncing ? (
-            <span className="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-500/40 text-cyan-300 animate-pulse">
-              SYNC_IN_PROGRESS
-            </span>
-          ) : (
-            <span className="px-2 py-0.5 rounded bg-emerald-950 border border-emerald-500/30 text-emerald-400">
-              BUFFER_SYNCED
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* ━━━ 1. CYBER BIOMETRIC COMMAND CORE (HERO HUD) ━━━ */}
-      <div className="relative overflow-hidden rounded-3xl bg-[#080d09] border-2 border-emerald-500/30 p-6 sm:p-9 shadow-2xl transition-all cyber-glow relative">
-        {/* Subtle Cyber Grid Background overlay */}
-        <div className="absolute inset-0 cyber-grid-bg opacity-30 pointer-events-none" />
-        {/* Ambient neon radial glows */}
-        <div className="absolute top-[-25%] right-[-15%] w-[55%] h-[65%] rounded-full bg-emerald-500/10 blur-[90px] pointer-events-none" />
-        <div className="absolute bottom-[-25%] left-[-15%] w-[45%] h-[55%] rounded-full bg-teal-500/10 blur-[80px] pointer-events-none" />
-
-        {/* HUD Corner Tech Brackets */}
-        <div className="absolute top-3 left-3 text-[10px] text-emerald-500/50 font-mono select-none">
-          ┌── [NUTRI_CORE:v4.2]
-        </div>
-        <div className="absolute top-3 right-3 text-[10px] text-emerald-500/50 font-mono select-none">
-          [CHANNEL://MAIN] ──┐
-        </div>
-        <div className="absolute bottom-3 left-3 text-[10px] text-emerald-500/50 font-mono select-none">
-          └── [SEC_LEVEL: 0]
-        </div>
-        <div className="absolute bottom-3 right-3 text-[10px] text-emerald-500/50 font-mono select-none">
-          [TERMINAL_READY] ──┘
-        </div>
-
-        {/* Top Header Block */}
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-8 border-b border-emerald-500/20">
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-8 border-b border-neutral-800">
           <div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-950/80 text-emerald-400 text-xs font-bold mb-3 border border-emerald-500/40">
-              <GreetingIcon className="w-4 h-4 text-emerald-400" />
-              <span className="tracking-widest uppercase">{greeting.text}</span>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 backdrop-blur-md text-emerald-400 text-xs font-bold mb-4 border border-white/10 shadow-sm">
+              <GreetingIcon className="w-4 h-4" />
+              <span className="tracking-wide uppercase">{greeting.text}</span>
+              {syncing && (
+                <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-300/80 lowercase">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  syncing
+                </span>
+              )}
             </div>
-
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white flex items-center gap-3">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
-                CYBER BIO-CORE
-              </span>
-              <span className="text-emerald-500 text-2xl sm:text-3xl animate-pulse">_</span>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight mb-2">
+              Your Daily <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200">Nutrition</span>
             </h1>
-
-            <p className="text-xs sm:text-sm text-neutral-400 mt-2 max-w-xl font-sans leading-relaxed">
+            <p className="text-sm text-neutral-400 font-medium max-w-xl leading-relaxed">
               {remainingCalories > 0 ? (
-                <>
-                  QUOTA_REMAINING: <span className="text-emerald-400 font-bold font-mono">{remainingCalories.toLocaleString()} KCAL</span>. 
-                  Target protocol aligned for <span className="text-white font-semibold font-mono">[{profile?.health_goal || 'METABOLIC_TUNING'}]</span>.
-                </>
+                <>You're <span className="text-emerald-400 font-bold">{remainingCalories.toLocaleString()} kcal</span> away from your target. Maintain your macros for <span className="text-white font-semibold">{profile?.health_goal || 'Weight Management'}</span>.</>
               ) : (
-                <>ENERGY_QUOTA COMPLETE // Calorie ceiling attained. Maintain hydration and cellular recovery.</>
+                <>Target reached. Great job! Focus on clean hydration and rest.</>
               )}
             </p>
           </div>
 
-          {/* Quick Hacker CTAs */}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/add-meal')}
-              className="px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs transition-all flex items-center gap-2 shadow-[0_0_25px_rgba(16,185,129,0.4)] active:scale-95 cursor-pointer"
+              className="px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-extrabold text-sm transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.3)]"
             >
-              <Zap className="w-4 h-4 fill-black" />
-              <span>[+ INJECT_MEAL_DATA]</span>
+              <PlusCircle className="w-4 h-4" />
+              Log Meal
             </button>
             <button
               onClick={() => navigate('/diet-plan')}
-              className="px-5 py-3 rounded-xl bg-neutral-900/90 hover:bg-neutral-800 text-emerald-300 border border-emerald-500/40 font-bold text-xs transition-all flex items-center gap-2 active:scale-95 cursor-pointer shadow-sm"
+              className="px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white border border-white/10 font-semibold text-sm transition-all flex items-center gap-2 backdrop-blur-sm"
             >
               <Utensils className="w-4 h-4 text-emerald-400" />
-              <span>[// DIET_MATRIX]</span>
+              Schedule
             </button>
           </div>
         </div>
 
-        {/* ━━━ CORE BIOMETRIC TELEMETRY GAUGES ━━━ */}
+        {/* Hero Interactive Gauges & Macro Status */}
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 pt-8">
-          
-          {/* Caloric Fusion Progress Ring */}
-          <div className="md:col-span-4 flex items-center gap-5 p-5 rounded-2xl bg-[#050806]/80 border border-emerald-500/25 backdrop-blur-md relative overflow-hidden">
-            <div className="relative">
-              <ProgressRing
-                progress={caloriePercent}
-                size={120}
-                strokeWidth={10}
-                color="#10b981"
-                trackColor="rgba(16, 185, 129, 0.15)"
-              >
-                <div className="text-center">
-                  <span className="text-2xl font-black text-emerald-400 font-mono block">{caloriePercent}%</span>
-                  <span className="text-[9px] text-neutral-400 uppercase tracking-widest">LOADED</span>
-                </div>
-              </ProgressRing>
-            </div>
+          {/* Calorie Progress Ring */}
+          <div className="md:col-span-4 flex items-center gap-6 p-5 rounded-3xl bg-black/40 border border-white/5 backdrop-blur-xl">
+            <ProgressRing
+              progress={caloriePercent}
+              size={120}
+              strokeWidth={10}
+              color="#34d399"
+              trackColor="rgba(255,255,255,0.1)"
+            >
+              <span className="text-xl font-black text-white">{caloriePercent}%</span>
+            </ProgressRing>
 
             <div className="space-y-1">
-              <span className="text-[10px] font-bold text-emerald-500/80 uppercase tracking-widest block">
-                // ENERGY_LIMIT
+              <span className="text-[11px] font-bold text-neutral-500 uppercase tracking-widest block mb-1">
+                Calorie Limit
               </span>
-              <div className="text-2xl sm:text-3xl font-black text-white tracking-tight font-mono">
+              <div className="text-3xl font-black text-white tracking-tight">
                 {consumedCalories.toLocaleString()}
               </div>
-              <p className="text-[11px] text-neutral-400 font-mono">
-                / {targetCalories.toLocaleString()} KCAL
+              <p className="text-xs font-semibold text-neutral-400">
+                / {targetCalories.toLocaleString()} kcal
               </p>
-              <div className="pt-1 text-[10px] text-emerald-400/70">
-                STATUS: {caloriePercent >= 100 ? 'CEILING_MAXED' : 'WITHIN_PARAMETERS'}
-              </div>
             </div>
           </div>
 
-          {/* Macro Synthesis Breakdown HUD */}
-          <div className="md:col-span-5 p-5 rounded-2xl bg-[#050806]/80 border border-emerald-500/25 backdrop-blur-md flex flex-col justify-center gap-3.5">
-            {/* Protein Stream */}
-            <div className="space-y-1">
-              <div className="flex justify-between text-[11px]">
-                <span className="text-cyan-400 font-bold">[PROTEIN_SYNTHESIS]</span>
-                <span className="text-neutral-300 font-mono">{Math.round(consumedProtein)}g / {targetProtein}g ({Math.min(100, Math.round((consumedProtein / (targetProtein || 1)) * 100))}%)</span>
-              </div>
-              <div className="w-full bg-neutral-900 rounded-md h-2.5 overflow-hidden border border-cyan-500/30 p-0.5">
-                <div 
-                  className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 rounded-sm transition-all duration-500" 
-                  style={{ width: `${Math.min(100, Math.round((consumedProtein / (targetProtein || 1)) * 100))}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Carbs Stream */}
-            <div className="space-y-1">
-              <div className="flex justify-between text-[11px]">
-                <span className="text-emerald-400 font-bold">[GLYCOGEN_CARBS]</span>
-                <span className="text-neutral-300 font-mono">{Math.round(consumedCarbs)}g / {targetCarbs}g ({Math.min(100, Math.round((consumedCarbs / (targetCarbs || 1)) * 100))}%)</span>
-              </div>
-              <div className="w-full bg-neutral-900 rounded-md h-2.5 overflow-hidden border border-emerald-500/30 p-0.5">
-                <div 
-                  className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-sm transition-all duration-500" 
-                  style={{ width: `${Math.min(100, Math.round((consumedCarbs / (targetCarbs || 1)) * 100))}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Fats Stream */}
-            <div className="space-y-1">
-              <div className="flex justify-between text-[11px]">
-                <span className="text-amber-400 font-bold">[LIPID_RESERVES]</span>
-                <span className="text-neutral-300 font-mono">{Math.round(consumedFat)}g / {targetFat}g ({Math.min(100, Math.round((consumedFat / (targetFat || 1)) * 100))}%)</span>
-              </div>
-              <div className="w-full bg-neutral-900 rounded-md h-2.5 overflow-hidden border border-amber-500/30 p-0.5">
-                <div 
-                  className="h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-sm transition-all duration-500" 
-                  style={{ width: `${Math.min(100, Math.round((consumedFat / (targetFat || 1)) * 100))}%` }}
-                />
-              </div>
-            </div>
+          {/* Macro Progress Bars */}
+          <div className="md:col-span-5 p-5 rounded-3xl bg-black/40 border border-white/5 backdrop-blur-xl flex flex-col justify-center gap-4">
+            <ProgressBar
+              label="Protein"
+              current={Math.round(consumedProtein)}
+              target={targetProtein}
+              unit="g"
+              color="bg-blue-500"
+            />
+            <ProgressBar
+              label="Carbs"
+              current={Math.round(consumedCarbs)}
+              target={targetCarbs}
+              unit="g"
+              color="bg-emerald-400"
+            />
+            <ProgressBar
+              label="Fats"
+              current={Math.round(consumedFat)}
+              target={targetFat}
+              unit="g"
+              color="bg-amber-400"
+            />
           </div>
 
-          {/* Biometric Score Radar */}
-          <div className="md:col-span-3 p-5 rounded-2xl bg-[#050806]/80 border border-emerald-500/25 backdrop-blur-md flex flex-col justify-between relative overflow-hidden">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
-                  <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-                  BIO_INDEX
+          {/* Health Score & BMI Card */}
+          <div className="md:col-span-3 p-5 rounded-3xl bg-gradient-to-br from-emerald-900/40 to-teal-900/20 border border-emerald-500/20 flex flex-col justify-between relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl transform translate-x-1/2 -translate-y-1/2 group-hover:bg-emerald-500/20 transition-all duration-700" />
+            
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-bold text-emerald-400/80 uppercase tracking-widest">
+                  Health Score
                 </span>
                 <Award className="w-4 h-4 text-emerald-400" />
               </div>
-              <div className="flex items-baseline gap-1 mt-1">
-                <span className="text-4xl font-black text-white font-mono">{nutritionScore}</span>
-                <span className="text-xs font-bold text-emerald-500">/ 100</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-black text-white">{nutritionScore}</span>
+                <span className="text-sm font-bold text-emerald-500">/100</span>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-emerald-500/20 mt-3 flex items-center justify-between">
+            <div className="relative z-10 pt-4 border-t border-emerald-800/30 mt-4 flex items-center justify-between">
               <div>
-                <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider block">BMI_VECTOR</span>
-                <span className="text-sm font-black text-white font-mono">{bmiValue}</span>
+                <span className="text-[10px] text-emerald-400/80 font-bold uppercase tracking-widest block mb-0.5">BMI</span>
+                <span className="text-sm font-black text-white">{bmiValue}</span>
               </div>
-              <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wide border ${bmiBadge.color}`}>
+              <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide ${bmiBadge.color.replace('bg-', 'bg-opacity-20 bg-').replace('text-', 'text-opacity-90 text-')} border-none bg-white/10 text-white`}>
                 {bmiBadge.label}
               </span>
             </div>
@@ -440,324 +337,285 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* ━━━ 2. FOUR CYBER TELEMETRY PODS ━━━ */}
+      {/* ━━━ 2. Metric Overview Cards Row ━━━ */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* POD 1: Quota */}
-        <div className="bg-[#090d0a] rounded-2xl p-4.5 border border-emerald-500/25 hover:border-emerald-400 transition-all duration-300 hover:-translate-y-1 group relative overflow-hidden">
+        {/* Daily Target */}
+        <div className="bg-white rounded-3xl p-5 border border-neutral-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 group">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-emerald-500/80 uppercase tracking-widest">
-              // POD_01: QUOTA
+            <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">
+              Daily Target
             </span>
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Target className="w-4 h-4" />
+            <div className="w-10 h-10 rounded-2xl bg-indigo-50/80 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <Target className="w-4.5 h-4.5" />
             </div>
           </div>
-          <div className="mt-3">
-            <div className="text-2xl font-black text-white tracking-tight font-mono">
+          <div className="mt-4">
+            <div className="text-3xl font-black text-neutral-900 tracking-tight">
               {targetCalories.toLocaleString()}{' '}
-              <span className="text-xs font-semibold text-emerald-400/80">KCAL</span>
+              <span className="text-sm font-semibold text-neutral-400">kcal</span>
             </div>
-            <p className="mt-1 text-[11px] text-neutral-400 font-sans">Daily baseline requirement</p>
+            <p className="mt-1 text-xs text-neutral-500 font-medium">Personalized BMR requirement</p>
           </div>
         </div>
 
-        {/* POD 2: Consumed */}
-        <div className="bg-[#090d0a] rounded-2xl p-4.5 border border-emerald-500/25 hover:border-emerald-400 transition-all duration-300 hover:-translate-y-1 group relative overflow-hidden">
+        {/* Consumed */}
+        <div className="bg-white rounded-3xl p-5 border border-neutral-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 group">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-emerald-500/80 uppercase tracking-widest">
-              // POD_02: CONSUMED
+            <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">
+              Consumed
             </span>
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Flame className="w-4 h-4 text-emerald-400" />
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50/80 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <Flame className="w-4.5 h-4.5" />
             </div>
           </div>
-          <div className="mt-3">
-            <div className="text-2xl font-black text-emerald-400 tracking-tight font-mono">
+          <div className="mt-4">
+            <div className="text-3xl font-black text-neutral-900 tracking-tight">
               {consumedCalories.toLocaleString()}{' '}
-              <span className="text-xs font-semibold text-neutral-400">KCAL</span>
+              <span className="text-sm font-semibold text-neutral-400">kcal</span>
             </div>
-            <p className="mt-1 text-[11px] text-neutral-400 font-sans">{caloriePercent}% of daily ceiling</p>
+            <p className="mt-1 text-xs text-neutral-500 font-medium">{caloriePercent}% of daily limit</p>
           </div>
         </div>
 
-        {/* POD 3: Deficit */}
-        <div className="bg-[#090d0a] rounded-2xl p-4.5 border border-emerald-500/25 hover:border-amber-400 transition-all duration-300 hover:-translate-y-1 group relative overflow-hidden">
+        {/* Calories Remaining */}
+        <div className="bg-white rounded-3xl p-5 border border-neutral-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 group">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-amber-400/80 uppercase tracking-widest">
-              // POD_03: DELTA_REMAIN
+            <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">
+              Remaining
             </span>
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <TrendingDown className="w-4 h-4" />
+            <div className="w-10 h-10 rounded-2xl bg-amber-50/80 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <TrendingDown className="w-4.5 h-4.5" />
             </div>
           </div>
-          <div className="mt-3">
-            <div className="text-2xl font-black text-amber-400 tracking-tight font-mono">
+          <div className="mt-4">
+            <div className="text-3xl font-black text-neutral-900 tracking-tight">
               {remainingCalories.toLocaleString()}{' '}
-              <span className="text-xs font-semibold text-neutral-400">KCAL</span>
+              <span className="text-sm font-semibold text-neutral-400">kcal</span>
             </div>
-            <p className="mt-1 text-[11px] text-neutral-400 font-sans">Available metabolic allocation</p>
+            <p className="mt-1 text-xs text-neutral-500 font-medium">Available for dinner/snacks</p>
           </div>
         </div>
 
-        {/* POD 4: Hydration */}
-        <div className="bg-[#090d0a] rounded-2xl p-4.5 border border-cyan-500/30 hover:border-cyan-400 transition-all duration-300 hover:-translate-y-1 group relative overflow-hidden">
+        {/* Hydration Indicator */}
+        <div className="bg-white rounded-3xl p-5 border border-neutral-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 group">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-cyan-400/80 uppercase tracking-widest">
-              // POD_04: FLUID_CELLS
+            <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">
+              Water Consumed
             </span>
-            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Droplet className="w-4 h-4 text-cyan-400" />
+            <div className="w-10 h-10 rounded-2xl bg-cyan-50/80 text-cyan-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <Droplet className="w-4.5 h-4.5" />
             </div>
           </div>
-          <div className="mt-3">
-            <div className="text-2xl font-black text-cyan-400 tracking-tight font-mono">
+          <div className="mt-4">
+            <div className="text-3xl font-black text-neutral-900 tracking-tight">
               {waterCount * 250}{' '}
-              <span className="text-xs font-semibold text-neutral-400">/ 2000 ML</span>
+              <span className="text-sm font-semibold text-neutral-400">/ 2000 ml</span>
             </div>
-            <p className="mt-1 text-[11px] text-neutral-400 font-sans">{waterCount} of 8 bio-cells filled</p>
+            <p className="mt-1 text-xs text-neutral-500 font-medium">{waterCount} of 8 glasses logged</p>
           </div>
         </div>
       </div>
 
-      {/* ━━━ 3. HACKER COMMAND MODULES (QUICK LAUNCH) ━━━ */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between text-xs text-neutral-400">
-          <span className="font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-emerald-400" />
-            TACTICAL_COMMAND_MODULES
-          </span>
-          <span className="text-[10px] text-neutral-500">// SELECT_EXECUTION_TARGET</span>
-        </div>
-
+      {/* ━━━ 3. Quick Actions Suite ━━━ */}
+      <div className="space-y-4 mt-2">
+        <h3 className="text-[11px] font-extrabold text-neutral-400 uppercase tracking-widest pl-1">
+          Quick Launch Tools
+        </h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <Link
             to="/add-meal"
-            className="p-4 rounded-2xl bg-[#090d0a] border border-emerald-500/25 hover:border-emerald-400 hover:bg-[#0d140f] transition-all duration-300 hover:-translate-y-1 flex flex-col gap-3 group"
+            className="group p-5 rounded-3xl bg-white border border-neutral-100 hover:border-emerald-200 shadow-[0_4px_20px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(16,185,129,0.08)] transition-all duration-300 hover:-translate-y-1 flex flex-col gap-4"
           >
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-black transition-all">
-              <PlusCircle className="w-5 h-5" />
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
+              <PlusCircle className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-[10px] text-emerald-500/70 font-mono block">MOD_01</span>
-              <h4 className="text-xs font-black text-white uppercase tracking-tight">MANUAL_INJECT</h4>
-              <p className="text-[11px] text-neutral-400 font-sans mt-0.5">Log custom food specs</p>
+              <h4 className="text-sm font-black text-neutral-900">Add Meal</h4>
+              <p className="text-xs text-neutral-400 font-medium mt-0.5">Log manual entry</p>
             </div>
           </Link>
 
           <Link
             to="/scan/barcode"
-            className="p-4 rounded-2xl bg-[#090d0a] border border-teal-500/25 hover:border-teal-400 hover:bg-[#091411] transition-all duration-300 hover:-translate-y-1 flex flex-col gap-3 group"
+            className="group p-5 rounded-3xl bg-white border border-neutral-100 hover:border-teal-200 shadow-[0_4px_20px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(20,184,166,0.08)] transition-all duration-300 hover:-translate-y-1 flex flex-col gap-4"
           >
-            <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-400 flex items-center justify-center group-hover:scale-110 group-hover:bg-teal-500 group-hover:text-black transition-all">
-              <Barcode className="w-5 h-5" />
+            <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300">
+              <Barcode className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-[10px] text-teal-500/70 font-mono block">MOD_02</span>
-              <h4 className="text-xs font-black text-white uppercase tracking-tight">BARCODE_DECODER</h4>
-              <p className="text-[11px] text-neutral-400 font-sans mt-0.5">50-slot verified registry</p>
+              <h4 className="text-sm font-black text-neutral-900">Barcode Scan</h4>
+              <p className="text-xs text-neutral-400 font-medium mt-0.5">Packaged foods</p>
             </div>
           </Link>
 
           <Link
             to="/scan/photo"
-            className="p-4 rounded-2xl bg-[#090d0a] border border-cyan-500/25 hover:border-cyan-400 hover:bg-[#071317] transition-all duration-300 hover:-translate-y-1 flex flex-col gap-3 group"
+            className="group p-5 rounded-3xl bg-white border border-neutral-100 hover:border-cyan-200 shadow-[0_4px_20px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(6,182,212,0.08)] transition-all duration-300 hover:-translate-y-1 flex flex-col gap-4"
           >
-            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center group-hover:scale-110 group-hover:bg-cyan-500 group-hover:text-black transition-all">
-              <Camera className="w-5 h-5" />
+            <div className="w-12 h-12 rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-cyan-500 group-hover:text-white transition-all duration-300">
+              <Camera className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-[10px] text-cyan-500/70 font-mono block">MOD_03</span>
-              <h4 className="text-xs font-black text-white uppercase tracking-tight">OPTICAL_VISION_AI</h4>
-              <p className="text-[11px] text-neutral-400 font-sans mt-0.5">Photo neural analysis</p>
+              <h4 className="text-sm font-black text-neutral-900">Food Vision</h4>
+              <p className="text-xs text-neutral-400 font-medium mt-0.5">Photo AI analysis</p>
             </div>
           </Link>
 
           <Link
             to="/chat"
-            className="p-4 rounded-2xl bg-[#090d0a] border border-indigo-500/25 hover:border-indigo-400 hover:bg-[#0d0f1a] transition-all duration-300 hover:-translate-y-1 flex flex-col gap-3 group"
+            className="group p-5 rounded-3xl bg-white border border-neutral-100 hover:border-indigo-200 shadow-[0_4px_20px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(99,102,241,0.08)] transition-all duration-300 hover:-translate-y-1 flex flex-col gap-4"
           >
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 flex items-center justify-center group-hover:scale-110 group-hover:bg-indigo-500 group-hover:text-white transition-all">
-              <MessageSquare className="w-5 h-5" />
+            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-indigo-500 group-hover:text-white transition-all duration-300">
+              <MessageSquare className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-[10px] text-indigo-400/70 font-mono block">MOD_04</span>
-              <h4 className="text-xs font-black text-white uppercase tracking-tight">NEURAL_ADVISOR</h4>
-              <p className="text-[11px] text-neutral-400 font-sans mt-0.5">AI nutritionist coaching</p>
+              <h4 className="text-sm font-black text-neutral-900">AI Nutritionist</h4>
+              <p className="text-xs text-neutral-400 font-medium mt-0.5">Coaching & tips</p>
             </div>
           </Link>
         </div>
       </div>
 
-      {/* ━━━ 4. MACRO SPECTRUM & HYDRATION CELL MATRIX ━━━ */}
+      {/* ━━━ 4. Analytics Section: Recharts & Water Tracker ━━━ */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* Recharts Hacker Spectrum */}
-        <div className="lg:col-span-8 bg-[#080d09] rounded-3xl border border-emerald-500/25 p-5 sm:p-7 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-emerald-500/20">
+        {/* Today's Nutrition Breakdown Chart */}
+        <div className="lg:col-span-8 bg-white rounded-3xl border border-neutral-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)] p-6 sm:p-8 space-y-4">
+          <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-black text-white flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-emerald-400" />
-                <span>// MACRO_SPECTRUM_DISTRIBUTION</span>
-              </h3>
-              <p className="text-[11px] text-neutral-400 font-sans mt-0.5">Real-time gram tracking vs target envelope</p>
+              <h3 className="text-base font-bold text-neutral-900">Macronutrient Distribution</h3>
+              <p className="text-xs text-neutral-400 font-medium">Daily gram comparison against your targets</p>
             </div>
-            <span className="text-[10px] font-mono px-2 py-0.5 bg-emerald-950 border border-emerald-500/40 text-emerald-400 rounded">
-              DIURNAL_WINDOW
+            <span className="text-[11px] font-bold px-2.5 py-1 bg-neutral-100 text-neutral-700 rounded-full">
+              Today
             </span>
           </div>
 
           <div className="h-64 w-full pt-2">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(16, 185, 129, 0.1)" />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#10b981', fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#6b7280', fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#050806',
-                    borderRadius: '10px',
-                    border: '1px solid #10b981',
-                    fontSize: '11px',
-                    fontFamily: 'monospace',
-                    color: '#e5e7eb',
-                    boxShadow: '0 0 15px rgba(16,185,129,0.3)',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '12px',
+                    border: '1px solid #e2e8f0',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+                    fontSize: '12px',
                   }}
                 />
-                <Legend iconType="square" wrapperStyle={{ fontSize: '11px', paddingTop: '10px', fontFamily: 'monospace' }} />
-                <Bar dataKey="Consumed" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={45} />
-                <Bar dataKey="Target" fill="rgba(255,255,255,0.15)" radius={[4, 4, 0, 0]} maxBarSize={45} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                <Bar dataKey="Consumed" fill="#059669" radius={[6, 6, 0, 0]} maxBarSize={45} />
+                <Bar dataKey="Target" fill="#e2e8f0" radius={[6, 6, 0, 0]} maxBarSize={45} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Interactive Fluid Injector */}
-        <div className="lg:col-span-4 bg-[#080d09] rounded-3xl border border-cyan-500/25 p-5 sm:p-7 flex flex-col justify-between">
+        {/* Water Intake Tracker */}
+        <div className="lg:col-span-4 bg-white rounded-3xl border border-neutral-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)] p-6 sm:p-8 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between pb-3 border-b border-cyan-500/20">
-              <h3 className="text-sm font-black text-white flex items-center gap-2">
-                <Droplet className="w-4 h-4 text-cyan-400" />
-                <span>// HYDRATION_ARRAY</span>
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-neutral-900 flex items-center gap-2">
+                <Droplet className="w-4.5 h-4.5 text-cyan-500 fill-cyan-500" />
+                Water Tracker
               </h3>
-              <span className="text-[10px] font-mono text-cyan-300 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-500/40">
-                {waterCount * 250} / 2000 ML
+              <span className="text-xs font-bold text-cyan-700 bg-cyan-50 px-2.5 py-1 rounded-full border border-cyan-200">
+                {waterCount * 250} ml / 2000 ml
               </span>
             </div>
 
-            <p className="text-[11px] text-neutral-400 mt-2 font-sans">
-              8-Stage Cellular Hydration Matrix. Click cells to toggle status.
-            </p>
+            <p className="text-xs text-neutral-400 mt-1 font-medium">Daily target: 8 glasses (2.0 L)</p>
 
-            <div className="grid grid-cols-4 gap-2.5 mt-4">
+            <div className="grid grid-cols-4 gap-2.5 mt-5">
               {Array.from({ length: 8 }).map((_, idx) => {
                 const filled = idx < waterCount;
                 return (
                   <button
                     key={idx}
                     onClick={() => setWaterCount(filled ? idx : idx + 1)}
-                    title={`Toggle Cell #${idx + 1}`}
-                    className={`h-11 rounded-xl flex items-center justify-center border font-mono text-xs transition-all active:scale-90 cursor-pointer ${
+                    title={`Glass ${idx + 1}`}
+                    className={`h-11 rounded-xl flex items-center justify-center border transition-all ${
                       filled
-                        ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.4)]'
-                        : 'bg-neutral-900/60 border-neutral-800 text-neutral-600 hover:border-cyan-500/40 hover:text-cyan-400'
+                        ? 'bg-cyan-500 border-cyan-500 text-white shadow-2xs'
+                        : 'bg-[#faf9f8] border-neutral-200/80 text-neutral-300 hover:border-cyan-300 hover:text-cyan-400'
                     }`}
                   >
-                    <Droplet className={`w-4 h-4 ${filled ? 'fill-cyan-400 text-cyan-400' : ''}`} />
+                    <Droplet className={`w-4.5 h-4.5 ${filled ? 'fill-white' : ''}`} />
                   </button>
                 );
               })}
             </div>
           </div>
 
-          <div className="mt-5 pt-4 border-t border-cyan-500/20 flex items-center justify-between text-xs font-mono">
-            <span className="text-cyan-400/80">EFFICIENCY: {Math.round((waterCount / 8) * 100)}%</span>
+          <div className="mt-5 pt-4 border-t border-neutral-100 flex items-center justify-between text-xs">
+            <span className="text-neutral-500 font-medium">{Math.round((waterCount / 8) * 100)}% Hydrated</span>
             <button
               onClick={() => setWaterCount((prev) => Math.min(8, prev + 1))}
-              className="text-cyan-300 hover:text-cyan-200 font-bold flex items-center gap-1 active:scale-95 cursor-pointer"
+              className="font-bold text-cyan-600 hover:text-cyan-700 transition-colors"
             >
-              [+ INJECT_CELL]
+              + Quick Add Glass
             </button>
           </div>
         </div>
       </div>
 
-      {/* ━━━ 5. TERMINAL AUDIT FEED (RECENT MEALS) ━━━ */}
-      <div className="bg-[#050806] rounded-3xl border border-emerald-500/30 p-5 sm:p-7 space-y-4 shadow-xl">
-        <div className="flex items-center justify-between pb-3 border-b border-emerald-500/20">
-          <div className="flex items-center gap-3">
-            {/* Terminal Window Dots */}
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80 inline-block" />
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block" />
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Terminal className="w-3.5 h-3.5 text-emerald-400" />
-                <span>root@nutri-ai:~# tail -f /var/log/nutrition.log</span>
-              </h3>
-            </div>
+      {/* ━━━ 5. Today's Logged Meals Timeline ━━━ */}
+      <div className="bg-white rounded-3xl border border-neutral-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)] p-6 sm:p-8 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-bold text-neutral-900">Recent Meals Logged</h3>
+            <p className="text-xs text-neutral-400 font-medium">Recorded nutrition entries for today</p>
           </div>
-          
           <Link
             to="/meals"
-            className="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 font-mono transition-colors"
+            className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 transition-colors"
           >
-            [VIEW_FULL_LOGS <ArrowUpRight className="w-3.5 h-3.5" />]
+            Full Meal History <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
         {meals.length === 0 ? (
-          <div className="p-8 text-center bg-neutral-950/60 rounded-2xl border border-emerald-500/15 space-y-3">
-            <Terminal className="w-8 h-8 text-emerald-500/40 mx-auto animate-pulse" />
-            <p className="text-xs text-emerald-400/80 font-mono">
-              [LOG_BUFFER_EMPTY] No nutritional packets recorded in current diurnal cycle.
-            </p>
-            <p className="text-[11px] text-neutral-500 font-sans max-w-md mx-auto">
-              Execute your first food entry via Manual Input, Barcode Decoder, or Computer Vision Recon.
-            </p>
-            <button
-              onClick={() => navigate('/add-meal')}
-              className="mt-2 px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 font-mono text-xs transition-all active:scale-95 cursor-pointer"
-            >
-              [+ EXECUTE_ENTRY]
-            </button>
-          </div>
+          <EmptyState
+            icon={Utensils}
+            title="No Meals Logged Today"
+            description="Log your breakfast, lunch or snacks to track remaining calories and macro adherence."
+            actionText="+ Log Your First Meal"
+            onAction={() => navigate('/add-meal')}
+          />
         ) : (
-          <div className="space-y-2">
-            {meals.slice(0, 5).map((meal, idx) => (
-              <div 
-                key={meal.id} 
-                className="p-3 rounded-xl bg-neutral-950/70 border border-emerald-500/15 hover:border-emerald-500/40 flex flex-wrap items-center justify-between gap-3 transition-colors text-xs font-mono"
-              >
+          <div className="divide-y divide-neutral-100">
+            {meals.slice(0, 5).map((meal) => (
+              <div key={meal.id} className="py-3.5 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <span className="text-emerald-500/50 text-[10px]">#{idx + 1}</span>
-                  <div className="w-7 h-7 rounded bg-emerald-950 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-xs border border-emerald-200/70">
                     {meal.meal_type ? meal.meal_type[0].toUpperCase() : 'M'}
                   </div>
                   <div>
-                    <span className="font-bold text-white uppercase">{meal.meal_type || 'FOOD_PACKET'}</span>
-                    <span className="text-[10px] text-neutral-500 ml-2">
+                    <h4 className="text-sm font-bold text-neutral-900">{meal.meal_type || 'Meal'}</h4>
+                    <p className="text-[11px] text-neutral-400 font-medium">
                       {meal.created_at || meal.date
                         ? new Date(meal.created_at || meal.date!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                        : 'TIMESTAMP_RECORDED'}
-                    </span>
+                        : 'Logged today'}
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <span className="text-emerald-400 font-bold">
-                    +{meal.total_calories || 0} KCAL
-                  </span>
-                  <div className="flex items-center gap-1.5 text-[10px]">
-                    <span className="px-1.5 py-0.5 rounded bg-cyan-950/80 text-cyan-300 border border-cyan-500/30">
-                      P:{meal.total_protein || 0}g
+                <div className="flex items-center gap-5">
+                  <div className="text-right">
+                    <span className="text-sm font-black text-neutral-900">{meal.total_calories || 0}</span>
+                    <span className="text-xs text-neutral-400 ml-1">kcal</span>
+                  </div>
+                  <div className="hidden sm:flex items-center gap-1.5 text-[11px]">
+                    <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-semibold border border-blue-200/60">
+                      P: {meal.total_protein || 0}g
                     </span>
-                    <span className="px-1.5 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-500/30">
-                      C:{meal.total_carbs || 0}g
+                    <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200/60">
+                      C: {meal.total_carbs || 0}g
                     </span>
-                    <span className="px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-500/30">
-                      F:{meal.total_fat || 0}g
+                    <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 font-semibold border border-amber-200/60">
+                      F: {meal.total_fat || 0}g
                     </span>
                   </div>
                 </div>
@@ -766,7 +624,6 @@ const Dashboard: React.FC = () => {
           </div>
         )}
       </div>
-
     </div>
   );
 };
