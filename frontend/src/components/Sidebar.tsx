@@ -13,7 +13,6 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  LogOut,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -198,7 +197,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
 
-        {/* Bottom Profile Summary Card & Logout */}
+        {/* Bottom Profile Summary Card */}
         <div className="p-3 border-t border-neutral-100 bg-[#faf9f8]/50 flex flex-col gap-2">
           <NavLink
             to="/onboarding"
@@ -216,15 +215,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
             )}
           </NavLink>
-          <button
-            onClick={() => window.dispatchEvent(new Event('logout'))}
-            className={`flex items-center gap-3 p-2 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100 transition-colors ${
-              collapsed ? 'justify-center' : ''
-            }`}
-          >
-            <LogOut className="w-4 h-4 shrink-0" />
-            {!collapsed && <span className="text-xs font-bold">Logout</span>}
-          </button>
         </div>
       </aside>
     </>

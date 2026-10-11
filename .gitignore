@@ -189,6 +189,12 @@ docs/_build/
 *.patch
 *.diff
 
+# ---------- DATABASE / SQLITE ----------
+*.db-shm
+*.db-wal
+*.sqlite-shm
+*.sqlite-wal
+
 # ---------- KEEP SAFE EXAMPLE CONFIGS ----------
 !.env.example
 !frontend/.env.example

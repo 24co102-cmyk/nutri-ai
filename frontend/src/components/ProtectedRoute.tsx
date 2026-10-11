@@ -1,13 +1,8 @@
 // src/components/ProtectedRoute.tsx
-import React, { useContext } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import React from 'react';
+import { Outlet } from 'react-router-dom';
 
 const ProtectedRoute: React.FC = () => {
-  const auth = useContext(AuthContext);
-  if (!auth?.isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
   return <Outlet />;
 };
 

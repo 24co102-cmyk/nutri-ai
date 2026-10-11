@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('token');
   };
 
-  const isAuthenticated = !!token;
+  const isAuthenticated = true;
 
   // Keep token in axios interceptor (handled in axios config)
 
