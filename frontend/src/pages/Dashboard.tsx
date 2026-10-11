@@ -30,7 +30,6 @@ import {
 } from 'recharts';
 import { ProgressRing } from '../components/ui/ProgressRing';
 import { ProgressBar } from '../components/ui/ProgressBar';
-import { DashboardSkeleton } from '../components/ui/SkeletonLoader';
 import { EmptyState } from '../components/ui/EmptyState';
 
 interface ProfileData {
@@ -64,14 +63,34 @@ interface MealItem {
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [meals, setMeals] = useState<MealItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<ProfileData>(() => {
+    try {
+      const cached = localStorage.getItem('nutrilens:cached-profile');
+      if (cached) return JSON.parse(cached);
+    } catch (e) {}
+    return {
+      daily_calorie_target: 2000,
+      protein_target: 130,
+      carbs_target: 230,
+      fat_target: 65,
+      health_goal: 'Weight Management',
+      bmi: 22.4,
+    };
+  });
+  const [meals, setMeals] = useState<MealItem[]>(() => {
+    try {
+      const cached = localStorage.getItem('nutrilens:cached-meals');
+      if (cached) return JSON.parse(cached);
+    } catch (e) {}
+    return [];
+  });
+  const [syncing, setSyncing] = useState<boolean>(false);
   const [waterCount, setWaterCount] = useState<number>(5); // 5/8 glasses default
 
   useEffect(() => {
     let isMounted = true;
     const fetchData = async () => {
+      setSyncing(true);
       try {
         const [profileRes, mealsRes] = await Promise.allSettled([
           api.get('/profile/'),
@@ -80,14 +99,20 @@ const Dashboard: React.FC = () => {
         if (!isMounted) return;
         if (profileRes.status === 'fulfilled' && profileRes.value?.data) {
           setProfile(profileRes.value.data);
+          try {
+            localStorage.setItem('nutrilens:cached-profile', JSON.stringify(profileRes.value.data));
+          } catch (e) {}
         }
         if (mealsRes.status === 'fulfilled' && mealsRes.value?.data) {
           setMeals(mealsRes.value.data || []);
+          try {
+            localStorage.setItem('nutrilens:cached-meals', JSON.stringify(mealsRes.value.data || []));
+          } catch (e) {}
         }
       } catch (e) {
         console.error('Failed to load dashboard data:', e);
       } finally {
-        if (isMounted) setLoading(false);
+        if (isMounted) setSyncing(false);
       }
     };
     fetchData();
@@ -180,10 +205,6 @@ const Dashboard: React.FC = () => {
     { name: 'Healthy Fats', Consumed: Math.round(consumedFat), Target: targetFat },
   ], [consumedProtein, targetProtein, consumedCarbs, targetCarbs, consumedFat, targetFat]);
 
-  if (loading) {
-    return <DashboardSkeleton />;
-  }
-
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* ━━━ 1. Health Summary Top Area (Premium Dark Hero) ━━━ */}
@@ -197,6 +218,12 @@ const Dashboard: React.FC = () => {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 backdrop-blur-md text-emerald-400 text-xs font-bold mb-4 border border-white/10 shadow-sm">
               <GreetingIcon className="w-4 h-4" />
               <span className="tracking-wide uppercase">{greeting.text}</span>
+              {syncing && (
+                <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-300/80 lowercase">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  syncing
+                </span>
+              )}
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight mb-2">
               Your Daily <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200">Nutrition</span>

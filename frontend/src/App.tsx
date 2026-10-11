@@ -27,6 +27,12 @@ const App: React.FC = () => {
     }
     // Clear any obsolete locks or flags
     localStorage.removeItem('unlocked_prototype');
+
+    // Silent background warmup for Render cloud backend instance
+    const healthUrl = import.meta.env.VITE_API_URL 
+      ? (import.meta.env.VITE_API_URL.endsWith('/api') ? `${import.meta.env.VITE_API_URL}/health` : `${import.meta.env.VITE_API_URL}/api/health`)
+      : 'https://nutri-ai-y70w.onrender.com/api/health';
+    fetch(healthUrl, { mode: 'cors' }).catch(() => {});
   }, []);
 
   return (

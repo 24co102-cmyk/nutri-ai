@@ -42,11 +42,11 @@ const onRequestStart = () => {
   activeRequestsCount++;
   if (activeRequestsCount === 1) {
     coldStartTimer = setTimeout(() => {
-      // If requests are still pending after 3.5 seconds, Render instance is likely waking up
+      // If requests are still pending after 5 seconds, Render instance is likely waking up
       if (activeRequestsCount > 0) {
         notifyColdStart(true);
       }
-    }, 3500);
+    }, 5000);
   }
 };
 

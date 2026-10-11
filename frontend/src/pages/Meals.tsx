@@ -28,8 +28,14 @@ interface Meal {
 }
 
 const Meals: React.FC = () => {
-  const [meals, setMeals] = useState<Meal[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [meals, setMeals] = useState<Meal[]>(() => {
+    try {
+      const cached = localStorage.getItem('nutrilens:cached-meals');
+      if (cached) return JSON.parse(cached);
+    } catch (e) {}
+    return [];
+  });
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('All');
   const [timeFilter, setTimeFilter] = useState<'All' | 'Today' | 'Yesterday' | '7D' | '30D'>('All');
@@ -40,7 +46,13 @@ const Meals: React.FC = () => {
     const fetchMeals = async () => {
       try {
         const res = await api.get('/meals/');
-        if (isMounted) setMeals(res.data || []);
+        if (isMounted) {
+          const loaded = res.data || [];
+          setMeals(loaded);
+          try {
+            localStorage.setItem('nutrilens:cached-meals', JSON.stringify(loaded));
+          } catch (e) {}
+        }
       } catch (e) {
         console.error(e);
       } finally {
