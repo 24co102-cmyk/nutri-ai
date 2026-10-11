@@ -1,5 +1,6 @@
 // src/components/Layout.tsx
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 
@@ -10,9 +11,13 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const location = useLocation();
+  const isDashboard = location.pathname === '/dashboard';
 
   return (
-    <div className="min-h-screen bg-[#faf9f8] flex flex-col font-sans">
+    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${
+      isDashboard ? 'bg-[#030712] text-slate-100' : 'bg-[#faf9f8] text-neutral-900'
+    }`}>
       <Sidebar
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
@@ -26,7 +31,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         }`}
       >
         <Header setMobileOpen={setMobileOpen} />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className={`flex-1 w-full mx-auto ${
+          isDashboard ? 'p-2 sm:p-4 lg:p-6 max-w-7xl' : 'p-4 sm:p-6 lg:p-8 max-w-7xl'
+        }`}>
           {children}
         </main>
       </div>

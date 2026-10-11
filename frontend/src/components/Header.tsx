@@ -46,24 +46,45 @@ export const Header: React.FC<HeaderProps> = ({ setMobileOpen }) => {
     }
   };
 
+  const isDashboard = location.pathname === '/dashboard';
+
   return (
-    <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-neutral-200/80 px-4 sm:px-8 h-18 flex items-center justify-between gap-4">
+    <header className={`sticky top-0 z-30 px-4 sm:px-8 h-18 flex items-center justify-between gap-4 transition-colors ${
+      isDashboard
+        ? 'bg-[#030712]/90 backdrop-blur-md border-b border-emerald-500/20 text-slate-100 shadow-[0_4px_25px_rgba(0,0,0,0.6)]'
+        : 'bg-white/90 backdrop-blur-md border-b border-neutral-200/80 text-neutral-900'
+    }`}>
       {/* Mobile Menu & Page Heading */}
       <div className="flex items-center gap-3 min-w-0">
         <button
           onClick={() => setMobileOpen(true)}
-          className="lg:hidden p-2 rounded-xl text-neutral-500 hover:text-neutral-800 hover:bg-neutral-100 transition-colors"
+          className={`lg:hidden p-2 rounded-xl transition-colors ${
+            isDashboard
+              ? 'text-emerald-400 hover:text-emerald-200 hover:bg-emerald-950/40 border border-emerald-500/30'
+              : 'text-neutral-500 hover:text-neutral-800 hover:bg-neutral-100'
+          }`}
           title="Open Menu"
         >
           <Menu className="w-5 h-5" />
         </button>
 
         <div className="min-w-0">
-          <h1 className="text-lg font-bold text-neutral-900 tracking-tight leading-none truncate">
-            {meta.title}
+          <h1 className={`text-lg font-bold tracking-tight leading-none truncate ${
+            isDashboard ? 'text-emerald-400 font-mono flex items-center gap-2' : 'text-neutral-900'
+          }`}>
+            {isDashboard ? (
+              <>
+                <span className="text-emerald-500 animate-pulse">&gt;</span>
+                <span>SYSTEM_HUD // OVERVIEW</span>
+              </>
+            ) : (
+              meta.title
+            )}
           </h1>
-          <p className="text-xs text-neutral-500 mt-1 font-medium hidden sm:block truncate">
-            {meta.subtitle}
+          <p className={`text-xs mt-1 font-medium hidden sm:block truncate ${
+            isDashboard ? 'text-emerald-600/80 font-mono tracking-wider text-[11px]' : 'text-neutral-500'
+          }`}>
+            {isDashboard ? 'ONLINE // NEURAL BIO-CORE v4.2 // TELEMETRY LINKED' : meta.subtitle}
           </p>
         </div>
       </div>
@@ -72,34 +93,52 @@ export const Header: React.FC<HeaderProps> = ({ setMobileOpen }) => {
       <div className="flex items-center gap-3">
         {/* Global Search */}
         <form onSubmit={handleSearchSubmit} className="relative hidden md:block w-64">
-          <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className={`w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none ${
+            isDashboard ? 'text-emerald-500/60' : 'text-neutral-400'
+          }`} />
           <input
             type="text"
-            placeholder="Search foods, meals, nutrition..."
+            placeholder={isDashboard ? "EXEC_SEARCH /food..." : "Search foods, meals, nutrition..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-12 py-2 text-xs rounded-xl bg-[#faf9f8] border border-neutral-200/80 focus:border-emerald-500 focus:bg-white focus:outline-none transition-all font-medium"
+            className={`w-full pl-8 pr-12 py-2 text-xs rounded-xl focus:outline-none transition-all ${
+              isDashboard
+                ? 'bg-black/60 border border-emerald-500/30 text-emerald-300 placeholder:text-emerald-700/60 font-mono focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/30'
+                : 'bg-[#faf9f8] border border-neutral-200/80 text-neutral-900 focus:border-emerald-500 focus:bg-white font-medium'
+            }`}
           />
-          <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] font-mono font-bold text-neutral-400 bg-white px-1.5 py-0.5 rounded border border-neutral-200 shadow-2xs">
+          <kbd className={`absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${
+            isDashboard
+              ? 'text-emerald-400/80 bg-emerald-950/40 border-emerald-500/30'
+              : 'text-neutral-400 bg-white border-neutral-200 shadow-2xs'
+          }`}>
             ↵
           </kbd>
         </form>
 
         {/* AI Health Engine Status Indicator */}
-        <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50/90 border border-emerald-200/80 text-emerald-800 text-[11px] font-bold">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>AI Engine Active</span>
+        <div className={`hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold ${
+          isDashboard
+            ? 'bg-emerald-950/50 border border-emerald-500/40 text-emerald-400 font-mono tracking-wider shadow-[0_0_12px_rgba(16,185,129,0.15)]'
+            : 'bg-emerald-50/90 border border-emerald-200/80 text-emerald-800'
+        }`}>
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
+          <span>{isDashboard ? 'NEURAL ENGINE: ACTIVE' : 'AI Engine Active'}</span>
         </div>
 
         {/* Notifications Popover */}
         <div className="relative">
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative p-2 rounded-xl text-neutral-500 hover:text-neutral-800 hover:bg-[#faf9f8] transition-colors border border-neutral-200/80"
+            className={`relative p-2 rounded-xl transition-colors border ${
+              isDashboard
+                ? 'text-emerald-400 hover:text-emerald-200 bg-black/40 border-emerald-500/30 hover:border-emerald-400'
+                : 'text-neutral-500 hover:text-neutral-800 hover:bg-[#faf9f8] border-neutral-200/80'
+            }`}
             title="Notifications"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-black" />
           </button>
 
           {showNotifications && (
