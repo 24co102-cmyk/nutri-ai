@@ -20,7 +20,7 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return schemas.Token(access_token=access_token)
 
 @router.post("/login", response_model=schemas.Token)
-def login(form: schemas.UserCreate, db: Session = Depends(get_db)):
+def login(form: schemas.UserLogin, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == form.email).first()
     if not user or not verify_password(form.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
