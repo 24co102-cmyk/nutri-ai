@@ -1,18 +1,21 @@
 // src/App.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
+import { PageLoadingFallback } from './components/ui/SkeletonLoader';
+import BackendStatusIndicator from './components/BackendStatusIndicator';
 
-import Login from './pages/Login';
-import Onboarding from './pages/Onboarding';
-import Dashboard from './pages/Dashboard';
-import DietPlan from './pages/DietPlan';
-import AddMeal from './pages/AddMeal';
-import Meals from './pages/Meals';
-import PhotoScan from './pages/PhotoScan';
-import BarcodeScan from './pages/BarcodeScan';
-import Chat from './pages/Chat';
-import Settings from './pages/Settings';
+// Code-split heavy page bundles for instant initial load
+const Login = lazy(() => import('./pages/Login'));
+const Onboarding = lazy(() => import('./pages/Onboarding'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const DietPlan = lazy(() => import('./pages/DietPlan'));
+const AddMeal = lazy(() => import('./pages/AddMeal'));
+const Meals = lazy(() => import('./pages/Meals'));
+const PhotoScan = lazy(() => import('./pages/PhotoScan'));
+const BarcodeScan = lazy(() => import('./pages/BarcodeScan'));
+const Chat = lazy(() => import('./pages/Chat'));
+const Settings = lazy(() => import('./pages/Settings'));
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
@@ -36,39 +39,46 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <Routes>
-      <Route 
-        path="/login" 
-        element={!isAuthenticated ? <Login onLogin={handleLogin} /> : <Navigate to="/dashboard" replace />} 
-      />
-      
-      <Route
-        path="*"
-        element={
-          isAuthenticated ? (
-            <Layout>
-              <Routes>
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/profile" element={<Onboarding />} />
-                <Route path="/diet-plan" element={<DietPlan />} />
-                <Route path="/add-meal" element={<AddMeal />} />
-                <Route path="/meals" element={<Meals />} />
-                <Route path="/scan/photo" element={<PhotoScan />} />
-                <Route path="/scan/barcode" element={<BarcodeScan />} />
-                <Route path="/products" element={<Navigate to="/scan/barcode?tab=registry" replace />} />
-                <Route path="/chat" element={<Chat />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
-              </Routes>
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-    </Routes>
+    <>
+      <BackendStatusIndicator />
+      <Suspense fallback={<PageLoadingFallback />}>
+        <Routes>
+          <Route 
+            path="/login" 
+            element={!isAuthenticated ? <Login onLogin={handleLogin} /> : <Navigate to="/dashboard" replace />} 
+          />
+          
+          <Route
+            path="*"
+            element={
+              isAuthenticated ? (
+                <Layout>
+                  <Suspense fallback={<PageLoadingFallback />}>
+                    <Routes>
+                      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/onboarding" element={<Onboarding />} />
+                      <Route path="/profile" element={<Onboarding />} />
+                      <Route path="/diet-plan" element={<DietPlan />} />
+                      <Route path="/add-meal" element={<AddMeal />} />
+                      <Route path="/meals" element={<Meals />} />
+                      <Route path="/scan/photo" element={<PhotoScan />} />
+                      <Route path="/scan/barcode" element={<BarcodeScan />} />
+                      <Route path="/products" element={<Navigate to="/scan/barcode?tab=registry" replace />} />
+                      <Route path="/chat" element={<Chat />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                    </Routes>
+                  </Suspense>
+                </Layout>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+        </Routes>
+      </Suspense>
+    </>
   );
 };
 

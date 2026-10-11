@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 
 from .. import models, schemas
@@ -55,7 +55,15 @@ def create_meal(meal_in: schemas.MealCreate, db: Session = Depends(get_db), user
 
 @router.get("/", response_model=List[schemas.MealOut])
 def list_meals(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
-    meals = db.query(models.Meal).filter(models.Meal.user_id == user.id).offset(skip).limit(limit).all()
+    meals = (
+        db.query(models.Meal)
+        .options(joinedload(models.Meal.items))
+        .filter(models.Meal.user_id == user.id)
+        .order_by(models.Meal.date.desc(), models.Meal.id.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
     return meals
 
 @router.delete("/{meal_id}", status_code=status.HTTP_204_NO_CONTENT)

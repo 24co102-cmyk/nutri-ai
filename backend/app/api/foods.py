@@ -18,7 +18,7 @@ def list_foods(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), _
 
 @router.get("/search", response_model=List[schemas.FoodOut])
 def search_foods(q: str = Query(..., min_length=1), db: Session = Depends(get_db), _: models.User = Depends(get_current_user)):
-    results = db.query(models.Food).filter(models.Food.name.ilike(f"%{q}%")).all()
+    results = db.query(models.Food).filter(models.Food.name.ilike(f"%{q}%")).limit(50).all()
     if not results:
         raise HTTPException(status_code=404, detail="No foods found matching query")
     return results

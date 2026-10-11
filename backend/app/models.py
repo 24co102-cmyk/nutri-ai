@@ -73,9 +73,9 @@ class Barcode(Base):
 class Meal(Base):
     __tablename__ = "meals"
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
     meal_type = Column(String)  # Breakfast, Lunch, Dinner, Snack
-    date = Column(DateTime, default=datetime.utcnow)
+    date = Column(DateTime, default=datetime.utcnow, index=True)
     total_calories = Column(Float, default=0)
     total_protein = Column(Float, default=0)
     total_carbs = Column(Float, default=0)
@@ -87,8 +87,8 @@ class Meal(Base):
 class MealItem(Base):
     __tablename__ = "meal_items"
     id = Column(Integer, primary_key=True, index=True)
-    meal_id = Column(Integer, ForeignKey("meals.id"))
-    food_id = Column(Integer, ForeignKey("foods.id"))
+    meal_id = Column(Integer, ForeignKey("meals.id"), index=True)
+    food_id = Column(Integer, ForeignKey("foods.id"), index=True)
     quantity = Column(Float)  # number of servings
     # Denormalised nutrition for this line
     calories = Column(Float)
@@ -102,8 +102,8 @@ class MealItem(Base):
 class DietPlan(Base):
     __tablename__ = "diet_plans"
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    created_at = Column(DateTime, default=datetime.utcnow)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
     description = Column(String)  # optional free‑text summary
 
     user = relationship("User", back_populates="diet_plans")
@@ -112,10 +112,10 @@ class DietPlan(Base):
 class ChatMessage(Base):
     __tablename__ = "chat_messages"
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
     role = Column(String)  # "user" or "assistant"
     content = Column(String)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
 
     user = relationship("User", back_populates="chat_messages")
 

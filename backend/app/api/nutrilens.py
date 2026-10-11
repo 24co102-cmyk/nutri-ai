@@ -28,6 +28,20 @@ OFF_CATEGORY = "https://world.openfoodfacts.org/category"
 OFF_TIMEOUT = 10.0
 OFF_USER_AGENT = "NutriLens-AI-HealthSuite/1.0 (contact: support@nutrilens.app)"
 
+_http_client: Optional[httpx.AsyncClient] = None
+_barcode_cache: dict[str, tuple[float, any]] = {}
+CACHE_TTL_SECONDS = 900.0  # 15 minutes cache for static food product specs
+
+def get_http_client() -> httpx.AsyncClient:
+    global _http_client
+    if _http_client is None or _http_client.is_closed:
+        _http_client = httpx.AsyncClient(
+            timeout=OFF_TIMEOUT,
+            headers={"User-Agent": OFF_USER_AGENT},
+            limits=httpx.Limits(max_keepalive_connections=20, max_connections=50),
+        )
+    return _http_client
+
 
 # ─── Response Schemas ────────────────────────────────────────────────────────
 class NutrientLevel(BaseModel):
@@ -387,19 +401,28 @@ async def scan_barcode(barcode: str, user=Depends(get_current_user)):
     if not clean or len(clean) < 6 or not clean.isdigit():
         raise HTTPException(status_code=400, detail="Invalid barcode. Please enter a valid 8-14 digit numeric barcode.")
 
+    # 1. Fast cache lookup (in-memory TTL)
+    now = time.time()
+    if clean in _barcode_cache:
+        cached_ts, cached_prod = _barcode_cache[clean]
+        if now - cached_ts < CACHE_TTL_SECONDS:
+            return cached_prod
+
     try:
-        async with httpx.AsyncClient(timeout=OFF_TIMEOUT) as client:
-            resp = await client.get(
-                f"{OFF_API}/{clean}.json",
-                headers={"User-Agent": OFF_USER_AGENT},
-            )
+        client = get_http_client()
+        resp = await client.get(
+            f"{OFF_API}/{clean}.json",
+            headers={"User-Agent": OFF_USER_AGENT},
+        )
     except httpx.TimeoutException:
         raise HTTPException(status_code=504, detail="Food database lookup timed out. Please check your internet connection and try again.")
     except httpx.RequestError as e:
         raise HTTPException(status_code=502, detail=f"Network error connecting to food database: {str(e)}")
 
     if resp.status_code == 404:
-        return NutriLensProduct(found=False, barcode=clean)
+        not_found = NutriLensProduct(found=False, barcode=clean)
+        _barcode_cache[clean] = (now, not_found)
+        return not_found
 
     if resp.status_code != 200:
         raise HTTPException(status_code=502, detail=f"Food database returned status {resp.status_code}.")
@@ -446,7 +469,7 @@ async def scan_barcode(barcode: str, user=Depends(get_current_user)):
     score = compute_health_score(cal, protein, fat, sugar, sodium_mg, fiber, sat_fat)
     verdict = get_health_verdict(score)
 
-    return NutriLensProduct(
+    product_obj = NutriLensProduct(
         found=True,
         barcode=clean,
         product_name=p.get("product_name") or p.get("product_name_en") or p.get("generic_name") or "Unknown Product",
@@ -473,6 +496,10 @@ async def scan_barcode(barcode: str, user=Depends(get_current_user)):
         sodium_level=classify_level(sodium_mg, 140, 600),
         protein_level=classify_level(protein, 5, 15),
     )
+    if len(_barcode_cache) > 500:
+        _barcode_cache.clear()
+    _barcode_cache[clean] = (now, product_obj)
+    return product_obj
 
 
 @router.post("/verdict", response_model=VerdictResponse)

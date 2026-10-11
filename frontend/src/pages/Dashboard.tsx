@@ -1,5 +1,5 @@
 // src/pages/Dashboard.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/axios';
 import {
@@ -70,82 +70,115 @@ const Dashboard: React.FC = () => {
   const [waterCount, setWaterCount] = useState<number>(5); // 5/8 glasses default
 
   useEffect(() => {
+    let isMounted = true;
     const fetchData = async () => {
       try {
-        const [profileRes, mealsRes] = await Promise.all([
+        const [profileRes, mealsRes] = await Promise.allSettled([
           api.get('/profile/'),
-          api.get('/meals/').catch(() => ({ data: [] })),
+          api.get('/meals/'),
         ]);
-        setProfile(profileRes.data);
-        setMeals(mealsRes.data || []);
+        if (!isMounted) return;
+        if (profileRes.status === 'fulfilled' && profileRes.value?.data) {
+          setProfile(profileRes.value.data);
+        }
+        if (mealsRes.status === 'fulfilled' && mealsRes.value?.data) {
+          setMeals(mealsRes.value.data || []);
+        }
       } catch (e) {
         console.error('Failed to load dashboard data:', e);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
     fetchData();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  // Time of day greeting
-  const getGreeting = () => {
+  // Time of day greeting (memoized)
+  const greeting = useMemo(() => {
     const hour = new Date().getHours();
     if (hour < 12) return { text: 'Good morning, Alex 👋', icon: Sun };
     if (hour < 18) return { text: 'Good afternoon, Alex 👋', icon: Sunset };
     return { text: 'Good evening, Alex 👋', icon: Moon };
-  };
-
-  const greeting = getGreeting();
+  }, []);
   const GreetingIcon = greeting.icon;
 
-  // Nutrition computations
-  const targetCalories = profile?.daily_calorie_target || 2000;
-  const consumedCalories = meals.reduce((acc, m) => acc + (m.total_calories || 0), 0);
-  const remainingCalories = Math.max(0, targetCalories - consumedCalories);
-  const caloriePercent = Math.min(100, Math.round((consumedCalories / targetCalories) * 100));
+  // Memoized nutrition totals
+  const {
+    targetCalories,
+    consumedCalories,
+    remainingCalories,
+    caloriePercent,
+    consumedProtein,
+    consumedCarbs,
+    consumedFat,
+    targetProtein,
+    targetCarbs,
+    targetFat,
+  } = useMemo(() => {
+    const tCal = profile?.daily_calorie_target || 2000;
+    const cCal = meals.reduce((acc, m) => acc + (m.total_calories || 0), 0);
+    const rCal = Math.max(0, tCal - cCal);
+    const cPct = Math.min(100, Math.round((cCal / tCal) * 100));
 
-  // Macro computations
-  const consumedProtein = meals.reduce((acc, m) => acc + (m.total_protein || 0), 0);
-  const consumedCarbs = meals.reduce((acc, m) => acc + (m.total_carbs || 0), 0);
-  const consumedFat = meals.reduce((acc, m) => acc + (m.total_fat || 0), 0);
+    const cProt = meals.reduce((acc, m) => acc + (m.total_protein || 0), 0);
+    const cCarb = meals.reduce((acc, m) => acc + (m.total_carbs || 0), 0);
+    const cFat = meals.reduce((acc, m) => acc + (m.total_fat || 0), 0);
 
-  const targetProtein = profile?.protein_target || 130;
-  const targetCarbs = profile?.carbs_target || 230;
-  const targetFat = profile?.fat_target || 65;
+    const tProt = profile?.protein_target || 130;
+    const tCarb = profile?.carbs_target || 230;
+    const tFat = profile?.fat_target || 65;
 
-  // BMI calculation
-  let bmiValue = profile?.bmi;
-  if (!bmiValue && profile?.height_cm && profile?.weight_kg) {
-    const h = profile.height_cm / 100;
-    bmiValue = Number((profile.weight_kg / (h * h)).toFixed(1));
-  }
-  bmiValue = bmiValue || 22.4;
+    return {
+      targetCalories: tCal,
+      consumedCalories: cCal,
+      remainingCalories: rCal,
+      caloriePercent: cPct,
+      consumedProtein: cProt,
+      consumedCarbs: cCarb,
+      consumedFat: cFat,
+      targetProtein: tProt,
+      targetCarbs: tCarb,
+      targetFat: tFat,
+    };
+  }, [profile, meals]);
 
-  const getBmiBadge = (bmi: number) => {
-    if (bmi < 18.5) return { label: 'Underweight', color: 'bg-amber-50 text-amber-700 border-amber-200' };
-    if (bmi < 25) return { label: 'Optimal / Normal', color: 'bg-emerald-50 text-emerald-800 border-emerald-200' };
-    if (bmi < 30) return { label: 'Overweight', color: 'bg-orange-50 text-orange-700 border-orange-200' };
-    return { label: 'High BMI', color: 'bg-rose-50 text-rose-700 border-rose-200' };
-  };
+  // BMI calculation (memoized)
+  const { bmiValue, bmiBadge } = useMemo(() => {
+    let val = profile?.bmi;
+    if (!val && profile?.height_cm && profile?.weight_kg) {
+      const h = profile.height_cm / 100;
+      val = Number((profile.weight_kg / (h * h)).toFixed(1));
+    }
+    const finalVal = val || 22.4;
 
-  const bmiBadge = getBmiBadge(bmiValue);
+    const getBadge = (b: number) => {
+      if (b < 18.5) return { label: 'Underweight', color: 'bg-amber-50 text-amber-700 border-amber-200' };
+      if (b < 25) return { label: 'Optimal / Normal', color: 'bg-emerald-50 text-emerald-800 border-emerald-200' };
+      if (b < 30) return { label: 'Overweight', color: 'bg-orange-50 text-orange-700 border-orange-200' };
+      return { label: 'High BMI', color: 'bg-rose-50 text-rose-700 border-rose-200' };
+    };
 
-  // Nutrition Quality Score calculation (out of 100)
-  const calculateNutritionScore = () => {
+    return { bmiValue: finalVal, bmiBadge: getBadge(finalVal) };
+  }, [profile]);
+
+  // Nutrition Quality Score calculation (memoized)
+  const nutritionScore = useMemo(() => {
     let score = 75;
     if (consumedCalories > 0 && consumedCalories <= targetCalories) score += 10;
     if (consumedProtein >= targetProtein * 0.7) score += 10;
     if (waterCount >= 4) score += 5;
     return Math.min(96, Math.max(60, score));
-  };
-  const nutritionScore = calculateNutritionScore();
+  }, [consumedCalories, targetCalories, consumedProtein, targetProtein, waterCount]);
 
-  // Weekly / Daily chart data
-  const chartData = [
+  // Weekly / Daily chart data (memoized)
+  const chartData = useMemo(() => [
     { name: 'Protein', Consumed: Math.round(consumedProtein), Target: targetProtein },
     { name: 'Carbs', Consumed: Math.round(consumedCarbs), Target: targetCarbs },
     { name: 'Healthy Fats', Consumed: Math.round(consumedFat), Target: targetFat },
-  ];
+  ], [consumedProtein, targetProtein, consumedCarbs, targetCarbs, consumedFat, targetFat]);
 
   if (loading) {
     return <DashboardSkeleton />;

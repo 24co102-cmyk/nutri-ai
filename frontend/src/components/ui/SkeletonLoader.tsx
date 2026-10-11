@@ -20,33 +20,28 @@ export const CardSkeleton: React.FC = () => (
   </div>
 );
 
-export const DashboardSkeleton: React.FC = () => (
-  <div className="space-y-6 max-w-6xl mx-auto pb-12 animate-fade-in">
-    <div className="premium-card p-6 flex justify-between items-center">
+export const PageLoadingFallback: React.FC = () => (
+  <div className="space-y-6 max-w-6xl mx-auto pb-12 animate-pulse">
+    <div className="bg-white p-6 rounded-2xl border border-neutral-200/80 shadow-2xs flex justify-between items-center">
       <div className="space-y-2">
         <Skeleton className="h-6 w-48" />
         <Skeleton className="h-3 w-64" />
       </div>
-      <Skeleton className="h-10 w-28 rounded-xl" />
+      <Skeleton className="h-9 w-24 rounded-xl" />
     </div>
-
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <CardSkeleton />
       <CardSkeleton />
       <CardSkeleton />
       <CardSkeleton />
     </div>
-
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <div className="lg:col-span-8 premium-card p-6 space-y-4">
-        <Skeleton className="h-5 w-40" />
-        <Skeleton className="h-64 w-full rounded-2xl" />
-      </div>
-      <div className="lg:col-span-4 premium-card p-6 space-y-4">
-        <Skeleton className="h-5 w-32" />
-        <Skeleton className="h-20 w-full rounded-2xl" />
-        <Skeleton className="h-20 w-full rounded-2xl" />
-      </div>
+    <div className="bg-white p-6 rounded-2xl border border-neutral-200/80 shadow-2xs space-y-4">
+      <Skeleton className="h-5 w-40" />
+      <Skeleton className="h-48 w-full rounded-2xl" />
     </div>
   </div>
 );
+
+export const DashboardSkeleton: React.FC = PageLoadingFallback;
+
+

@@ -1,5 +1,5 @@
 // src/pages/PhotoScan.tsx
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   Camera, Upload, Sparkles, CheckCircle2, RefreshCw,
   FlipHorizontal, PlusCircle, Search, X, Info, Star
@@ -234,13 +234,28 @@ const PhotoScan: React.FC = () => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
-    if (selected) { setFile(selected); setPreview(URL.createObjectURL(selected)); setResult(null); }
+    if (selected) {
+      if (preview && preview.startsWith('blob:')) {
+        URL.revokeObjectURL(preview);
+      }
+      setFile(selected);
+      setPreview(URL.createObjectURL(selected));
+      setResult(null);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault(); setDragActive(false);
+    e.preventDefault();
+    setDragActive(false);
     const selected = e.dataTransfer.files?.[0];
-    if (selected) { setFile(selected); setPreview(URL.createObjectURL(selected)); setResult(null); }
+    if (selected) {
+      if (preview && preview.startsWith('blob:')) {
+        URL.revokeObjectURL(preview);
+      }
+      setFile(selected);
+      setPreview(URL.createObjectURL(selected));
+      setResult(null);
+    }
   };
 
   const handleAnalyze = () => {
@@ -250,20 +265,26 @@ const PhotoScan: React.FC = () => {
       const food = matchFood(file?.name || 'food');
       setResult(food);
       setLoading(false);
-    }, 1800);
+    }, 1200);
   };
 
   const handleSelectFood = (food: FoodInfo) => {
+    if (preview && preview.startsWith('blob:')) {
+      URL.revokeObjectURL(preview);
+    }
     setResult(food);
     setPreview(null);
     setActiveTab('upload');
   };
 
-  const filteredFoods = FOOD_DATABASE.filter(f => {
-    const matchCat = activeCategory === 'All' || f.category === activeCategory;
-    const matchSearch = f.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchCat && matchSearch;
-  });
+  const filteredFoods = useMemo(() => {
+    const searchLower = searchQuery.toLowerCase().trim();
+    return FOOD_DATABASE.filter(f => {
+      const matchCat = activeCategory === 'All' || f.category === activeCategory;
+      const matchSearch = !searchLower || f.name.toLowerCase().includes(searchLower);
+      return matchCat && matchSearch;
+    });
+  }, [activeCategory, searchQuery]);
 
   const macroBar = (val: number, max: number, color: string) => (
     <div className="w-full bg-neutral-100 rounded-full h-2">

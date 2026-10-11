@@ -1,10 +1,6 @@
 // src/pages/BarcodeScan.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import AddProductForm from '../components/AddProductForm';
-import ProductManagementTable from '../components/ProductManagementTable';
-import ScanFoodBarcode from '../components/ScanFoodBarcode';
-import GlobalBarcodeScanner from '../components/GlobalBarcodeScanner';
 import {
   fetchAllFoodProducts,
   MAX_PRODUCTS,
@@ -15,6 +11,12 @@ import {
   Layers,
   Globe,
 } from 'lucide-react';
+import { CardSkeleton } from '../components/ui/SkeletonLoader';
+
+const AddProductForm = lazy(() => import('../components/AddProductForm'));
+const ProductManagementTable = lazy(() => import('../components/ProductManagementTable'));
+const ScanFoodBarcode = lazy(() => import('../components/ScanFoodBarcode'));
+const GlobalBarcodeScanner = lazy(() => import('../components/GlobalBarcodeScanner'));
 
 const BarcodeScan: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -122,42 +124,44 @@ const BarcodeScan: React.FC = () => {
         </div>
       </div>
 
-      {/* TAB 1: SCANNER & LOOKUP */}
-      {activeTab === 'scanner' && (
-        <ScanFoodBarcode
-          initialBarcode={targetedBarcode}
-          onMealLogged={loadProducts}
-        />
-      )}
-
-      {/* TAB 2: PRODUCT REGISTRY & GENERATOR */}
-      {activeTab === 'registry' && (
-        <div className="space-y-6">
-          {/* Add Food Product Form */}
-          <AddProductForm
-            products={products}
-            onProductAdded={(newProd) => {
-              setProducts((prev) => {
-                const list = [...prev.filter((p) => p.serialNumber !== newProd.serialNumber), newProd];
-                list.sort((a, b) => a.serialNumber - b.serialNumber);
-                return list;
-              });
-            }}
+      <Suspense fallback={<CardSkeleton />}>
+        {/* TAB 1: SCANNER & LOOKUP */}
+        {activeTab === 'scanner' && (
+          <ScanFoodBarcode
+            initialBarcode={targetedBarcode}
+            onMealLogged={loadProducts}
           />
+        )}
 
-          {/* Product Management Table */}
-          <ProductManagementTable
-            products={products}
-            onRefresh={loadProducts}
-            onScanShortcut={handleScanShortcut}
-          />
-        </div>
-      )}
+        {/* TAB 2: PRODUCT REGISTRY & GENERATOR */}
+        {activeTab === 'registry' && (
+          <div className="space-y-6">
+            {/* Add Food Product Form */}
+            <AddProductForm
+              products={products}
+              onProductAdded={(newProd) => {
+                setProducts((prev) => {
+                  const list = [...prev.filter((p) => p.serialNumber !== newProd.serialNumber), newProd];
+                  list.sort((a, b) => a.serialNumber - b.serialNumber);
+                  return list;
+                });
+              }}
+            />
 
-      {/* TAB 3: GLOBAL OPEN FOOD FACTS SCANNER (Preserved 100%) */}
-      {activeTab === 'global' && (
-        <GlobalBarcodeScanner />
-      )}
+            {/* Product Management Table */}
+            <ProductManagementTable
+              products={products}
+              onRefresh={loadProducts}
+              onScanShortcut={handleScanShortcut}
+            />
+          </div>
+        )}
+
+        {/* TAB 3: GLOBAL OPEN FOOD FACTS SCANNER (Preserved 100%) */}
+        {activeTab === 'global' && (
+          <GlobalBarcodeScanner />
+        )}
+      </Suspense>
     </div>
   );
 };

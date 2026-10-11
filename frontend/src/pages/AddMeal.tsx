@@ -1,5 +1,5 @@
 // src/pages/AddMeal.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import {
@@ -66,8 +66,9 @@ const AddMeal: React.FC = () => {
     serving_size: '1 serving',
   });
 
-  // Search foods when query changes
+  // Search foods when query changes with cancellation of obsolete requests
   useEffect(() => {
+    const controller = new AbortController();
     const fetchFoods = async () => {
       if (!query.trim()) {
         setFoods([]);
@@ -75,40 +76,51 @@ const AddMeal: React.FC = () => {
       }
       setLoadingSearch(true);
       try {
-        const res = await api.get(`/foods/search?q=${encodeURIComponent(query)}`);
+        const res = await api.get(`/foods/search?q=${encodeURIComponent(query)}`, {
+          signal: controller.signal,
+        });
         setFoods(res.data || []);
-      } catch (e) {
-        console.error(e);
+      } catch (e: any) {
+        if (e?.name !== 'CanceledError' && e?.code !== 'ERR_CANCELED') {
+          console.error(e);
+        }
       } finally {
         setLoadingSearch(false);
       }
     };
 
-    const timer = setTimeout(fetchFoods, 300);
-    return () => clearTimeout(timer);
+    const timer = setTimeout(fetchFoods, 250);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [query]);
 
-  // Compute live macro calculations
+  // Compute live macro calculations (memoized to eliminate redundant computations on keystroke)
   const factor = (quantity || 0) / 100;
-  const currentBase = activeTab === 'manual'
-    ? {
-        name: manualForm.name || 'Custom Meal',
-        calories: manualForm.calories,
-        protein: manualForm.protein,
-        carbs: manualForm.carbs,
-        fat: manualForm.fat,
-        sugar: manualForm.sugar,
-        fiber: manualForm.fiber,
-        sodium: manualForm.sodium,
-      }
-    : selectedFood || RECENT_FOOD_PRESETS[0];
+  const currentBase = useMemo(() => {
+    return activeTab === 'manual'
+      ? {
+          name: manualForm.name || 'Custom Meal',
+          calories: manualForm.calories,
+          protein: manualForm.protein,
+          carbs: manualForm.carbs,
+          fat: manualForm.fat,
+          sugar: manualForm.sugar,
+          fiber: manualForm.fiber,
+          sodium: manualForm.sodium,
+        }
+      : selectedFood || RECENT_FOOD_PRESETS[0];
+  }, [activeTab, manualForm, selectedFood]);
 
-  const calcCalories = Math.round((currentBase.calories || 160) * factor);
-  const calcProtein = Math.round((currentBase.protein || 12) * factor);
-  const calcCarbs = Math.round((currentBase.carbs || 20) * factor);
-  const calcFat = Math.round((currentBase.fat || 5) * factor);
-  const calcFiber = Math.round((currentBase.fiber || 2) * factor);
-  const calcSodium = Math.round((currentBase.sodium || 60) * factor);
+  const { calcCalories, calcProtein, calcCarbs, calcFat, calcFiber, calcSodium } = useMemo(() => ({
+    calcCalories: Math.round((currentBase.calories || 160) * factor),
+    calcProtein: Math.round((currentBase.protein || 12) * factor),
+    calcCarbs: Math.round((currentBase.carbs || 20) * factor),
+    calcFat: Math.round((currentBase.fat || 5) * factor),
+    calcFiber: Math.round((currentBase.fiber || 2) * factor),
+    calcSodium: Math.round((currentBase.sodium || 60) * factor),
+  }), [currentBase, factor]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

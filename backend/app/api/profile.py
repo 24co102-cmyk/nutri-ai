@@ -17,8 +17,10 @@ def read_profile(current_user: models.User = Depends(get_current_user), db: Sess
         db.commit()
         db.refresh(profile)
         
-    # Recalculate if needed
-    if profile.age and profile.sex and profile.height_cm and profile.weight_kg and profile.activity_level and profile.goal:
+    # Only calculate and commit if targets have not been computed yet
+    if (profile.bmr is None or profile.daily_calorie_target is None) and (
+        profile.age and profile.sex and profile.height_cm and profile.weight_kg and profile.activity_level and profile.goal
+    ):
         bmr = nutrition.calculate_bmr(profile.sex, profile.weight_kg, profile.height_cm, profile.age)
         daily = nutrition.calculate_daily_calorie_target(bmr, profile.activity_level, profile.goal)
         macros = nutrition.calculate_macro_targets(daily)

@@ -1,5 +1,5 @@
 // src/pages/Meals.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -14,6 +14,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { EmptyState } from '../components/ui/EmptyState';
+import { CardSkeleton, Skeleton } from '../components/ui/SkeletonLoader';
 
 interface Meal {
   id: number;
@@ -34,19 +35,23 @@ const Meals: React.FC = () => {
   const [timeFilter, setTimeFilter] = useState<'All' | 'Today' | 'Yesterday' | '7D' | '30D'>('All');
   const navigate = useNavigate();
 
-  const fetchMeals = async () => {
-    try {
-      const res = await api.get('/meals/');
-      setMeals(res.data || []);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    let isMounted = true;
+    const fetchMeals = async () => {
+      try {
+        const res = await api.get('/meals/');
+        if (isMounted) setMeals(res.data || []);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
     fetchMeals();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleDelete = async (id: number) => {
@@ -60,48 +65,66 @@ const Meals: React.FC = () => {
     }
   };
 
-  // Filter meals based on search term, category, and time range
-  const filteredMeals = meals.filter((m) => {
-    const matchesSearch =
-      (m.meal_type || 'Meal').toLowerCase().includes(searchTerm.toLowerCase());
+  // Filter meals based on search term, category, and time range (memoized)
+  const filteredMeals = useMemo(() => {
+    const searchLower = searchTerm.toLowerCase();
+    const typeLower = selectedType.toLowerCase();
+    const now = new Date();
+    const nowDate = now.getDate();
 
-    const matchesType =
-      selectedType === 'All' || (m.meal_type || '').toLowerCase() === selectedType.toLowerCase();
+    return meals.filter((m) => {
+      const matchesSearch =
+        (m.meal_type || 'Meal').toLowerCase().includes(searchLower);
 
-    // Time filter
-    let matchesTime = true;
-    const mealDateStr = m.created_at || m.date;
-    if (mealDateStr && timeFilter !== 'All') {
-      const mealDate = new Date(mealDateStr);
-      const now = new Date();
-      const diffDays = Math.floor((now.getTime() - mealDate.getTime()) / (1000 * 3600 * 24));
+      const matchesType =
+        selectedType === 'All' || (m.meal_type || '').toLowerCase() === typeLower;
 
-      if (timeFilter === 'Today') {
-        matchesTime = diffDays === 0 && mealDate.getDate() === now.getDate();
-      } else if (timeFilter === 'Yesterday') {
-        matchesTime = diffDays === 1 || (diffDays <= 1 && mealDate.getDate() === now.getDate() - 1);
-      } else if (timeFilter === '7D') {
-        matchesTime = diffDays <= 7;
-      } else if (timeFilter === '30D') {
-        matchesTime = diffDays <= 30;
+      // Time filter
+      let matchesTime = true;
+      const mealDateStr = m.created_at || m.date;
+      if (mealDateStr && timeFilter !== 'All') {
+        const mealDate = new Date(mealDateStr);
+        const diffDays = Math.floor((now.getTime() - mealDate.getTime()) / (1000 * 3600 * 24));
+
+        if (timeFilter === 'Today') {
+          matchesTime = diffDays === 0 && mealDate.getDate() === nowDate;
+        } else if (timeFilter === 'Yesterday') {
+          matchesTime = diffDays === 1 || (diffDays <= 1 && mealDate.getDate() === nowDate - 1);
+        } else if (timeFilter === '7D') {
+          matchesTime = diffDays <= 7;
+        } else if (timeFilter === '30D') {
+          matchesTime = diffDays <= 30;
+        }
       }
-    }
 
-    return matchesSearch && matchesType && matchesTime;
-  });
+      return matchesSearch && matchesType && matchesTime;
+    });
+  }, [meals, searchTerm, selectedType, timeFilter]);
 
-  // Calculate Summary Metrics
-  const totalCalories = filteredMeals.reduce((acc, m) => acc + (m.total_calories || 0), 0);
-  const avgCalories = filteredMeals.length > 0 ? Math.round(totalCalories / filteredMeals.length) : 0;
-  const totalProtein = filteredMeals.reduce((acc, m) => acc + (m.total_protein || 0), 0);
-  const avgProtein = filteredMeals.length > 0 ? Math.round(totalProtein / filteredMeals.length) : 0;
+  // Calculate Summary Metrics (memoized)
+  const { totalCalories, avgCalories, avgProtein } = useMemo(() => {
+    const totalCal = filteredMeals.reduce((acc, m) => acc + (m.total_calories || 0), 0);
+    const avgCal = filteredMeals.length > 0 ? Math.round(totalCal / filteredMeals.length) : 0;
+    const totalProt = filteredMeals.reduce((acc, m) => acc + (m.total_protein || 0), 0);
+    const avgProt = filteredMeals.length > 0 ? Math.round(totalProt / filteredMeals.length) : 0;
+    return { totalCalories: totalCal, avgCalories: avgCal, avgProtein: avgProt };
+  }, [filteredMeals]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[350px]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-9 h-9 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs font-semibold text-neutral-400">Loading your meal records...</p>
+      <div className="space-y-6 max-w-6xl mx-auto pb-12 animate-pulse">
+        <div className="bg-white p-6 rounded-2xl border border-neutral-200/80 shadow-2xs flex justify-between items-center">
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-44" />
+            <Skeleton className="h-3 w-56" />
+          </div>
+          <Skeleton className="h-9 w-28 rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
         </div>
       </div>
     );
