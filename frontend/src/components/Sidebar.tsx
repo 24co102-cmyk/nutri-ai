@@ -7,6 +7,7 @@ import {
   History,
   Camera,
   Barcode,
+  QrCode,
   Settings,
   User,
   MessageSquare,
@@ -53,6 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       items: [
         { path: '/scan/photo', label: t('nav_photo'), icon: Camera },
         { path: '/scan/barcode', label: t('nav_barcode'), icon: Barcode },
+        { path: '/scan/qr', label: t('nav_qr'), icon: QrCode },
         { path: '/chat', label: t('nav_chat'), icon: MessageSquare, badge: 'PRO' },
       ],
     },
