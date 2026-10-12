@@ -469,6 +469,21 @@ const BarcodeScan: React.FC = () => {
                 <p>• Ensure lighting is clear and barcode is unscratched.</p>
                 <p>• Try entering the digits manually in the search field.</p>
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setNotFound(false);
+                  setProduct(null);
+                  setBarcodeInput('');
+                  setSearchedBarcode('');
+                  setScanMode('camera');
+                  setCameraActive(true);
+                }}
+                className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-sm transition-all inline-flex items-center gap-2"
+              >
+                <Camera className="w-3.5 h-3.5" />
+                <span>Scan Another Barcode</span>
+              </button>
             </div>
           )}
 
@@ -521,18 +536,35 @@ const BarcodeScan: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* External Source Link */}
-                  {product.source_url && (
-                    <a
-                      href={product.source_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3 py-1.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-teal-300 text-xs font-bold border border-neutral-700 transition-colors flex items-center gap-1.5 shrink-0"
+                  {/* Actions: Scan Again & External Source Link */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProduct(null);
+                        setNotFound(false);
+                        setBarcodeInput('');
+                        setSearchedBarcode('');
+                        setScanMode('camera');
+                        setCameraActive(true);
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
                     >
-                      <span>Open Food Facts</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  )}
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>Scan Again</span>
+                    </button>
+                    {product.source_url && (
+                      <a
+                        href={product.source_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-teal-300 text-xs font-bold border border-neutral-700 transition-colors flex items-center gap-1.5"
+                      >
+                        <span>Open Food Facts</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
 
