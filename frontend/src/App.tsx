@@ -12,7 +12,6 @@ const DietPlan = lazy(() => import('./pages/DietPlan'));
 const AddMeal = lazy(() => import('./pages/AddMeal'));
 const Meals = lazy(() => import('./pages/Meals'));
 const PhotoScan = lazy(() => import('./pages/PhotoScan'));
-const BarcodeScan = lazy(() => import('./pages/BarcodeScan'));
 const Chat = lazy(() => import('./pages/Chat'));
 const Settings = lazy(() => import('./pages/Settings'));
 
@@ -58,8 +57,8 @@ const App: React.FC = () => {
             <Route path="/add-meal" element={<AddMeal />} />
             <Route path="/meals" element={<Meals />} />
             <Route path="/scan/photo" element={<PhotoScan />} />
-            <Route path="/scan/barcode" element={<BarcodeScan />} />
-            <Route path="/products" element={<Navigate to="/scan/barcode?tab=registry" replace />} />
+            <Route path="/scan/barcode" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/products" element={<Navigate to="/dashboard" replace />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

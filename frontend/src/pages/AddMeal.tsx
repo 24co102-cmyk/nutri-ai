@@ -9,7 +9,6 @@ import {
   Flame,
   X,
   Camera,
-  Barcode,
   History,
   Edit3,
   CheckCircle2,
@@ -188,8 +187,8 @@ const AddMeal: React.FC = () => {
         </button>
       </div>
 
-      {/* ━━━ Top Options Bar (Search Food / Photo Scan / Barcode / Recent / Manual) ━━━ */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+      {/* ━━━ Top Options Bar (Search Food / Photo Scan / Recent / Manual) ━━━ */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         <button
           onClick={() => setActiveTab('search')}
           className={`p-3 rounded-2xl border text-xs font-bold transition-all flex flex-col items-center gap-1.5 text-center ${
@@ -208,14 +207,6 @@ const AddMeal: React.FC = () => {
         >
           <Camera className="w-4 h-4 text-cyan-600" />
           <span>Upload Photo</span>
-        </button>
-
-        <button
-          onClick={() => navigate('/scan/barcode')}
-          className="p-3 rounded-2xl border bg-white border-neutral-200/80 text-neutral-700 hover:border-teal-400 hover:bg-teal-50/50 text-xs font-bold transition-all flex flex-col items-center gap-1.5 text-center"
-        >
-          <Barcode className="w-4 h-4 text-teal-600" />
-          <span>Scan Barcode</span>
         </button>
 
         <button

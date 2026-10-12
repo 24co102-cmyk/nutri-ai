@@ -7,7 +7,6 @@ import {
   Target,
   TrendingDown,
   PlusCircle,
-  Barcode,
   Camera,
   MessageSquare,
   Droplet,
@@ -448,15 +447,15 @@ const Dashboard: React.FC = () => {
           </Link>
 
           <Link
-            to="/scan/barcode"
-            className="group p-5 rounded-3xl bg-white border border-neutral-100 hover:border-teal-200 shadow-[0_4px_20px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(20,184,166,0.08)] transition-all duration-300 hover:-translate-y-1 flex flex-col gap-4"
+            to="/diet-plan"
+            className="group p-5 rounded-3xl bg-white border border-neutral-100 hover:border-emerald-200 shadow-[0_4px_20px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(5,150,105,0.08)] transition-all duration-300 hover:-translate-y-1 flex flex-col gap-4"
           >
-            <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300">
-              <Barcode className="w-6 h-6" />
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
+              <Utensils className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="text-sm font-black text-neutral-900">Barcode Scan</h4>
-              <p className="text-xs text-neutral-400 font-medium mt-0.5">Packaged foods</p>
+              <h4 className="text-sm font-black text-neutral-900">Diet Plan</h4>
+              <p className="text-xs text-neutral-400 font-medium mt-0.5">AI meal schedule</p>
             </div>
           </Link>
 
