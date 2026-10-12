@@ -6,6 +6,7 @@ import {
   PlusCircle,
   History,
   Camera,
+  Barcode,
   Settings,
   User,
   MessageSquare,
@@ -51,6 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       name: t('cat_smart_tools'),
       items: [
         { path: '/scan/photo', label: t('nav_photo'), icon: Camera },
+        { path: '/scan/barcode', label: t('nav_barcode'), icon: Barcode },
         { path: '/chat', label: t('nav_chat'), icon: MessageSquare, badge: 'PRO' },
       ],
     },

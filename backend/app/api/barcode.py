@@ -1,5 +1,7 @@
 import json
+import re
 from typing import List, Optional
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -257,3 +259,311 @@ def legacy_lookup(request: LegacyBarcodeRequest, db: Session = Depends(get_db)):
             message="Product found"
         )
     return LegacyBarcodeResponse(message="Product Not Found. This barcode is not registered in your 20-product database.")
+
+
+# ─── NUTRILENS LIVE EXTERNAL BARCODE LOOKUP (RULE 3, 6, 7, 8) ───────────────
+
+class BarcodeProductResponse(BaseModel):
+    barcode: str
+    product_name: str
+    brand: str
+    image_url: Optional[str] = None
+    quantity: Optional[str] = None
+    serving_size: Optional[str] = None
+    serving_weight_g: float = 100.0
+
+    # Values per 100g
+    calories_100g: float = 0.0
+    protein_100g: float = 0.0
+    carbs_100g: float = 0.0
+    sugar_100g: float = 0.0
+    fat_100g: float = 0.0
+    sat_fat_100g: float = 0.0
+    sodium_mg_100g: float = 0.0
+    salt_100g: float = 0.0
+    fiber_100g: float = 0.0
+
+    # Values per serving (optional)
+    calories_serving: Optional[float] = None
+    protein_serving: Optional[float] = None
+    carbs_serving: Optional[float] = None
+    sugar_serving: Optional[float] = None
+    fat_serving: Optional[float] = None
+    sat_fat_serving: Optional[float] = None
+    sodium_mg_serving: Optional[float] = None
+
+    ingredients_text: str = ""
+    ingredients: List[str] = []
+    allergens: List[str] = []
+    nutriscore_grade: Optional[str] = None
+    nova_group: Optional[int] = None
+    source: str = "Open Food Facts"
+    source_url: str = ""
+    assessment: Optional[str] = None
+    found: bool = True
+
+
+def generate_nutrilens_assessment(
+    name: str,
+    cal_100: float,
+    prot_100: float,
+    sugar_100: float,
+    fat_100: float,
+    sat_fat_100: float,
+    sod_mg_100: float,
+    fiber_100: float,
+    nutriscore: Optional[str] = None
+) -> str:
+    """Generate transparent, simple language nutrition summary per RULE 7."""
+    strengths = []
+    considerations = []
+
+    if prot_100 >= 10.0:
+        strengths.append(f"High protein density ({prot_100}g per 100g)")
+    elif prot_100 >= 5.0:
+        strengths.append(f"Moderate protein source ({prot_100}g per 100g)")
+
+    if fiber_100 >= 3.0:
+        strengths.append(f"Good source of dietary fiber ({fiber_100}g per 100g)")
+
+    if sugar_100 <= 5.0 and (cal_100 > 0 or carbs_100 > 0 if 'carbs_100' in locals() else True):
+        strengths.append("Low in added sugars (<=5g per 100g)")
+    elif sugar_100 > 15.0:
+        considerations.append(f"Elevated sugar density ({sugar_100}g per 100g)")
+
+    if sat_fat_100 > 5.0:
+        considerations.append(f"High saturated fat ({sat_fat_100}g per 100g)")
+    elif sat_fat_100 <= 1.5 and fat_100 > 0:
+        strengths.append("Low saturated fat profile")
+
+    if sod_mg_100 > 600.0:
+        considerations.append(f"High sodium ({int(sod_mg_100)}mg per 100g)")
+    elif sod_mg_100 <= 140.0:
+        strengths.append("Low sodium formulation")
+
+    grade_note = f"Source Nutri-Score: Grade {nutriscore.upper()}." if nutriscore else "No official manufacturer Nutri-Score provided."
+    strengths_str = "; ".join(strengths) if strengths else "Balanced baseline macronutrient distribution."
+    considerations_str = "; ".join(considerations) if considerations else "No high-risk nutritional flags detected."
+
+    return (
+        f"NutriLens Assessment for {name}: {grade_note} "
+        f"Strengths: {strengths_str}. "
+        f"Considerations: {considerations_str}. "
+        f"Disclaimer: Nutritional evaluation is derived from Open Food Facts verified food records. "
+        f"It is for general health awareness and is not clinical diagnosis or medical treatment."
+    )
+
+
+@router.get("/{barcode}", response_model=BarcodeProductResponse)
+async def get_barcode_product(barcode: str, db: Session = Depends(get_db)):
+    """
+    Search and retrieve verified food product information by barcode.
+    Accepts 6-14 digit GTIN, EAN-13, EAN-8, UPC-A, and UPC-E barcodes.
+    Queries internal registry first, then queries Open Food Facts API v2.
+    """
+    clean_code = barcode.strip().replace(" ", "").replace("-", "")
+    if not clean_code or not clean_code.isdigit() or len(clean_code) < 6 or len(clean_code) > 14:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid barcode format. Expected a 6 to 14 digit numeric barcode."
+        )
+
+    # 1. Check local database first
+    local_prod = db.query(ManagedProduct).filter(ManagedProduct.barcode == clean_code).first()
+    if local_prod:
+        ing_list = []
+        try:
+            ing_list = json.loads(local_prod.ingredients) if local_prod.ingredients else []
+        except Exception:
+            ing_list = [i.strip() for i in local_prod.ingredients.split(",") if i.strip()] if local_prod.ingredients else []
+
+        all_list = []
+        try:
+            all_list = json.loads(local_prod.allergens) if local_prod.allergens else []
+        except Exception:
+            all_list = [a.strip() for a in local_prod.allergens.split(",") if a.strip()] if local_prod.allergens else []
+
+        assessment = generate_nutrilens_assessment(
+            local_prod.product_name,
+            float(local_prod.calories or 0),
+            float(local_prod.protein or 0),
+            float(local_prod.sugar or 0),
+            float(local_prod.fat or 0),
+            0.0,
+            float(local_prod.sodium or 0),
+            float(local_prod.fiber or 0)
+        )
+
+        return BarcodeProductResponse(
+            barcode=local_prod.barcode,
+            product_name=local_prod.product_name,
+            brand=local_prod.brand_name or "Internal Registry",
+            quantity=None,
+            serving_size=local_prod.serving_size or "100g",
+            serving_weight_g=100.0,
+            calories_100g=float(local_prod.calories or 0),
+            protein_100g=float(local_prod.protein or 0),
+            carbs_100g=float(local_prod.carbohydrates or 0),
+            sugar_100g=float(local_prod.sugar or 0),
+            fat_100g=float(local_prod.fat or 0),
+            sat_fat_100g=0.0,
+            sodium_mg_100g=float(local_prod.sodium or 0),
+            salt_100g=round(float(local_prod.sodium or 0) * 2.5 / 1000, 2),
+            fiber_100g=float(local_prod.fiber or 0),
+            ingredients_text=", ".join(ing_list) if ing_list else "Not available",
+            ingredients=ing_list,
+            allergens=all_list,
+            source="NutriLens Internal Registry",
+            source_url="/scan/barcode",
+            assessment=assessment,
+            found=True
+        )
+
+    # 2. Query Open Food Facts external provider
+    off_url = f"https://world.openfoodfacts.org/api/v2/product/{clean_code}.json"
+    headers = {
+        "User-Agent": "NutriLensAI/1.0 (https://nutri-ai-eight-iota.vercel.app; support@nutrilens.app)"
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=8.0) as client:
+            resp = await client.get(off_url, headers=headers)
+    except httpx.TimeoutException:
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="Open Food Facts provider timed out. Please try again."
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Failed to connect to external barcode provider."
+        )
+
+    if resp.status_code != 200:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with barcode '{clean_code}' not found."
+        )
+
+    try:
+        data = resp.json()
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Invalid response received from external provider."
+        )
+
+    if data.get("status") != 1 or not data.get("product"):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with barcode '{clean_code}' not found in Open Food Facts database."
+        )
+
+    p = data["product"]
+    nutriments = p.get("nutriments") or {}
+
+    def parse_float(val, fallback=0.0):
+        try:
+            v = float(val)
+            return fallback if (v != v) else max(0.0, v)
+        except (ValueError, TypeError):
+            return fallback
+
+    # Calories per 100g: Check energy-kcal or convert kJ
+    cal_100 = parse_float(nutriments.get("energy-kcal_100g") or nutriments.get("energy-kcal_value") or nutriments.get("energy-kcal"))
+    if not cal_100 and nutriments.get("energy_100g"):
+        cal_100 = round(parse_float(nutriments.get("energy_100g")) / 4.184, 1)
+
+    prot_100 = round(parse_float(nutriments.get("proteins_100g")), 1)
+    carbs_100 = round(parse_float(nutriments.get("carbohydrates_100g")), 1)
+    sugar_100 = round(parse_float(nutriments.get("sugars_100g")), 1)
+    fat_100 = round(parse_float(nutriments.get("fat_100g")), 1)
+    sat_fat_100 = round(parse_float(nutriments.get("saturated-fat_100g")), 1)
+    fiber_100 = round(parse_float(nutriments.get("fiber_100g")), 1)
+    salt_100 = round(parse_float(nutriments.get("salt_100g")), 2)
+
+    # Sodium: OFF reports sodium in grams per 100g. Convert to mg.
+    sod_g = parse_float(nutriments.get("sodium_100g"))
+    if not sod_g and salt_100:
+        sod_g = salt_100 / 2.5
+    sod_mg_100 = round(sod_g * 1000.0, 1)
+
+    # Serving size and serving weight
+    serving_str = p.get("serving_size") or "100g"
+    serving_weight_g = parse_float(p.get("serving_quantity"), 0.0)
+    if not serving_weight_g:
+        match = re.search(r"(\d+(?:\.\d+)?)\s*g", serving_str, re.IGNORECASE)
+        if match:
+            serving_weight_g = parse_float(match.group(1), 100.0)
+        else:
+            serving_weight_g = 100.0
+
+    # Optional serving values
+    cal_serving = parse_float(nutriments.get("energy-kcal_serving")) or None
+    prot_serving = parse_float(nutriments.get("proteins_serving")) or None
+    carbs_serving = parse_float(nutriments.get("carbohydrates_serving")) or None
+    sugar_serving = parse_float(nutriments.get("sugars_serving")) or None
+    fat_serving = parse_float(nutriments.get("fat_serving")) or None
+    sat_fat_serving = parse_float(nutriments.get("saturated-fat_serving")) or None
+    sod_serving_g = parse_float(nutriments.get("sodium_serving"))
+    sod_mg_serving = round(sod_serving_g * 1000.0, 1) if sod_serving_g else None
+
+    # Ingredients & allergens cleanup
+    raw_allergens = p.get("allergens_tags") or []
+    cleaned_allergens = [
+        re.sub(r"^[a-z]{2}:", "", a).replace("-", " ").strip()
+        for a in raw_allergens if a
+    ]
+    raw_ingredients = p.get("ingredients") or []
+    ingredient_names = [
+        item.get("text", "").strip() for item in raw_ingredients if isinstance(item, dict) and item.get("text")
+    ]
+
+    nutriscore = (p.get("nutriscore_grade") or "").upper() or None
+    nova = p.get("nova_group")
+    if nova is not None:
+        try:
+            nova = int(nova)
+        except (ValueError, TypeError):
+            nova = None
+
+    assessment = generate_nutrilens_assessment(
+        p.get("product_name") or "Product",
+        cal_100, prot_100, sugar_100, fat_100, sat_fat_100, sod_mg_100, fiber_100, nutriscore
+    )
+
+    return BarcodeProductResponse(
+        barcode=clean_code,
+        product_name=p.get("product_name") or p.get("product_name_en") or p.get("generic_name") or "Verified Product",
+        brand=p.get("brands") or p.get("brand_owner") or "Verified Brand",
+        image_url=p.get("image_front_url") or p.get("image_url") or p.get("image_small_url"),
+        quantity=p.get("quantity") or None,
+        serving_size=serving_str,
+        serving_weight_g=round(serving_weight_g, 1),
+        calories_100g=round(cal_100, 1),
+        protein_100g=prot_100,
+        carbs_100g=carbs_100,
+        sugar_100g=sugar_100,
+        fat_100g=fat_100,
+        sat_fat_100g=sat_fat_100,
+        sodium_mg_100g=sod_mg_100,
+        salt_100g=salt_100,
+        fiber_100g=fiber_100,
+        calories_serving=round(cal_serving, 1) if cal_serving else None,
+        protein_serving=round(prot_serving, 1) if prot_serving else None,
+        carbs_serving=round(carbs_serving, 1) if carbs_serving else None,
+        sugar_serving=round(sugar_serving, 1) if sugar_serving else None,
+        fat_serving=round(fat_serving, 1) if fat_serving else None,
+        sat_fat_serving=round(sat_fat_serving, 1) if sat_fat_serving else None,
+        sodium_mg_serving=sod_mg_serving,
+        ingredients_text=p.get("ingredients_text") or p.get("ingredients_text_en") or "Ingredients not supplied by manufacturer.",
+        ingredients=ingredient_names[:25],
+        allergens=cleaned_allergens,
+        nutriscore_grade=nutriscore,
+        nova_group=nova,
+        source="Open Food Facts",
+        source_url=f"https://world.openfoodfacts.org/product/{clean_code}",
+        assessment=assessment,
+        found=True
+    )
+

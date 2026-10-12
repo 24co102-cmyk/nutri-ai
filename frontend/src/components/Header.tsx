@@ -22,6 +22,7 @@ const routeTitles: Record<string, { title: string; subtitle: string }> = {
   '/add-meal': { title: 'Log Meal', subtitle: 'Search database, scan barcodes, or log custom food' },
   '/meals': { title: 'Meal History', subtitle: 'Review daily nutrition logs and macronutrient trends' },
   '/scan/photo': { title: 'Photo Food Scanner', subtitle: 'Computer vision food identification & macro estimation' },
+  '/scan/barcode': { title: 'Barcode Product Scanner', subtitle: 'Search packaged groceries & manufacturer nutrition facts' },
   '/nutrilens': { title: 'NutriLens Intelligence', subtitle: 'Food quality analysis, allergen screening & health scoring' },
   '/chat': { title: 'AI Health Assistant', subtitle: 'Interactive clinical-grade nutrition Q&A and dietary coach' },
   '/settings': { title: 'Settings Center', subtitle: 'App preferences, alerts, nutrition parameters & privacy' },
