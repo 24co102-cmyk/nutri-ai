@@ -17,17 +17,152 @@ interface ChatMessage {
 }
 
 const promptSuggestions = [
-  'How is BarcodeScan.tsx implemented?',
-  'What endpoints are in meals.py?',
-  'What is my daily calorie target and health goal?',
-  'Analyze my meals today',
-  'Calories in 100g chicken breast?',
-  'How does the VisionCamera autofocus work?',
-  'Where are database models defined in backend?',
-  "Create today's diet plan",
+  'Explain operating system deadlock with an analogy',
+  'Write a Python program to check whether a number is prime',
+  'Fix IndexError: list index out of range in Python',
+  'What is artificial intelligence and machine learning?',
+  'Analyze my daily calories & protein targets',
+  'How is BarcodeScan.tsx implemented in this project?',
+  'Create a 1500 kcal high-protein diet plan',
 ];
 
-const getProjectKnowledgeAnswer = (query: string): string => {
+const CodeBlock: React.FC<{ code: string; language?: string }> = ({ code, language = 'code' }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="my-3 rounded-xl overflow-hidden border border-neutral-800 bg-[#18181b] shadow-md text-left">
+      <div className="flex items-center justify-between px-3.5 py-1.5 bg-[#27272a] text-neutral-300 text-[11px] font-mono border-b border-neutral-700/60">
+        <span className="font-bold lowercase text-emerald-400">{language}</span>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="hover:text-white transition-colors flex items-center gap-1 text-[11px] font-sans px-2 py-0.5 rounded hover:bg-neutral-700 cursor-pointer"
+        >
+          {copied ? '✓ Copied' : 'Copy code'}
+        </button>
+      </div>
+      <div className="p-3.5 overflow-x-auto">
+        <pre className="font-mono text-xs sm:text-sm text-neutral-100 whitespace-pre leading-relaxed">
+          {code}
+        </pre>
+      </div>
+    </div>
+  );
+};
+
+const renderInlineStyles = (line: string): React.ReactNode => {
+  const codeParts = line.split(/(`[^`]+`)/);
+  return codeParts.map((part, pIdx) => {
+    if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
+      return (
+        <code
+          key={pIdx}
+          className="font-mono text-[11px] sm:text-xs bg-neutral-200/80 text-neutral-900 px-1.5 py-0.5 rounded border border-neutral-300/70"
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    const boldParts = part.split(/(\*\*[^*]+\*\*)/);
+    return boldParts.map((bPart, bIdx) => {
+      if (bPart.startsWith('**') && bPart.endsWith('**') && bPart.length > 4) {
+        return (
+          <strong key={`${pIdx}-${bIdx}`} className="font-bold text-neutral-900">
+            {bPart.slice(2, -2)}
+          </strong>
+        );
+      }
+      return bPart;
+    });
+  });
+};
+
+const TextContent: React.FC<{ chunk: string }> = ({ chunk }) => {
+  const lines = chunk.split('\n');
+
+  return (
+    <>
+      {lines.map((line, idx) => {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          return <div key={idx} className="h-1.5" />;
+        }
+        if (line.startsWith('### ')) {
+          return (
+            <h4 key={idx} className="text-xs sm:text-sm font-bold text-neutral-900 mt-2 mb-1">
+              {renderInlineStyles(line.replace('### ', ''))}
+            </h4>
+          );
+        }
+        if (line.startsWith('## ')) {
+          return (
+            <h3 key={idx} className="text-sm sm:text-base font-extrabold text-neutral-900 mt-2.5 mb-1.5">
+              {renderInlineStyles(line.replace('## ', ''))}
+            </h3>
+          );
+        }
+        if (line.startsWith('• ') || line.startsWith('- ') || line.startsWith('* ')) {
+          return (
+            <div key={idx} className="flex items-start gap-2 my-0.5 pl-1">
+              <span className="text-emerald-600 font-bold">•</span>
+              <span className="flex-1">{renderInlineStyles(line.substring(2))}</span>
+            </div>
+          );
+        }
+        const numMatch = line.match(/^(\d+)\.\s+(.*)/);
+        if (numMatch) {
+          return (
+            <div key={idx} className="flex items-start gap-2 my-0.5 pl-1">
+              <span className="text-neutral-500 font-bold text-xs">{numMatch[1]}.</span>
+              <span className="flex-1">{renderInlineStyles(numMatch[2])}</span>
+            </div>
+          );
+        }
+        return (
+          <p key={idx} className="my-0.5">
+            {renderInlineStyles(line)}
+          </p>
+        );
+      })}
+    </>
+  );
+};
+
+const FormattedMessage: React.FC<{ text: string; isUser: boolean }> = ({ text, isUser }) => {
+  if (isUser) {
+    return <div className="whitespace-pre-wrap">{text}</div>;
+  }
+
+  const codeBlockRegex = /```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g;
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = codeBlockRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      const textChunk = text.substring(lastIndex, match.index);
+      parts.push(<TextContent key={`text-${lastIndex}`} chunk={textChunk} />);
+    }
+    const lang = match[1] || 'code';
+    const code = match[2];
+    parts.push(<CodeBlock key={`code-${match.index}`} code={code.trimEnd()} language={lang} />);
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(<TextContent key={`text-${lastIndex}`} chunk={text.substring(lastIndex)} />);
+  }
+
+  return <div className="space-y-1 text-left">{parts}</div>;
+};
+
+export const getProjectKnowledgeAnswer = (query: string): string => {
   const q = query.toLowerCase();
 
   // ── Chicken Breast ──
@@ -479,7 +614,7 @@ const Chat: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
-      text: "Hello! I am your NutriLens AI Nutrition Coach. I can analyze your meals, recommend optimal foods based on your daily targets, or answer any nutritional questions. How can I support your nutrition today?",
+      text: "Hello! I am your NutriLens AI Assistant. I can write and debug code, solve mathematics and academic problems, explain complex concepts, analyze your nutrition and diet targets, or explore this application's features. How can I help you today?",
     },
   ]);
   const [loading, setLoading] = useState(false);
@@ -536,11 +671,21 @@ const Chat: React.FC = () => {
           { role: 'assistant', text: replyText, source, tools_used, sources },
         ]);
       } else {
-        throw new Error('Empty reply');
+        throw new Error('Empty reply received from server');
       }
-    } catch {
-      const replyText = getProjectKnowledgeAnswer(queryText.trim());
-      setMessages((prev) => [...prev, { role: 'assistant', text: replyText, source: 'training' }]);
+    } catch (err: any) {
+      console.error('[Chat API Error]:', err);
+      const serverMessage = err?.response?.data?.detail || err?.response?.data?.message;
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          text: serverMessage
+            ? `⚠️ ${serverMessage}`
+            : '⚠️ The AI assistant is currently experiencing high load or connection issues. Please try again.',
+          source: 'fallback',
+        },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -565,7 +710,7 @@ const Chat: React.FC = () => {
               NutriLens AI Assistant
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             </h1>
-            <p className="text-xs text-neutral-400 font-medium">Personalized Diet & Nutrition Intelligence Engine</p>
+            <p className="text-xs text-neutral-400 font-medium">Full-Stack Intelligent Assistant & Nutrition Engine</p>
           </div>
         </div>
 
@@ -658,13 +803,13 @@ const Chat: React.FC = () => {
                   </div>
 
                   <div
-                    className={`max-w-lg p-4 rounded-2xl text-xs sm:text-sm leading-relaxed font-medium whitespace-pre-line ${
+                    className={`max-w-xl sm:max-w-2xl xl:max-w-3xl p-4 rounded-2xl text-xs sm:text-sm leading-relaxed font-medium ${
                       isUser
                         ? 'bg-emerald-600 text-white rounded-tr-none shadow-2xs'
                         : 'bg-[#faf9f8] text-neutral-800 rounded-tl-none border border-neutral-200/70'
                     }`}
                   >
-                    {msg.text}
+                    <FormattedMessage text={msg.text} isUser={isUser} />
                     {!isUser && (msg.source || (msg.tools_used && msg.tools_used.length > 0) || (msg.sources && msg.sources.length > 0)) && (
                       <div className="mt-2.5 pt-2 border-t border-neutral-200/60 space-y-2">
                         {/* Source engine & tool badges */}
@@ -760,7 +905,7 @@ const Chat: React.FC = () => {
           >
             <input
               type="text"
-              placeholder="Ask anything about meals, calories, or diet plans..."
+              placeholder="Ask anything — coding, concepts, problem-solving, or nutrition..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               className="flex-1 px-3.5 py-2 text-xs sm:text-sm bg-[#faf9f8] border border-neutral-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:bg-white transition-all font-medium"

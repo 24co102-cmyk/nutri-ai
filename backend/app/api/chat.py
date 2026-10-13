@@ -1,17 +1,16 @@
 # backend/app/api/chat.py
 """
-NutriLens AI — Project-Aware, Fast, and Tool-Enabled Assistant Endpoint
-Combines repository RAG retrieval, real application tools, Gemini AI,
-and offline fallback engines for reliable, fast answers.
+NutriLens AI — Versatile General-Purpose & Nutrition AI Assistant Endpoint
+Combines high-performance Gemini AI models, conversation context memory,
+selective repository RAG retrieval, application tools, and robust failover.
 """
 
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 import os
 import re
-import random
 import time
 
 # pyrefly: ignore [missing-import]
@@ -23,7 +22,7 @@ from .. import models
 # pyrefly: ignore [missing-import]
 from ..config import GEMINI_API_KEY
 # pyrefly: ignore [missing-import]
-from ..training_data import TRAINING_DATA, FALLBACK_RESPONSES
+from ..training_data import TRAINING_DATA
 # pyrefly: ignore [missing-import]
 from ..services.project_rag import search_project_knowledge
 # pyrefly: ignore [missing-import]
@@ -37,8 +36,8 @@ class ChatMessageItem(BaseModel):
     text: str
 
 class ChatRequest(BaseModel):
-    message: str
-    history: List[Dict[str, Any]] = []
+    message: str = Field(..., description="User prompt or follow-up question")
+    history: List[Dict[str, Any]] = Field(default=[], description="Previous conversation turns")
 
 class SourceReference(BaseModel):
     title: str
@@ -68,31 +67,82 @@ def get_gemini_client():
         print(f"[Gemini Client Init Warning]: {e}")
         return None
 
-# High-priority models verified in production
+# Validated, high-availability Gemini models ordered by response speed & reliability
 GEMINI_MODELS = [
-    "gemini-flash-lite-latest",
-    "gemini-3-flash-preview",
+    "gemini-3.1-flash-lite",
+    "gemini-3.5-flash",
     "gemini-3.1-flash-lite-preview",
-    "gemini-3.8-flash"
+    "gemini-3-flash-preview",
+    "gemini-3.8-flash",
+    "gemini-3.5-flash-lite",
 ]
 
-SYSTEM_PROMPT = """You are NutriLens AI — the official intelligent assistant for the NutriLens AI application.
-You possess deep clinical and practical knowledge of human nutrition, calories, macronutrients, and healthy living,
-AS WELL AS complete technical understanding of the NutriLens AI codebase, architecture, components, and APIs.
+# ── Comprehensive General-Purpose & Domain System Instruction ─────────────────
+SYSTEM_PROMPT = """You are NutriLens AI — a highly capable, versatile, general-purpose AI assistant and intelligent nutrition companion.
 
-Your Core Capabilities:
-1. Personal Nutrition & Meal Analysis: Help users understand their daily calorie allowance, macros, and logged food entries using live user data provided in context.
-2. Code & Architecture Guidance: When asked about NutriLens features, files, or endpoints, use the indexed repository context and cite exact file paths (e.g., `frontend/src/pages/BarcodeScan.tsx`).
-3. Barcode & Product Facts: Explain grocery nutrition, ingredients, and allergen alerts accurately.
-4. Syntactically Valid Code: When asked for code, provide clean, idiomatic React 19 / TypeScript / FastAPI snippets matching project conventions.
-5. Empathy & Health Safety: Always provide evidence-based, actionable guidance. Never diagnose medical conditions or prescribe pharmaceuticals. If urgent medical symptoms arise, advise consulting a healthcare professional.
+Your Core Capabilities & Persona:
+1. General-Purpose Problem Solving & Explanations:
+   - You answer ANY question across all domains: computer science, programming, software engineering, mathematics, physics, engineering subjects, exam preparation, writing, literature, logic, business, history, and general knowledge.
+   - For coding requests: write clean, modern, syntactically correct, and complete code (Python, JavaScript/TypeScript, React, FastAPI, Java, C++, SQL, Go, Rust, HTML/CSS, etc.) with helpful explanations and Markdown code blocks.
+   - For debugging requests: analyze error messages, explain root causes clearly, and provide working fixed code with line-by-line rationale.
+   - For mathematics and academic problems: provide step-by-step solutions, display relevant formulas, and show intermediate calculations.
+   - For conceptual explanations: break down complex ideas into intuitive steps and use real-life analogies when helpful.
 
-Formatting: Use clean Markdown, bold highlights, bullet points, and appropriate emojis to make responses engaging and easy to read."""
+2. NutriLens AI & Nutrition Domain:
+   - When users ask about food, calories, macronutrients, health goals, diet planning, wellness, or grocery products, provide authoritative, evidence-based guidance.
+   - When verified user profile metrics, logged meals, or food database items are provided in context, incorporate those exact numbers seamlessly.
+   - When asked about the NutriLens AI application, architecture, or components, reference actual repository conventions and files.
+
+3. Conversational Guidelines & Style:
+   - Directly address what the user actually asked. Do not deflect non-nutrition questions or force discussions back to diet.
+   - Understand and seamlessly continue follow-up questions referencing previous turns ("explain simpler", "give me the code", "fix that error", "compare both").
+   - Format responses using clean Markdown: clear headings, bullet points, bold highlights, and fenced code blocks with language identifiers.
+   - Be concise when a short answer suffices; provide deep, structured explanations when the user asks for comprehensive detail.
+   - Never invent facts or hallucinate citations. If information is unavailable or uncertain, state it honestly.
+   - Respond in the language or tone requested by the user (English, Hindi, etc.)."""
+
+
+def _prepare_gemini_history(history: List[Dict[str, Any]]) -> List[Any]:
+    """
+    Validates, sanitizes, and bounds conversation history for Gemini multi-turn chat.
+    Ensures:
+    - Bounded to the last 10 turns.
+    - Consecutive messages of the same role are combined to enforce strict alternation.
+    - The conversation history always begins with a user turn.
+    """
+    from google.genai import types
+
+    cleaned: List[Any] = []
+    recent_turns = history[-10:] if len(history) > 10 else history
+
+    for item in recent_turns:
+        raw_role = str(item.get("role", "")).lower().strip()
+        text = str(item.get("text", "")).strip()
+        if not text:
+            continue
+        gemini_role = "user" if raw_role in ["user", "human"] else "model"
+
+        if cleaned and cleaned[-1].role == gemini_role:
+            existing_part = cleaned[-1].parts[0].text if cleaned[-1].parts else ""
+            cleaned[-1] = types.Content(
+                role=gemini_role,
+                parts=[types.Part(text=f"{existing_part}\n\n{text}")]
+            )
+        else:
+            cleaned.append(types.Content(role=gemini_role, parts=[types.Part(text=text)]))
+
+    # Gemini multi-turn history MUST begin with user turn
+    while cleaned and cleaned[0].role != "user":
+        cleaned.pop(0)
+
+    return cleaned
 
 
 def _detect_tools_and_context(query: str, user: models.User, db: Session):
     """
-    Analyzes intent and executes appropriate backend tools to build high-relevance context.
+    Selectively executes backend tools only when strictly relevant to the user's intent.
+    Normal general questions (programming, mathematics, general knowledge) bypass project tools
+    to prevent irrelevant context contamination.
     """
     tools_used: List[str] = []
     sources: List[SourceReference] = []
@@ -100,14 +150,20 @@ def _detect_tools_and_context(query: str, user: models.User, db: Session):
 
     q = query.lower()
 
-    # 1. Project Code / Architecture / API queries
-    project_indicators = [
-        "code", "repo", "api", "endpoint", "route", "backend", "frontend", "model",
-        "barcodescan", "visioncamera", "dashboard", "dietplan", "addmeal", "main.py",
-        "models.py", "database", "fastapi", "react", "vite", "render", "vercel",
-        "how does", "how is", "file", "architecture", "implementation", "nutrilens"
-    ]
-    if any(ind in q for ind in project_indicators):
+    # 1. Project Codebase queries specifically for NutriLens AI
+    nutrilens_explicit = (
+        "nutrilens" in q or "nutri-ai" in q or "nutri ai" in q
+        or "in this app" in q or "in this project" in q or "in our project" in q
+        or "in this codebase" in q or "in this repo" in q or "in our codebase" in q
+        or "our backend" in q or "our frontend" in q or "how does our" in q
+        or "how does this app" in q or "how is this app" in q
+        or any(k in q for k in [
+            "barcodescan.tsx", "visioncamera", "dietplan.tsx", "models.py",
+            "chat.tsx", "ai_tools.py", "project_rag.py", "database.py"
+        ])
+    )
+
+    if nutrilens_explicit:
         rag_hits = search_project_knowledge(query, top_k=3)
         if rag_hits:
             tools_used.append("search_project_knowledge")
@@ -120,23 +176,30 @@ def _detect_tools_and_context(query: str, user: models.User, db: Session):
                 snippets.append(snippet_text)
             context_sections.append("PROJECT CODEBASE CONTEXT:\n" + "\n\n".join(snippets))
 
-    # 2. User Profile / BMR / Calorie Target queries
-    profile_indicators = ["my profile", "my calories", "my goal", "bmr", "target", "calorie limit", "how much protein do i need", "macros"]
-    if any(ind in q for ind in profile_indicators):
+    # 2. User Profile / BMR / Calorie Targets
+    profile_triggers = [
+        "my profile", "my calories", "my daily target", "my goal", "my bmr",
+        "my calorie target", "my macros", "how much protein do i need",
+        "what is my calorie limit", "my calorie goal"
+    ]
+    if any(trig in q for trig in profile_triggers):
         prof_data = execute_tool("get_user_profile", {}, user, db)
         tools_used.append("get_user_profile")
         context_sections.append(f"AUTHENTICATED USER PROFILE:\n{prof_data}")
 
-    # 3. Logged Meals / "What did I eat" queries
-    meal_indicators = ["my meal", "logged", "what did i eat", "today's meal", "history", "analyze my meal", "dinner today", "lunch today"]
-    if any(ind in q for ind in meal_indicators):
+    # 3. Logged Meals queries
+    meal_triggers = [
+        "my meal", "logged today", "what did i eat", "today's meal",
+        "my meal history", "analyze my meals", "dinner today", "lunch today", "breakfast today"
+    ]
+    if any(trig in q for trig in meal_triggers):
         meals_data = execute_tool("get_meal_history", {"limit": 5}, user, db)
         tools_used.append("get_meal_history")
-        context_sections.append(f"USER RECENT MEAL LOGS (LIVE DATABASE):\n{meals_data}")
+        context_sections.append(f"USER RECENT MEAL LOGS (DATABASE):\n{meals_data}")
 
-    # 4. Barcode lookup queries (e.g. "barcode 737628064502" or raw digits)
+    # 4. Barcode lookup queries
     barcode_match = re.search(r"\b\d{8,14}\b", query)
-    if barcode_match or "barcode" in q and any(c.isdigit() for c in q):
+    if barcode_match or ("barcode" in q and any(c.isdigit() for c in q)):
         code = barcode_match.group(0) if barcode_match else "".join(filter(str.isdigit, query))
         if code and len(code) >= 6:
             barcode_data = execute_tool("lookup_barcode", {"barcode": code}, user, db)
@@ -144,14 +207,19 @@ def _detect_tools_and_context(query: str, user: models.User, db: Session):
             context_sections.append(f"BARCODE PRODUCT LOOKUP RESULT:\n{barcode_data}")
 
     # 5. Food item database lookup
-    food_search_indicators = ["calories in", "nutrition in", "protein in", "facts of", "search food"]
-    if any(ind in q for ind in food_search_indicators):
-        cleaned_food = re.sub(r"(calories in|nutrition in|protein in|facts of|search food|100g of|100g|per 100g|\?)", "", q).strip()
-        if cleaned_food:
+    food_search_triggers = ["calories in", "nutrition in", "protein in 100g", "search food in db"]
+    if any(trig in q for trig in food_search_triggers):
+        cleaned_food = re.sub(
+            r"(calories in|nutrition in|protein in 100g|search food in db|100g of|100g|per 100g|\?)",
+            "",
+            q,
+            flags=re.IGNORECASE
+        ).strip()
+        if cleaned_food and len(cleaned_food) >= 2:
             food_db_res = execute_tool("search_foods", {"query": cleaned_food, "limit": 3}, user, db)
             if food_db_res.get("status") == "success":
                 tools_used.append("search_foods")
-                context_sections.append(f"DATABASE FOOD MATCHES:\n{food_db_res}")
+                context_sections.append(f"VERIFIED DATABASE FOOD MATCHES:\n{food_db_res}")
 
     return tools_used, sources, "\n\n".join(context_sections)
 
@@ -161,32 +229,25 @@ def _call_gemini_with_fallback(
     history: List[Dict[str, Any]],
     augmented_context: str
 ) -> Optional[str]:
-    """Calls Gemini with automated multi-model failover and bounded conversation history."""
+    """Calls Gemini with automated multi-model failover, bounded history, and Millisecond timeout."""
     client = get_gemini_client()
     if client is None:
         return None
 
     from google.genai import types
 
-    # Prepare chat history (bounded to last 8 turns)
-    chat_history = []
-    for turn in history[-8:]:
-        role = "user" if turn.get("role") == "user" else "model"
-        text = turn.get("text", "")
-        if text:
-            chat_history.append(types.Content(role=role, parts=[types.Part(text=text)]))
+    chat_history = _prepare_gemini_history(history)
 
-    # Incorporate augmented real context into system instruction
     full_instruction = SYSTEM_PROMPT
     if augmented_context:
-        full_instruction += f"\n\nCURRENT RETRIEVED REAL-TIME CONTEXT:\n{augmented_context}"
+        full_instruction += f"\n\nCURRENT VERIFIED APPLICATION CONTEXT:\n{augmented_context}"
 
     config = types.GenerateContentConfig(
         system_instruction=full_instruction,
-        temperature=0.4,
+        temperature=0.5,
+        http_options=types.HttpOptions(timeout=20000),  # 20,000 milliseconds = 20s
     )
 
-    # Attempt primary and fallback models
     for model_name in GEMINI_MODELS:
         try:
             chat = client.chats.create(
@@ -200,15 +261,17 @@ def _call_gemini_with_fallback(
         except Exception as e:
             err_str = str(e)
             print(f"[Gemini Fallback] Model '{model_name}' failed: {err_str[:120]}")
-            # Try next model in fallback list
             continue
 
     return None
 
 
-def _offline_fallback_response(query: str, augmented_context: str, sources: List[SourceReference]) -> str:
-    """Deterministic offline fallback ensuring 100% availability if external AI APIs are down."""
-    # If we have RAG codebase sources retrieved, synthesize a direct answer
+def _intelligent_offline_response(query: str, augmented_context: str, sources: List[SourceReference]) -> str:
+    """
+    Transparent, high-utility offline fallback when external AI APIs are down.
+    Never hallucinates unrelated food answers for coding or general queries.
+    """
+    # 1. Project codebase query with verified source
     if sources and "PROJECT CODEBASE CONTEXT:" in augmented_context:
         top_src = sources[0]
         return (
@@ -218,18 +281,40 @@ def _offline_fallback_response(query: str, augmented_context: str, sources: List
             + "\n\n💡 *Retrieved directly from NutriLens AI repository knowledge base.*"
         )
 
-    # Check keyword training pairs
+    # 2. Database Profile context
+    if "AUTHENTICATED USER PROFILE:" in augmented_context:
+        return (
+            "Here is your active profile data from the NutriLens database:\n\n"
+            + augmented_context.replace("AUTHENTICATED USER PROFILE:\n", "")
+        )
+
+    # 3. Database Meal logs
+    if "USER RECENT MEAL LOGS (DATABASE):" in augmented_context:
+        return (
+            "Here are your recent meal logs from the database:\n\n"
+            + augmented_context.replace("USER RECENT MEAL LOGS (DATABASE):\n", "")
+        )
+
+    # 4. Standard Greetings or FAQ
     norm = query.lower().strip()
-    norm = re.sub(r"[^\w\s]", " ", norm)
-    norm = re.sub(r"\s+", " ", norm).strip()
+    norm_clean = re.sub(r"[^\w\s]", " ", norm)
+    norm_clean = re.sub(r"\s+", " ", norm_clean).strip()
 
     for triggers, resp in TRAINING_DATA:
         for trig in triggers:
             pattern = r"\b" + re.escape(trig) + r"\b"
-            if re.search(pattern, norm):
+            if re.search(pattern, norm_clean):
                 return resp
 
-    return random.choice(FALLBACK_RESPONSES)
+    # 5. General queries when external provider is unreachable
+    return (
+        "⚠️ **AI Service Notice**: The AI provider is temporarily unavailable or experiencing high traffic. "
+        "Your message has been preserved. Please try asking again in a few moments.\n\n"
+        "💡 *If asking about NutriLens, you can also explore your Dashboard, Diet Plan, Meal History, or Barcode Scanner.*"
+    )
+
+# Backward-compatibility alias for tests
+_offline_fallback_response = _intelligent_offline_response
 
 
 @router.post("/", response_model=ChatResponse)
@@ -241,9 +326,12 @@ def chat(
     start_time = time.time()
     user_message = request.message.strip()
     if not user_message:
-        return ChatResponse(reply="How can I assist you with your nutrition or the NutriLens application today?", source="fallback")
+        return ChatResponse(
+            reply="Hello! How can I assist you today? You can ask me general questions, programming problems, calculations, or anything about NutriLens nutrition and features.",
+            source="fallback"
+        )
 
-    # 1. Intent Analysis & Real Tool Dispatching
+    # 1. Intent Analysis & Selective Tool Execution
     tools_used, sources, augmented_context = _detect_tools_and_context(user_message, user, db)
 
     # 2. Multi-Model Gemini Generation
@@ -258,9 +346,9 @@ def chat(
             sources=sources
         )
 
-    # 3. High-Quality Direct Knowledge / Training Fallback
-    fallback_reply = _offline_fallback_response(user_message, augmented_context, sources)
-    source_type = "project_rag" if sources else ("tools" if tools_used else "training")
+    # 3. Intelligent Fallback
+    fallback_reply = _intelligent_offline_response(user_message, augmented_context, sources)
+    source_type = "project_rag" if sources else ("tools" if tools_used else "fallback")
 
     return ChatResponse(
         reply=fallback_reply,
