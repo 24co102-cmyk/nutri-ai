@@ -4,7 +4,7 @@ from jose import JWTError
 from sqlalchemy.orm import Session
 
 # Import sibling modules within the same package
-from . import models, schemas, utils
+from . import models
 from .database import get_db
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")

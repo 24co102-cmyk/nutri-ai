@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, event
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from .config import DATABASE_URL
 
 engine = create_engine(
@@ -20,7 +20,8 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-Base = declarative_base()
+class Base(DeclarativeBase):
+    pass
 
 def get_db():
     db = SessionLocal()

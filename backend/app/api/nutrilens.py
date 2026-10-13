@@ -9,7 +9,7 @@ Endpoints:
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Any
 import httpx
 import math
 import time
@@ -29,7 +29,7 @@ OFF_TIMEOUT = 10.0
 OFF_USER_AGENT = "NutriLens-AI-HealthSuite/1.0 (contact: support@nutrilens.app)"
 
 _http_client: Optional[httpx.AsyncClient] = None
-_barcode_cache: dict[str, tuple[float, any]] = {}
+_barcode_cache: dict[str, tuple[float, Any]] = {}
 CACHE_TTL_SECONDS = 900.0  # 15 minutes cache for static food product specs
 
 def get_http_client() -> httpx.AsyncClient:

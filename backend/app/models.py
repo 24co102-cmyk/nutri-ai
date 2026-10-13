@@ -1,7 +1,9 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, DateTime, Table
-from sqlalchemy.orm import relationship
-from .database import Base
+from __future__ import annotations
+from typing import Optional, List
 from datetime import datetime
+from sqlalchemy import Integer, String, Float, Boolean, ForeignKey, DateTime, Table, Column
+from sqlalchemy.orm import relationship, Mapped, mapped_column
+from .database import Base
 
 # Association table for many‑to‑many between DietPlan and Meal
 dietplan_meal_assoc = Table(
@@ -13,131 +15,129 @@ dietplan_meal_assoc = Table(
 
 class User(Base):
     __tablename__ = "users"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
+    hashed_password: Mapped[str] = mapped_column(String, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
-    profile = relationship("Profile", uselist=False, back_populates="user")
-    meals = relationship("Meal", back_populates="user")
-    diet_plans = relationship("DietPlan", back_populates="user")
-    chat_messages = relationship("ChatMessage", back_populates="user")
+    profile: Mapped[Optional[Profile]] = relationship("Profile", uselist=False, back_populates="user")
+    meals: Mapped[List[Meal]] = relationship("Meal", back_populates="user")
+    diet_plans: Mapped[List[DietPlan]] = relationship("DietPlan", back_populates="user")
+    chat_messages: Mapped[List[ChatMessage]] = relationship("ChatMessage", back_populates="user")
 
 class Profile(Base):
     __tablename__ = "profiles"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
-    age = Column(Integer)
-    sex = Column(String)  # "Male" / "Female" / "Other"
-    height_cm = Column(Float)
-    weight_kg = Column(Float)
-    activity_level = Column(String)  # Sedentary, Light, Moderate, Very Active
-    goal = Column(String)  # Weight Loss, Maintenance, etc.
-    diet_type = Column(String)  # Vegetarian, Vegan, etc.
-    allergies = Column(String)  # comma‑separated list
-    foods_to_avoid = Column(String)  # comma‑separated list
-    preferred_cuisine = Column(String)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), unique=True)
+    age: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    sex: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # "Male" / "Female" / "Other"
+    height_cm: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    weight_kg: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    activity_level: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # Sedentary, Light, Moderate, Very Active
+    goal: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # Weight Loss, Maintenance, etc.
+    diet_type: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # Vegetarian, Vegan, etc.
+    allergies: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # comma‑separated list
+    foods_to_avoid: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # comma‑separated list
+    preferred_cuisine: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     # Calculated fields (stored for quick lookup)
-    bmr = Column(Float)
-    daily_calorie_target = Column(Float)
-    protein_target = Column(Float)
-    carbs_target = Column(Float)
-    fat_target = Column(Float)
+    bmr: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    daily_calorie_target: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    protein_target: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    carbs_target: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    fat_target: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
 
-    user = relationship("User", back_populates="profile")
+    user: Mapped[Optional[User]] = relationship("User", back_populates="profile")
 
 class Food(Base):
     __tablename__ = "foods"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False, index=True)
-    serving_size = Column(String)  # e.g. "100g" or "1 cup"
-    calories = Column(Float)
-    protein = Column(Float)
-    carbs = Column(Float)
-    fat = Column(Float)
-    sugar = Column(String, default="Not available")
-    sodium = Column(String, default="Not available")
-    ingredients = Column(String, default="Not available")
-    allergens = Column(String, default="Not available")
-    nutrition_grade = Column(String, default="Not available")
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    serving_size: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # e.g. "100g" or "1 cup"
+    calories: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    protein: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    carbs: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    fat: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    sugar: Mapped[Optional[str]] = mapped_column(String, default="Not available")
+    sodium: Mapped[Optional[str]] = mapped_column(String, default="Not available")
+    ingredients: Mapped[Optional[str]] = mapped_column(String, default="Not available")
+    allergens: Mapped[Optional[str]] = mapped_column(String, default="Not available")
+    nutrition_grade: Mapped[Optional[str]] = mapped_column(String, default="Not available")
 
 class Barcode(Base):
     __tablename__ = "barcodes"
-    barcode = Column(String, primary_key=True, index=True)
-    product_id = Column(Integer, ForeignKey("foods.id"), nullable=False)
+    barcode: Mapped[str] = mapped_column(String, primary_key=True, index=True)
+    product_id: Mapped[int] = mapped_column(Integer, ForeignKey("foods.id"), nullable=False)
 
-    food = relationship("Food")
+    food: Mapped[Optional[Food]] = relationship("Food")
 
 class Meal(Base):
     __tablename__ = "meals"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), index=True)
-    meal_type = Column(String)  # Breakfast, Lunch, Dinner, Snack
-    date = Column(DateTime, default=datetime.utcnow, index=True)
-    total_calories = Column(Float, default=0)
-    total_protein = Column(Float, default=0)
-    total_carbs = Column(Float, default=0)
-    total_fat = Column(Float, default=0)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    meal_type: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # Breakfast, Lunch, Dinner, Snack
+    date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    total_calories: Mapped[float] = mapped_column(Float, default=0.0)
+    total_protein: Mapped[float] = mapped_column(Float, default=0.0)
+    total_carbs: Mapped[float] = mapped_column(Float, default=0.0)
+    total_fat: Mapped[float] = mapped_column(Float, default=0.0)
 
-    user = relationship("User", back_populates="meals")
-    items = relationship("MealItem", back_populates="meal", cascade="all, delete-orphan")
+    user: Mapped[Optional[User]] = relationship("User", back_populates="meals")
+    items: Mapped[List[MealItem]] = relationship("MealItem", back_populates="meal", cascade="all, delete-orphan")
 
 class MealItem(Base):
     __tablename__ = "meal_items"
-    id = Column(Integer, primary_key=True, index=True)
-    meal_id = Column(Integer, ForeignKey("meals.id"), index=True)
-    food_id = Column(Integer, ForeignKey("foods.id"), index=True)
-    quantity = Column(Float)  # number of servings
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    meal_id: Mapped[int] = mapped_column(Integer, ForeignKey("meals.id"), index=True)
+    food_id: Mapped[int] = mapped_column(Integer, ForeignKey("foods.id"), index=True)
+    quantity: Mapped[Optional[float]] = mapped_column(Float, nullable=True)  # number of servings
     # Denormalised nutrition for this line
-    calories = Column(Float)
-    protein = Column(Float)
-    carbs = Column(Float)
-    fat = Column(Float)
+    calories: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    protein: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    carbs: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    fat: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
 
-    meal = relationship("Meal", back_populates="items")
-    food = relationship("Food")
+    meal: Mapped[Optional[Meal]] = relationship("Meal", back_populates="items")
+    food: Mapped[Optional[Food]] = relationship("Food")
 
 class DietPlan(Base):
     __tablename__ = "diet_plans"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), index=True)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
-    description = Column(String)  # optional free‑text summary
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    description: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # optional free‑text summary
 
-    user = relationship("User", back_populates="diet_plans")
-    meals = relationship("Meal", secondary=dietplan_meal_assoc, backref="diet_plans")
+    user: Mapped[Optional[User]] = relationship("User", back_populates="diet_plans")
+    meals: Mapped[List[Meal]] = relationship("Meal", secondary=dietplan_meal_assoc, backref="diet_plans")
 
 class ChatMessage(Base):
     __tablename__ = "chat_messages"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), index=True)
-    role = Column(String)  # "user" or "assistant"
-    content = Column(String)
-    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    role: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # "user" or "assistant"
+    content: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
 
-    user = relationship("User", back_populates="chat_messages")
-
+    user: Mapped[Optional[User]] = relationship("User", back_populates="chat_messages")
 
 class ManagedProduct(Base):
     __tablename__ = "managed_products"
-    serial_number = Column(Integer, primary_key=True, index=True)
-    barcode = Column(String, unique=True, index=True, nullable=False)
-    product_name = Column(String, nullable=False)
-    brand_name = Column(String, default="")
-    category = Column(String, default="")
-    serving_size = Column(String, default="")
-    calories = Column(Float, default=0.0)
-    protein = Column(Float, default=0.0)
-    carbohydrates = Column(Float, default=0.0)
-    fat = Column(Float, default=0.0)
-    sugar = Column(Float, default=0.0)
-    fiber = Column(Float, default=0.0)
-    sodium = Column(Float, default=0.0)
-    ingredients = Column(String, default="[]")
-    allergens = Column(String, default="[]")
-    description = Column(String, default="")
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
+    serial_number: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    barcode: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
+    product_name: Mapped[str] = mapped_column(String, nullable=False)
+    brand_name: Mapped[str] = mapped_column(String, default="")
+    category: Mapped[str] = mapped_column(String, default="")
+    serving_size: Mapped[str] = mapped_column(String, default="")
+    calories: Mapped[float] = mapped_column(Float, default=0.0)
+    protein: Mapped[float] = mapped_column(Float, default=0.0)
+    carbohydrates: Mapped[float] = mapped_column(Float, default=0.0)
+    fat: Mapped[float] = mapped_column(Float, default=0.0)
+    sugar: Mapped[float] = mapped_column(Float, default=0.0)
+    fiber: Mapped[float] = mapped_column(Float, default=0.0)
+    sodium: Mapped[float] = mapped_column(Float, default=0.0)
+    ingredients: Mapped[str] = mapped_column(String, default="[]")
+    allergens: Mapped[str] = mapped_column(String, default="[]")
+    description: Mapped[str] = mapped_column(String, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

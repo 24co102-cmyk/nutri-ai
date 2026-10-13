@@ -326,7 +326,7 @@ def generate_nutrilens_assessment(
     if fiber_100 >= 3.0:
         strengths.append(f"Good source of dietary fiber ({fiber_100}g per 100g)")
 
-    if sugar_100 <= 5.0 and (cal_100 > 0 or carbs_100 > 0 if 'carbs_100' in locals() else True):
+    if sugar_100 <= 5.0 and cal_100 > 0:
         strengths.append("Low in added sugars (<=5g per 100g)")
     elif sugar_100 > 15.0:
         considerations.append(f"Elevated sugar density ({sugar_100}g per 100g)")
