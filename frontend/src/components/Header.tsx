@@ -23,7 +23,6 @@ const routeTitles: Record<string, { title: string; subtitle: string }> = {
   '/meals': { title: 'Meal History', subtitle: 'Review daily nutrition logs and macronutrient trends' },
   '/scan/photo': { title: 'Photo Food Scanner', subtitle: 'Computer vision food identification & macro estimation' },
   '/scan/barcode': { title: 'Barcode Product Scanner', subtitle: 'Search packaged groceries & manufacturer nutrition facts' },
-  '/scan/qr': { title: 'QR Code Scanner', subtitle: 'Decode QR codes via camera, image upload, or manual entry' },
   '/nutrilens': { title: 'NutriLens Intelligence', subtitle: 'Food quality analysis, allergen screening & health scoring' },
   '/chat': { title: 'AI Health Assistant', subtitle: 'Interactive clinical-grade nutrition Q&A and dietary coach' },
   '/settings': { title: 'Settings Center', subtitle: 'App preferences, alerts, nutrition parameters & privacy' },

@@ -13,7 +13,6 @@ const AddMeal = lazy(() => import('./pages/AddMeal'));
 const Meals = lazy(() => import('./pages/Meals'));
 const PhotoScan = lazy(() => import('./pages/PhotoScan'));
 const BarcodeScan = lazy(() => import('./pages/BarcodeScan'));
-const QRScan = lazy(() => import('./pages/QRScan'));
 const Chat = lazy(() => import('./pages/Chat'));
 const Settings = lazy(() => import('./pages/Settings'));
 
@@ -60,7 +59,7 @@ const App: React.FC = () => {
             <Route path="/meals" element={<Meals />} />
             <Route path="/scan/photo" element={<PhotoScan />} />
             <Route path="/scan/barcode" element={<BarcodeScan />} />
-            <Route path="/scan/qr" element={<QRScan />} />
+            <Route path="/scan/qr" element={<Navigate to="/scan/barcode" replace />} />
             <Route path="/products" element={<Navigate to="/scan/barcode" replace />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/settings" element={<Settings />} />
