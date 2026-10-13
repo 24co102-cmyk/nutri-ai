@@ -14,12 +14,19 @@ import re
 import random
 import time
 
+# pyrefly: ignore [missing-import]
 from ..dependencies import get_current_user
+# pyrefly: ignore [missing-import]
 from ..database import get_db
+# pyrefly: ignore [missing-import]
 from .. import models
+# pyrefly: ignore [missing-import]
 from ..config import GEMINI_API_KEY
+# pyrefly: ignore [missing-import]
 from ..training_data import TRAINING_DATA, FALLBACK_RESPONSES
+# pyrefly: ignore [missing-import]
 from ..services.project_rag import search_project_knowledge
+# pyrefly: ignore [missing-import]
 from ..services.ai_tools import execute_tool
 
 router = APIRouter()

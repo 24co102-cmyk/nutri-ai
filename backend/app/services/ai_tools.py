@@ -8,6 +8,7 @@ logged meal history, diet plan generation, and barcode lookups securely.
 from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 import httpx
+# pyrefly: ignore [missing-import]
 from .. import models
 from .project_rag import search_project_knowledge
 

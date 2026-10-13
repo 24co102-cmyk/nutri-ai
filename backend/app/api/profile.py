@@ -1,9 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+# pyrefly: ignore [missing-import]
 from .. import models, schemas
+# pyrefly: ignore [missing-import]
 from ..database import get_db
+# pyrefly: ignore [missing-import]
 from ..dependencies import get_current_user
+# pyrefly: ignore [missing-import]
 from ..utils import nutrition
 
 router = APIRouter()

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+# pyrefly: ignore [missing-import]
 from ..dependencies import get_current_user
 
 router = APIRouter()

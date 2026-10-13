@@ -6,8 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+# pyrefly: ignore [missing-import]
 from ..database import get_db
+# pyrefly: ignore [missing-import]
 from ..models import ManagedProduct
+# pyrefly: ignore [missing-import]
 from ..schemas import ManagedProductCreate, ManagedProductUpdate, ManagedProductOut
 
 router = APIRouter()
