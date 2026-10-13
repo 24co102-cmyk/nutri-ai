@@ -3,21 +3,28 @@ import React, { useState, useRef, useEffect } from 'react';
 import api from '../api/axios';
 import { Send, Sparkles, User, Bot, HelpCircle } from 'lucide-react';
 
+interface ChatSource {
+  title: string;
+  file_path: string;
+}
+
 interface ChatMessage {
   role: 'user' | 'assistant';
   text: string;
-  source?: 'gemini' | 'training' | 'fallback';
+  source?: 'gemini' | 'project_rag' | 'tools' | 'training' | 'fallback';
+  tools_used?: string[];
+  sources?: ChatSource[];
 }
 
 const promptSuggestions = [
-  'What should I eat for dinner?',
-  'Is this food healthy?',
-  'How much protein do I need?',
-  'Analyze my meals',
-  "Create today's diet plan",
+  'How is BarcodeScan.tsx implemented?',
+  'What endpoints are in meals.py?',
+  'What is my daily calorie target and health goal?',
+  'Analyze my meals today',
   'Calories in 100g chicken breast?',
-  'Nutrition facts of banana',
-  'Is avocado good for weight loss?',
+  'How does the VisionCamera autofocus work?',
+  'Where are database models defined in backend?',
+  "Create today's diet plan",
 ];
 
 const getProjectKnowledgeAnswer = (query: string): string => {
@@ -519,10 +526,15 @@ const Chat: React.FC = () => {
       });
 
       const replyText = res.data.reply || res.data.message;
-      const source = res.data.source || 'training';
+      const source = res.data.source || 'gemini';
+      const tools_used = res.data.tools_used || [];
+      const sources = res.data.sources || [];
 
       if (replyText) {
-        setMessages((prev) => [...prev, { role: 'assistant', text: replyText, source }]);
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', text: replyText, source, tools_used, sources },
+        ]);
       } else {
         throw new Error('Empty reply');
       }
@@ -653,17 +665,68 @@ const Chat: React.FC = () => {
                     }`}
                   >
                     {msg.text}
-                    {!isUser && msg.source && (
-                      <div className="mt-2 pt-2 border-t border-neutral-200/60">
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                            msg.source === 'gemini'
-                              ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                              : 'bg-neutral-200 text-neutral-600'
-                          }`}
-                        >
-                          {msg.source === 'gemini' ? '✨ Gemini AI' : '📚 Nutrition Engine'}
-                        </span>
+                    {!isUser && (msg.source || (msg.tools_used && msg.tools_used.length > 0) || (msg.sources && msg.sources.length > 0)) && (
+                      <div className="mt-2.5 pt-2 border-t border-neutral-200/60 space-y-2">
+                        {/* Source engine & tool badges */}
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                              msg.source === 'gemini'
+                                ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                : msg.source === 'project_rag'
+                                ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                                : msg.source === 'tools'
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : 'bg-neutral-200 text-neutral-600'
+                            }`}
+                          >
+                            {msg.source === 'gemini'
+                              ? '✨ Gemini AI'
+                              : msg.source === 'project_rag'
+                              ? '📁 Project RAG'
+                              : msg.source === 'tools'
+                              ? '⚡ Live App Tools'
+                              : '📚 Nutrition Engine'}
+                          </span>
+
+                          {msg.tools_used?.map((tool) => (
+                            <span
+                              key={tool}
+                              className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/70 flex items-center gap-1"
+                            >
+                              <Sparkles className="w-2.5 h-2.5 text-emerald-600" />
+                              {tool === 'search_project_knowledge'
+                                ? 'Codebase RAG'
+                                : tool === 'get_user_profile'
+                                ? 'Live Profile'
+                                : tool === 'get_meal_history'
+                                ? 'Meal DB'
+                                : tool === 'lookup_barcode'
+                                ? 'Barcode Registry'
+                                : tool === 'search_foods'
+                                ? 'Food DB'
+                                : tool}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Repository source file references */}
+                        {msg.sources && msg.sources.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                            <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-wider">
+                              Sources:
+                            </span>
+                            {msg.sources.map((s, sIdx) => (
+                              <span
+                                key={sIdx}
+                                className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-md bg-neutral-100 text-neutral-700 border border-neutral-200/80 inline-flex items-center gap-1"
+                                title={s.title}
+                              >
+                                📄 {s.file_path}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
