@@ -4,7 +4,8 @@ import api from '../api/axios';
 import {
   Camera, Upload, Sparkles, CheckCircle2, RefreshCw,
   FlipHorizontal, PlusCircle, Search, X, Info, Star, AlertCircle,
-  ShieldCheck, HelpCircle, Sliders
+  ShieldCheck, HelpCircle, Sliders, ShoppingBasket, Download, Eye,
+  Check, Layers
 } from 'lucide-react';
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -59,6 +60,36 @@ export interface PlateSummary {
   item_count: number;
   matched_count: number;
   unmatched_count: number;
+}
+
+export interface BasketItem {
+  id: string;
+  name: string;
+  category: string;
+  basket_category: string;
+  typical_serving: string;
+  serving_grams: number;
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  fiber_g: number;
+  sugar_g: number;
+  sodium_mg: number;
+  notes: string;
+  image_file: string;
+  svg_url: string | null;
+  photo_url: string | null;
+  has_photo: boolean;
+  image_type: 'photograph' | 'reference_illustration';
+  download_filename: string;
+  is_approximate: boolean;
+  reference_source: string;
+}
+
+export interface BasketCategory {
+  name: string;
+  count: number;
 }
 
 interface FoodInfo {
@@ -117,7 +148,7 @@ const scoreColor: Record<string, string> = {
 // MAIN COMPONENT
 // ────────────────────────────────────────────────────────────────────────────
 const PhotoScan: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'camera' | 'upload' | 'browse'>('upload');
+  const [activeTab, setActiveTab] = useState<'camera' | 'upload' | 'browse' | 'basket'>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
@@ -141,6 +172,17 @@ const PhotoScan: React.FC = () => {
 
   // Database food catalog for Browse tab
   const [dbFoods, setDbFoods] = useState<FoodInfo[]>(DEFAULT_POPULAR_FOODS);
+
+  // Food Basket Gallery State
+  const [basketItems, setBasketItems] = useState<BasketItem[]>([]);
+  const [basketCategories, setBasketCategories] = useState<BasketCategory[]>([]);
+  const [basketActiveCategory, setBasketActiveCategory] = useState<string>('All Foods');
+  const [basketSearch, setBasketSearch] = useState<string>('');
+  const [basketPhotosOnly, setBasketPhotosOnly] = useState<boolean>(false);
+  const [basketLoading, setBasketLoading] = useState<boolean>(false);
+  const [selectedBasketItem, setSelectedBasketItem] = useState<BasketItem | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [downloadSuccessId, setDownloadSuccessId] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -179,6 +221,25 @@ const PhotoScan: React.FC = () => {
       }
     };
     fetchCatalog();
+  }, []);
+
+  // Fetch Food Basket items from backend
+  useEffect(() => {
+    const fetchBasket = async () => {
+      setBasketLoading(true);
+      try {
+        const res = await api.get('/photo/basket');
+        if (res.data?.success && Array.isArray(res.data?.items)) {
+          setBasketItems(res.data.items);
+          setBasketCategories(res.data.categories || []);
+        }
+      } catch (e) {
+        console.error('Failed to load Food Basket items:', e);
+      } finally {
+        setBasketLoading(false);
+      }
+    };
+    fetchBasket();
   }, []);
 
   const startCamera = async (facing: 'environment' | 'user') => {
@@ -453,6 +514,55 @@ const PhotoScan: React.FC = () => {
     setActiveTab('upload');
   };
 
+  // Download genuine image from Food Basket
+  const handleDownloadImage = async (item: BasketItem, preferredFormat: 'photo' | 'svg' = 'photo') => {
+    setDownloadingId(item.id);
+    try {
+      const filename = (preferredFormat === 'photo' && item.has_photo)
+        ? item.download_filename
+        : (item.image_file ? item.image_file.replace(/^images\//, '') : `${item.name.toLowerCase().replace(/\s+/g, '_')}.svg`);
+
+      const res = await api.get(`/photo/basket/download?item_id=${item.id}&preferred=${preferredFormat}`, {
+        responseType: 'blob',
+      });
+
+      const mimeType = preferredFormat === 'photo' && item.has_photo ? 'image/jpeg' : 'image/svg+xml';
+      const blob = new Blob([res.data], { type: mimeType });
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+
+      setDownloadSuccessId(item.id);
+      setTimeout(() => setDownloadSuccessId(null), 2500);
+    } catch (err: any) {
+      console.error('Failed to download image:', err);
+      alert(`Could not download image for ${item.name}. Please ensure the server is online.`);
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  // Test an image from Food Basket in AI Scanner
+  const handleTestInScanner = (item: BasketItem) => {
+    const targetUrl = item.photo_url || item.svg_url;
+    if (!targetUrl) return;
+
+    if (preview && preview.startsWith('blob:')) {
+      URL.revokeObjectURL(preview);
+    }
+    setPreview(targetUrl);
+    setFile(null);
+    setDetectedItems([]);
+    setPlateSummary(null);
+    setSelectedBasketItem(null);
+    setActiveTab('upload');
+  };
+
   const categories = useMemo(() => {
     return ['All', ...Array.from(new Set(dbFoods.map(f => f.category)))];
   }, [dbFoods]);
@@ -465,6 +575,17 @@ const PhotoScan: React.FC = () => {
       return matchCat && matchSearch;
     });
   }, [dbFoods, activeCategory, searchQuery]);
+
+  // Filtered Food Basket items
+  const filteredBasketItems = useMemo(() => {
+    const q = basketSearch.toLowerCase().trim();
+    return basketItems.filter(item => {
+      const matchCat = basketActiveCategory === 'All Foods' || item.basket_category === basketActiveCategory;
+      const matchSearch = !q || item.name.toLowerCase().includes(q) || item.category.toLowerCase().includes(q);
+      const matchPhotos = !basketPhotosOnly || item.has_photo;
+      return matchCat && matchSearch && matchPhotos;
+    });
+  }, [basketItems, basketActiveCategory, basketSearch, basketPhotosOnly]);
 
   const activeItem = detectedItems[activeItemIndex] || null;
 
@@ -481,13 +602,13 @@ const PhotoScan: React.FC = () => {
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-50 text-cyan-800 text-xs font-semibold mb-2 border border-cyan-200/80">
             <Sparkles className="w-3.5 h-3.5 text-cyan-600" />
-            <span>Computer Vision • {dbFoods.length} Reference Foods in Catalog</span>
+            <span>Computer Vision • 233 Reference Catalog Foods • 42 HD Photographs</span>
           </div>
           <h1 className="text-2xl font-extrabold text-neutral-900 tracking-tight">
             Food Photo Scanner
           </h1>
           <p className="text-xs sm:text-sm text-neutral-500 mt-1 font-medium max-w-xl">
-            Upload meal photos, capture with live camera, cross-reference the 233-food starter catalog, adjust portions, and log full plates to Food Diary.
+            Upload meal photos, capture with live camera, cross-reference verified catalog benchmarks, adjust portions, and explore the new Food Basket reference gallery.
           </p>
         </div>
 
@@ -500,703 +621,1143 @@ const PhotoScan: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-        {/* ━━━ LEFT: Scanner Panel (6 cols) ━━━ */}
-        <div className="xl:col-span-6 space-y-4">
-          {/* Mode Switcher Tabs */}
-          <div className="bg-neutral-100 p-1.5 rounded-2xl border border-neutral-200/80 flex gap-1">
-            {(['upload', 'camera', 'browse'] as const).map((tab) => (
+      {/* ━━━ Main Switcher Tabs (Including Food Basket) ━━━ */}
+      <div className="bg-neutral-100 p-1.5 rounded-2xl border border-neutral-200/80 flex gap-1">
+        {[
+          { key: 'upload', label: 'Upload Image', icon: Upload },
+          { key: 'camera', label: 'Camera Scan', icon: Camera },
+          { key: 'browse', label: 'Browse Quick List', icon: Search },
+          { key: 'basket', label: 'Food Basket Gallery', icon: ShoppingBasket, count: 233 },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => {
+                setActiveTab(tab.key as any);
+              }}
+              className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                activeTab === tab.key
+                  ? 'bg-white text-neutral-900 shadow-2xs'
+                  : 'text-neutral-600 hover:text-neutral-900'
+              }`}
+            >
+              <Icon className="w-4 h-4 shrink-0 text-emerald-600" />
+              <span>{tab.label}</span>
+              {tab.count && (
+                <span className="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 text-[10px] font-black rounded-full ml-0.5">
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ━━━ TAB 4: FOOD BASKET GALLERY ━━━ */}
+      {activeTab === 'basket' && (
+        <div className="space-y-5">
+          {/* Basket Header & Controls */}
+          <div className="premium-card p-6 space-y-4">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+                    <ShoppingBasket className="w-4 h-4 text-emerald-700" />
+                  </div>
+                  <h2 className="text-xl font-extrabold text-neutral-900">Food Basket Reference Library</h2>
+                </div>
+                <p className="text-xs text-neutral-500 mt-1 font-medium">
+                  Search 233 authenticated food reference items across 10 categories, download real image files with descriptive filenames, or send directly into the AI Photo Scanner.
+                </p>
+              </div>
+
+              {/* Photo Filter Toggle */}
               <button
-                key={tab}
-                onClick={() => {
-                  setActiveTab(tab);
-                  setDetectedItems([]);
-                  setPlateSummary(null);
-                  setPreview(null);
-                }}
-                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all capitalize ${
-                  activeTab === tab
-                    ? 'bg-white text-neutral-900 shadow-2xs'
-                    : 'text-neutral-600 hover:text-neutral-900'
+                onClick={() => setBasketPhotosOnly(!basketPhotosOnly)}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border shrink-0 ${
+                  basketPhotosOnly
+                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                    : 'bg-white text-neutral-700 border-neutral-200 hover:border-emerald-300'
                 }`}
               >
-                {tab === 'upload' ? 'Upload Image' : tab === 'camera' ? 'Camera Scan' : 'Browse Catalog'}
+                <Camera className="w-4 h-4" />
+                <span>Show Real Photos Only (42)</span>
               </button>
-            ))}
-          </div>
+            </div>
 
-          {/* UPLOAD TAB */}
-          {activeTab === 'upload' && (
-            <div className="premium-card p-6 space-y-4">
-              {preview ? (
-                <div className="relative rounded-2xl overflow-hidden border border-neutral-200">
-                  <img src={preview} alt="Food capture" className="w-full h-64 object-cover" />
-                  <button
-                    onClick={() => {
-                      setPreview(null);
-                      setFile(null);
-                      setDetectedItems([]);
-                      setPlateSummary(null);
-                    }}
-                    className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white text-neutral-700 rounded-xl shadow-md transition-all"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div
-                  onDragEnter={() => setDragActive(true)}
-                  onDragLeave={() => setDragActive(false)}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-2xl h-60 flex flex-col items-center justify-center cursor-pointer transition-all ${
-                    dragActive
-                      ? 'border-emerald-500 bg-emerald-50/50'
-                      : 'border-neutral-200 hover:border-emerald-400 hover:bg-[#faf9f8]/50'
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search food by name, alias, or ingredient (e.g. apple, biryani, spinach, pizza, salmon)..."
+                value={basketSearch}
+                onChange={(e) => setBasketSearch(e.target.value)}
+                className="w-full pl-9 pr-10 py-2.5 text-xs rounded-xl bg-[#faf9f8] border border-neutral-200 focus:border-emerald-500 focus:outline-none font-medium text-neutral-900"
+              />
+              {basketSearch && (
+                <button
+                  onClick={() => setBasketSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Category Filter Pills with Live Accurate Counts */}
+            <div className="flex gap-1.5 flex-wrap">
+              {basketCategories.map((cat) => (
+                <button
+                  key={cat.name}
+                  onClick={() => setBasketActiveCategory(cat.name)}
+                  className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all border flex items-center gap-1.5 ${
+                    basketActiveCategory === cat.name
+                      ? 'bg-neutral-900 text-white border-neutral-900 shadow-2xs'
+                      : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300'
                   }`}
                 >
-                  <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-3 border border-emerald-200/80">
-                    <Upload className="w-6 h-6" />
-                  </div>
-                  <p className="text-sm font-bold text-neutral-800">Drop food photograph here</p>
-                  <p className="text-xs text-neutral-400 mt-1 font-medium">or click to browse local files</p>
-                  <span className="text-[10px] text-neutral-400 font-bold bg-neutral-100 px-2.5 py-0.5 rounded-full mt-2.5">
-                    JPG, PNG, WEBP (Supports single or multi-food meals)
+                  <span>{cat.name}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    basketActiveCategory === cat.name ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-100 text-neutral-600'
+                  }`}>
+                    {cat.count}
                   </span>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleFileChange}
-                  />
-                </div>
-              )}
-
-              <button
-                onClick={handleAnalyze}
-                disabled={(!file && !preview) || loading}
-                className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>Analyzing image with Gemini Vision...</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4" />
-                    <span>Run AI Food Recognition</span>
-                  </>
-                )}
-              </button>
-            </div>
-          )}
-
-          {/* CAMERA TAB */}
-          {activeTab === 'camera' && (
-            <div className="premium-card p-6 space-y-4">
-              <div className="relative bg-neutral-900 rounded-2xl overflow-hidden min-h-[256px] flex items-center justify-center border border-neutral-800">
-                {preview ? (
-                  <div className="relative w-full">
-                    <img src={preview} alt="Captured food" className="w-full h-64 object-cover" />
-                    <button
-                      onClick={() => {
-                        setPreview(null);
-                        setDetectedItems([]);
-                        setPlateSummary(null);
-                        startCamera(cameraFacing);
-                      }}
-                      className="absolute top-3 right-3 p-2 bg-white/90 text-neutral-700 rounded-xl shadow-md"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : cameraError ? (
-                  <div className="text-center p-8">
-                    <Camera className="w-10 h-10 text-neutral-500 mx-auto mb-2" />
-                    <p className="text-neutral-300 text-xs font-medium">{cameraError}</p>
-                  </div>
-                ) : (
-                  <>
-                    <video ref={videoRef} autoPlay playsInline muted className="w-full h-64 object-cover" />
-                    <div className="absolute inset-0 border-4 border-transparent pointer-events-none">
-                      <div className="absolute top-4 left-4 w-7 h-7 border-t-2 border-l-2 border-emerald-400 rounded-tl" />
-                      <div className="absolute top-4 right-4 w-7 h-7 border-t-2 border-r-2 border-emerald-400 rounded-tr" />
-                      <div className="absolute bottom-4 left-4 w-7 h-7 border-b-2 border-l-2 border-emerald-400 rounded-bl" />
-                      <div className="absolute bottom-4 right-4 w-7 h-7 border-b-2 border-r-2 border-emerald-400 rounded-br" />
-                    </div>
-                    <button
-                      onClick={() => {
-                        setCameraFacing((f) => (f === 'environment' ? 'user' : 'environment'));
-                        startCamera(cameraFacing === 'environment' ? 'user' : 'environment');
-                      }}
-                      className="absolute top-4 right-4 p-2 bg-neutral-900/60 hover:bg-neutral-900/80 text-white rounded-xl backdrop-blur-sm"
-                    >
-                      <FlipHorizontal className="w-4 h-4" />
-                    </button>
-                  </>
-                )}
-              </div>
-
-              {preview ? (
-                <button
-                  onClick={handleAnalyze}
-                  disabled={loading}
-                  className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs"
-                >
-                  {loading ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Analyzing Food...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4" />
-                      <span>Analyze Captured Photo</span>
-                    </>
-                  )}
                 </button>
-              ) : (
-                !cameraError && (
-                  <button
-                    onClick={capturePhoto}
-                    className="w-full py-3.5 rounded-2xl bg-neutral-900 hover:bg-neutral-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs"
-                  >
-                    <Camera className="w-4 h-4" />
-                    <span>Capture Photo</span>
-                  </button>
-                )
-              )}
+              ))}
             </div>
-          )}
+          </div>
 
-          {/* BROWSE TAB */}
-          {activeTab === 'browse' && (
-            <div className="premium-card p-5 space-y-4">
-              <div className="relative">
-                <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Filter 233 reference foods..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-[#faf9f8] border border-neutral-200 focus:border-emerald-500 focus:outline-none font-medium"
-                />
-              </div>
+          {/* Results Summary Bar */}
+          <div className="flex items-center justify-between text-xs px-1 text-neutral-500 font-medium">
+            <span>
+              Showing <strong className="text-neutral-900">{filteredBasketItems.length}</strong> available food items in{' '}
+              <strong className="text-neutral-900">{basketActiveCategory}</strong>
+              {basketPhotosOnly && ' (Photographs Only)'}
+            </span>
+            <span className="text-emerald-700 font-bold flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              100% Genuine Stored Assets
+            </span>
+          </div>
 
-              {/* Category filter */}
-              <div className="flex gap-1.5 flex-wrap max-h-24 overflow-y-auto pr-1">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all border ${
-                      activeCategory === cat
-                        ? 'bg-neutral-900 text-white border-neutral-900'
-                        : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-
-              {/* Food grid */}
-              <div className="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-1">
-                {filteredFoods.map((food) => (
-                  <button
-                    key={food.catalog_id || food.name}
-                    onClick={() => handleSelectFood(food)}
-                    className="flex items-center gap-2 p-2.5 rounded-xl border border-neutral-200/80 hover:border-emerald-400 hover:bg-emerald-50/50 transition-all text-left"
-                  >
-                    {food.image_file ? (
-                      <img
-                        src={`/food_reference_images/${food.image_file.replace(/^images\//, '')}`}
-                        alt={food.name}
-                        className="w-7 h-7 object-contain shrink-0"
-                        onError={(e) => {
-                          (e.target as HTMLElement).style.display = 'none';
-                        }}
-                      />
-                    ) : (
-                      <span className="text-xl shrink-0">{food.emoji}</span>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-neutral-900 truncate">{food.name}</p>
-                      <p className="text-[10px] text-neutral-400">{food.calories} kcal • {food.protein_g}g P</p>
-                    </div>
-                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${scoreColor[food.health_score] || 'bg-[#faf9f8] text-neutral-500 border-neutral-200'}`}>
-                      {food.health_score}
-                    </span>
-                  </button>
-                ))}
-              </div>
+          {/* Food Basket Cards Grid */}
+          {basketLoading ? (
+            <div className="premium-card p-12 text-center">
+              <RefreshCw className="w-8 h-8 text-emerald-600 animate-spin mx-auto mb-3" />
+              <p className="text-sm font-bold text-neutral-800">Loading Food Basket Gallery...</p>
             </div>
-          )}
-        </div>
-
-        {/* ━━━ RIGHT: Nutrition Result Panel (6 cols) ━━━ */}
-        <div className="xl:col-span-6">
-          {errorMessage && !loading && detectedItems.length === 0 && (
-            <div className="premium-card p-6 mb-4 border border-rose-200 bg-rose-50/50 space-y-3">
-              <div className="flex items-center gap-2 text-rose-700 font-bold text-xs">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>Recognition Note</span>
+          ) : filteredBasketItems.length === 0 ? (
+            <div className="premium-card p-12 text-center space-y-3">
+              <div className="w-14 h-14 rounded-2xl bg-neutral-100 text-neutral-400 flex items-center justify-center mx-auto">
+                <Search className="w-6 h-6" />
               </div>
-              <p className="text-xs text-rose-600 leading-relaxed font-medium">
-                {errorMessage}
+              <h3 className="text-sm font-bold text-neutral-800">No foods found</h3>
+              <p className="text-xs text-neutral-500 max-w-sm mx-auto">
+                No items match your search for "{basketSearch}". Try selecting "All Foods" or clearing the search filter.
               </p>
               <button
                 onClick={() => {
-                  setErrorMessage(null);
-                  setActiveTab('browse');
+                  setBasketSearch('');
+                  setBasketActiveCategory('All Foods');
+                  setBasketPhotosOnly(false);
                 }}
-                className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all"
+                className="px-4 py-2 rounded-xl bg-neutral-900 text-white text-xs font-bold hover:bg-neutral-800 transition-all"
               >
-                Browse Reference Food Database →
+                Reset Filters
               </button>
             </div>
-          )}
-
-          {detectedItems.length === 0 && !loading && (
-            <div className="premium-card p-8 flex flex-col items-center justify-center min-h-[420px] text-center">
-              <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-700 flex items-center justify-center mb-4">
-                <Camera className="w-7 h-7" />
-              </div>
-              <h3 className="text-base font-bold text-neutral-900">Food Analysis Panel</h3>
-              <p className="text-xs text-neutral-400 mt-1 max-w-xs font-medium">
-                Upload or capture a photo. NutriLens recognizes multiple items, cross-references verified reference data, and calculates plate nutrition totals.
-              </p>
-              <div className="grid grid-cols-3 gap-2.5 mt-6 w-full max-w-xs">
-                {[['🥦', 'Broccoli'], ['🍗', 'Chicken breast cooked'], ['🍎', 'Apple']].map(([e, n]) => (
-                  <button
-                    key={n}
-                    onClick={() => {
-                      setErrorMessage(null);
-                      const target = dbFoods.find((f) => f.name.toLowerCase() === n.toLowerCase()) || dbFoods[0];
-                      handleSelectFood(target);
-                    }}
-                    className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-[#faf9f8] hover:bg-emerald-50 border border-neutral-200/80 hover:border-emerald-300 transition-all"
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredBasketItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="premium-card overflow-hidden flex flex-col justify-between group hover:border-emerald-300 hover:shadow-md transition-all"
+                >
+                  {/* Card Image Area */}
+                  <div
+                    onClick={() => setSelectedBasketItem(item)}
+                    className="relative bg-[#faf9f8] p-4 flex items-center justify-center min-h-[170px] border-b border-neutral-100 cursor-pointer overflow-hidden"
                   >
-                    <span className="text-xl">{e}</span>
-                    <span className="text-[11px] font-bold text-neutral-700 truncate w-full text-center">{n}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+                    {item.has_photo && item.photo_url ? (
+                      <img
+                        src={item.photo_url}
+                        alt={item.name}
+                        className="w-full h-36 object-cover rounded-xl group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          // Fallback to SVG if photo file fails
+                          if (item.svg_url) (e.target as HTMLImageElement).src = item.svg_url;
+                        }}
+                      />
+                    ) : item.svg_url ? (
+                      <img
+                        src={item.svg_url}
+                        alt={item.name}
+                        className="w-28 h-28 object-contain group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 rounded-xl bg-neutral-100 text-neutral-400 flex items-center justify-center">
+                        <ShoppingBasket className="w-8 h-8" />
+                      </div>
+                    )}
 
-          {loading && (
-            <div className="premium-card p-8 flex flex-col items-center justify-center min-h-[420px]">
-              <div className="relative">
-                <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center animate-pulse">
-                  <Sparkles className="w-8 h-8 text-emerald-600" />
-                </div>
-              </div>
-              <p className="mt-4 text-sm font-bold text-neutral-800">Analyzing your meal with Gemini Vision...</p>
-              <p className="text-xs text-neutral-400 mt-1 font-medium">Segmenting plate foods & cross-referencing catalog</p>
-              <div className="mt-4 space-y-2 w-full max-w-xs">
-                {['Inspecting image with vision AI...', 'Matching food items in NutriEmotion catalog...', 'Calculating multi-item plate totals & macros...'].map((s, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.2}s` }} />
-                    <span className="text-xs text-neutral-500 font-medium">{s}</span>
+                    {/* Image Type Badge */}
+                    <div className="absolute top-3 right-3">
+                      {item.has_photo ? (
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-600/90 text-white text-[9px] font-black uppercase tracking-wider backdrop-blur-xs flex items-center gap-1 shadow-2xs">
+                          <Camera className="w-2.5 h-2.5" />
+                          HD Photo
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full bg-neutral-900/70 text-white text-[9px] font-black uppercase tracking-wider backdrop-blur-xs flex items-center gap-1">
+                          <Layers className="w-2.5 h-2.5" />
+                          SVG Card
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Quick View Button Hover Overlay */}
+                    <div className="absolute inset-0 bg-neutral-900/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <span className="px-3 py-1.5 bg-white text-neutral-900 text-xs font-bold rounded-xl shadow-md flex items-center gap-1.5">
+                        <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                        Quick View
+                      </span>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
 
-          {detectedItems.length > 0 && !loading && (
-            <div className="space-y-4">
-              {/* ━━━ Combined Plate Summary Banner ━━━ */}
-              {plateSummary && (
-                <div className="premium-card p-5 bg-gradient-to-br from-emerald-50/60 to-teal-50/40 border border-emerald-200/80">
-                  <div className="flex items-start justify-between gap-3 mb-3">
+                  {/* Card Content Area */}
+                  <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                     <div>
-                      <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold tracking-wide">
-                          PLATE TOTALS • {plateSummary.item_count} {plateSummary.item_count === 1 ? 'ITEM' : 'ITEMS'}
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider truncate">
+                          {item.basket_category}
                         </span>
-                        {plateSummary.matched_count > 0 && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-white/80 px-2 py-0.5 rounded-full border border-emerald-200">
-                            <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                            {plateSummary.matched_count} Catalog Verified
-                          </span>
-                        )}
-                        {plateSummary.unmatched_count > 0 && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                            <HelpCircle className="w-3 h-3 text-amber-600" />
-                            {plateSummary.unmatched_count} AI Estimate
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="text-lg font-black text-neutral-900 mt-1">
-                        Plate Nutrition Overview
-                      </h3>
-                      {statusMessage && (
-                        <p className="text-xs text-neutral-600 mt-0.5">{statusMessage}</p>
-                      )}
-                    </div>
-
-                    <div className="text-right">
-                      <span className="text-2xl font-black text-emerald-700 block">
-                        {plateSummary.total_calories} <span className="text-xs font-bold text-neutral-500">kcal</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Combined Totals Grid */}
-                  <div className="grid grid-cols-4 gap-2 text-center pt-2 border-t border-emerald-200/60">
-                    <div className="bg-white/90 p-2 rounded-xl border border-emerald-100">
-                      <span className="text-[10px] font-bold text-blue-600 uppercase block">Protein</span>
-                      <span className="text-sm font-black text-blue-900">{plateSummary.total_protein_g}g</span>
-                    </div>
-                    <div className="bg-white/90 p-2 rounded-xl border border-emerald-100">
-                      <span className="text-[10px] font-bold text-emerald-600 uppercase block">Carbs</span>
-                      <span className="text-sm font-black text-emerald-900">{plateSummary.total_carbs_g}g</span>
-                    </div>
-                    <div className="bg-white/90 p-2 rounded-xl border border-emerald-100">
-                      <span className="text-[10px] font-bold text-amber-600 uppercase block">Fat</span>
-                      <span className="text-sm font-black text-amber-900">{plateSummary.total_fat_g}g</span>
-                    </div>
-                    <div className="bg-white/90 p-2 rounded-xl border border-emerald-100">
-                      <span className="text-[10px] font-bold text-purple-600 uppercase block">Fiber</span>
-                      <span className="text-sm font-black text-purple-900">{plateSummary.total_fiber_g}g</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Multi-Item Tabs (If > 1 item) */}
-              {detectedItems.length > 1 && (
-                <div className="flex gap-1.5 overflow-x-auto pb-1">
-                  {detectedItems.map((item, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setActiveItemIndex(idx)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition-all whitespace-nowrap ${
-                        activeItemIndex === idx
-                          ? 'bg-neutral-900 text-white border-neutral-900 shadow-2xs'
-                          : 'bg-white text-neutral-700 border-neutral-200 hover:border-neutral-300'
-                      }`}
-                    >
-                      <span>{item.emoji}</span>
-                      <span>{item.name}</span>
-                      <span className="opacity-70 text-[10px]">({item.calories} kcal)</span>
-                      {item.matched_catalog && (
-                        <ShieldCheck className="w-3 h-3 text-emerald-400 shrink-0" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Active Item Details Card */}
-              {activeItem && (
-                <div className="premium-card overflow-hidden">
-                  {/* Item Header */}
-                  <div className="p-6 border-b border-neutral-100 bg-[#faf9f8]/50">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3.5">
-                        {activeItem.image_url ? (
-                          <div className="w-14 h-14 rounded-2xl bg-white border border-neutral-200/80 p-2 flex items-center justify-center shrink-0 shadow-2xs">
-                            <img
-                              src={activeItem.image_url}
-                              alt={activeItem.name}
-                              className="w-full h-full object-contain"
-                            />
-                          </div>
-                        ) : (
-                          <span className="text-4xl shrink-0">{activeItem.emoji}</span>
-                        )}
-
-                        <div>
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                              {activeItem.category}
-                            </span>
-                            {activeItem.matched_catalog ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
-                                <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                                Catalog Verified Benchmark
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold border border-amber-200">
-                                <HelpCircle className="w-3 h-3 text-amber-600" />
-                                AI Estimate (Unverified)
-                              </span>
-                            )}
-                            <span className="px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 text-[10px] font-bold">
-                              {activeItem.confidence.toFixed(1)}% Confidence
-                            </span>
-                          </div>
-                          <h3 className="text-xl font-extrabold text-neutral-900 tracking-tight">
-                            {activeItem.name}
-                          </h3>
-                          <p className="text-xs text-neutral-400 mt-0.5 font-medium">
-                            Current Portion: {activeItem.serving_grams}g ({activeItem.quantity} serving)
-                          </p>
-                        </div>
-                      </div>
-
-                      <span className={`text-xs font-black px-3 py-1 rounded-xl border shrink-0 ${scoreColor[activeItem.health_score] || ''}`}>
-                        Score: {activeItem.health_score}
-                      </span>
-                    </div>
-
-                    {/* Active Item Macros */}
-                    <div className="mt-5 grid grid-cols-4 gap-2 text-center">
-                      <div className="p-2.5 rounded-xl bg-white border border-neutral-200/70">
-                        <span className="text-[10px] font-bold text-neutral-400 uppercase block">Calories</span>
-                        <span className="text-base font-black text-neutral-900">{activeItem.calories}</span>
-                        <span className="text-[10px] text-neutral-400">kcal</span>
-                      </div>
-                      <div className="p-2.5 rounded-xl bg-white border border-neutral-200/70">
-                        <span className="text-[10px] font-bold text-blue-600 uppercase block">Protein</span>
-                        <span className="text-base font-black text-blue-900">{activeItem.protein_g}g</span>
-                      </div>
-                      <div className="p-2.5 rounded-xl bg-white border border-neutral-200/70">
-                        <span className="text-[10px] font-bold text-emerald-600 uppercase block">Carbs</span>
-                        <span className="text-base font-black text-emerald-900">{activeItem.carbs_g}g</span>
-                      </div>
-                      <div className="p-2.5 rounded-xl bg-white border border-neutral-200/70">
-                        <span className="text-[10px] font-bold text-amber-600 uppercase block">Fat</span>
-                        <span className="text-base font-black text-amber-900">{activeItem.fat_g}g</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-6 space-y-4">
-                    {/* Portion-Size Adjustment Controls */}
-                    <div className="p-4 rounded-2xl bg-neutral-50/80 border border-neutral-200/80 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <Sliders className="w-3.5 h-3.5 text-neutral-600" />
-                          <span className="text-xs font-bold text-neutral-800">Portion Adjustment ({activeItem.name})</span>
-                        </div>
-                        <span className="text-xs font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
-                          {activeItem.serving_grams} grams
+                        <span className="text-[10px] font-mono text-neutral-400 shrink-0">
+                          {item.id}
                         </span>
                       </div>
-
-                      {/* Gram Slider */}
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[11px] text-neutral-400 font-bold">
-                          <span>25g</span>
-                          <span>100g</span>
-                          <span>200g</span>
-                          <span>300g</span>
-                          <span>500g</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="20"
-                          max="500"
-                          step="10"
-                          value={activeItem.serving_grams}
-                          onChange={(e) => handleUpdatePortion(activeItemIndex, parseFloat(e.target.value), activeItem.quantity)}
-                          className="w-full accent-emerald-600 cursor-pointer"
-                        />
-                      </div>
-
-                      {/* Quick Gram Preset Buttons & Quantity Stepper */}
-                      <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
-                        <div className="flex gap-1 flex-wrap">
-                          {[50, 100, 150, 200, 250].map((presetG) => (
-                            <button
-                              key={presetG}
-                              type="button"
-                              onClick={() => handleUpdatePortion(activeItemIndex, presetG, activeItem.quantity)}
-                              className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ${
-                                activeItem.serving_grams === presetG
-                                  ? 'bg-emerald-600 text-white border-emerald-600'
-                                  : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300'
-                              }`}
-                            >
-                              {presetG}g
-                            </button>
-                          ))}
-                        </div>
-
-                        {/* Serving Multiplier Stepper */}
-                        <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded-xl border border-neutral-200">
-                          <span className="text-[10px] font-bold text-neutral-400 uppercase">Qty:</span>
-                          <button
-                            type="button"
-                            onClick={() => handleUpdatePortion(activeItemIndex, activeItem.serving_grams, Math.max(0.5, activeItem.quantity - 0.5))}
-                            className="w-5 h-5 rounded bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold text-xs flex items-center justify-center"
-                          >
-                            -
-                          </button>
-                          <span className="text-xs font-bold text-neutral-800 min-w-[24px] text-center">
-                            {activeItem.quantity}x
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => handleUpdatePortion(activeItemIndex, activeItem.serving_grams, activeItem.quantity + 0.5)}
-                            className="w-5 h-5 rounded bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold text-xs flex items-center justify-center"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Detailed macro profile */}
-                    <div className="space-y-2.5">
-                      <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
-                        Detailed Macro Profile
+                      <h4
+                        onClick={() => setSelectedBasketItem(item)}
+                        className="text-sm font-extrabold text-neutral-900 tracking-tight hover:text-emerald-700 cursor-pointer line-clamp-1"
+                      >
+                        {item.name}
                       </h4>
-                      {[
-                        { label: 'Dietary Fiber', val: activeItem.fiber_g, max: 20, color: 'bg-emerald-600', unit: 'g' },
-                        { label: 'Sugar', val: activeItem.sugar_g, max: 30, color: 'bg-purple-500', unit: 'g' },
-                        { label: 'Sodium', val: activeItem.sodium_mg, max: 1500, color: 'bg-neutral-400', unit: 'mg' },
-                      ].map((m) => (
-                        <div key={m.label}>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span className="font-medium text-neutral-600">{m.label}</span>
-                            <span className="font-bold text-neutral-900">{m.val}{m.unit}</span>
-                          </div>
-                          {macroBar(m.val, m.max, m.color)}
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Reference & Transparency Box */}
-                    <div className="p-3.5 rounded-2xl bg-neutral-50 border border-neutral-200/80 space-y-1">
-                      <div className="flex items-center gap-1.5 text-neutral-700">
-                        <Info className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
-                        <span className="text-xs font-bold text-neutral-800">Data Source & Verification</span>
-                      </div>
-                      <p className="text-[11px] text-neutral-600 font-medium">
-                        {activeItem.reference_source}
-                        {activeItem.catalog_id ? ` (ID: ${activeItem.catalog_id})` : ''}
+                      <p className="text-[11px] text-neutral-400 mt-0.5">
+                        Serving: {item.typical_serving}
                       </p>
-                      {activeItem.notes && (
-                        <p className="text-[11px] text-neutral-500 italic mt-0.5">
-                          "{activeItem.notes}"
-                        </p>
-                      )}
-                    </div>
 
-                    {/* Micronutrients */}
-                    <div>
-                      <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">
-                        Key Micronutrients
-                      </h4>
-                      <div className="flex flex-wrap gap-1.5">
-                        {activeItem.micronutrients.map((m) => (
-                          <span key={m} className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold">
-                            {m}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Benefits */}
-                    <div className="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200/60">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <Star className="w-3.5 h-3.5 text-blue-600" />
-                        <span className="text-xs font-bold text-blue-800">Nutritional Health Benefit</span>
-                      </div>
-                      <p className="text-xs text-blue-700 leading-relaxed font-medium">{activeItem.benefits}</p>
-                    </div>
-
-                    {/* AI Tip */}
-                    <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/60">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                        <span className="text-xs font-bold text-emerald-800">Dietary Recommendation</span>
-                      </div>
-                      <p className="text-xs text-emerald-700 leading-relaxed font-medium">{activeItem.ai_tip}</p>
-                    </div>
-
-                    {/* Meal Type Selector & Log Meal Button */}
-                    <div className="space-y-2 pt-2 border-t border-neutral-100">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-neutral-600">Log As Meal:</span>
-                        <div className="flex gap-1">
-                          {(['Breakfast', 'Lunch', 'Dinner', 'Snack'] as const).map((m) => (
-                            <button
-                              key={m}
-                              type="button"
-                              onClick={() => setMealType(m)}
-                              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border ${
-                                mealType === m
-                                  ? 'bg-neutral-900 text-white border-neutral-900'
-                                  : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300'
-                              }`}
-                            >
-                              {m}
-                            </button>
-                          ))}
+                      {/* Macro Chips */}
+                      <div className="grid grid-cols-4 gap-1 text-center mt-2.5 pt-2 border-t border-neutral-100">
+                        <div className="bg-[#faf9f8] p-1 rounded-lg">
+                          <span className="text-[9px] font-bold text-neutral-400 uppercase block">Cal</span>
+                          <span className="text-xs font-black text-neutral-900">{item.calories}</span>
+                        </div>
+                        <div className="bg-[#faf9f8] p-1 rounded-lg">
+                          <span className="text-[9px] font-bold text-blue-600 uppercase block">P</span>
+                          <span className="text-xs font-black text-blue-900">{item.protein_g}g</span>
+                        </div>
+                        <div className="bg-[#faf9f8] p-1 rounded-lg">
+                          <span className="text-[9px] font-bold text-emerald-600 uppercase block">C</span>
+                          <span className="text-xs font-black text-emerald-900">{item.carbs_g}g</span>
+                        </div>
+                        <div className="bg-[#faf9f8] p-1 rounded-lg">
+                          <span className="text-[9px] font-bold text-amber-600 uppercase block">F</span>
+                          <span className="text-xs font-black text-amber-900">{item.fat_g}g</span>
                         </div>
                       </div>
+                    </div>
 
+                    {/* Action Buttons */}
+                    <div className="space-y-1.5 pt-2 border-t border-neutral-100">
+                      {/* Download Action */}
                       <button
-                        onClick={handleLogToMeals}
-                        disabled={loggingMeal}
-                        className={`w-full py-3.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs disabled:opacity-50 ${
-                          logSuccess
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer'
+                        onClick={() => handleDownloadImage(item, item.has_photo ? 'photo' : 'svg')}
+                        disabled={downloadingId === item.id}
+                        className={`w-full py-2 px-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all border ${
+                          downloadSuccessId === item.id
+                            ? 'bg-emerald-600 text-white border-emerald-600'
+                            : 'bg-white text-neutral-700 border-neutral-200 hover:border-emerald-400 hover:bg-emerald-50/50'
                         }`}
                       >
-                        {logSuccess ? (
+                        {downloadSuccessId === item.id ? (
                           <>
-                            <CheckCircle2 className="w-4 h-4" />
-                            <span>Logged {detectedItems.length} item(s) to {mealType} & Saved in Database!</span>
+                            <Check className="w-3.5 h-3.5 text-white" />
+                            <span>Downloaded {item.download_filename}!</span>
                           </>
-                        ) : loggingMeal ? (
+                        ) : downloadingId === item.id ? (
                           <>
-                            <RefreshCw className="w-4 h-4 animate-spin" />
-                            <span>Saving Meal to Database...</span>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>Downloading...</span>
                           </>
                         ) : (
                           <>
-                            <PlusCircle className="w-4 h-4" />
-                            <span>
-                              Log {detectedItems.length} {detectedItems.length === 1 ? 'Item' : 'Items'} to {mealType} (+{plateSummary?.total_calories || activeItem.calories} kcal)
-                            </span>
+                            <Download className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Download {item.download_filename}</span>
                           </>
                         )}
+                      </button>
+
+                      {/* Test in Scanner Action */}
+                      <button
+                        onClick={() => handleTestInScanner(item)}
+                        className="w-full py-1.5 px-3 rounded-xl text-[10px] font-bold text-neutral-600 bg-neutral-100 hover:bg-neutral-200 transition-all flex items-center justify-center gap-1.5"
+                      >
+                        <Sparkles className="w-3 h-3 text-emerald-600" />
+                        <span>Test in AI Scanner</span>
                       </button>
                     </div>
                   </div>
                 </div>
-              )}
+              ))}
+            </div>
+          )}
+
+          {/* ━━━ Detail Modal ━━━ */}
+          {selectedBasketItem && (
+            <div className="fixed inset-0 z-50 bg-neutral-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+              <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-7 space-y-5 border border-neutral-200 shadow-2xl relative my-8">
+                {/* Close Button */}
+                <button
+                  onClick={() => setSelectedBasketItem(null)}
+                  className="absolute top-5 right-5 p-2 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-600 transition-all"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+
+                {/* Modal Title & Badges */}
+                <div className="pr-8">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className="px-2.5 py-0.5 rounded-full bg-neutral-100 text-neutral-700 text-[10px] font-bold">
+                      {selectedBasketItem.basket_category}
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
+                      ID: {selectedBasketItem.id}
+                    </span>
+                    {selectedBasketItem.has_photo && (
+                      <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold border border-blue-200">
+                        Genuine HD Photograph Available
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-2xl font-black text-neutral-900 tracking-tight">
+                    {selectedBasketItem.name}
+                  </h3>
+                  <p className="text-xs text-neutral-400 mt-0.5 font-medium">
+                    Standard Reference Serving: {selectedBasketItem.typical_serving}
+                  </p>
+                </div>
+
+                {/* Image Display */}
+                <div className="rounded-2xl bg-[#faf9f8] p-6 border border-neutral-200 flex items-center justify-center max-h-64 overflow-hidden relative">
+                  {selectedBasketItem.has_photo && selectedBasketItem.photo_url ? (
+                    <img
+                      src={selectedBasketItem.photo_url}
+                      alt={selectedBasketItem.name}
+                      className="max-h-52 w-auto object-contain rounded-xl"
+                    />
+                  ) : selectedBasketItem.svg_url ? (
+                    <img
+                      src={selectedBasketItem.svg_url}
+                      alt={selectedBasketItem.name}
+                      className="max-h-52 w-auto object-contain"
+                    />
+                  ) : (
+                    <ShoppingBasket className="w-16 h-16 text-neutral-400" />
+                  )}
+                </div>
+
+                {/* Nutrition Breakdown per 100g */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                      Reference Nutrition (Per 100g)
+                    </h4>
+                    <span className="text-[11px] font-bold text-emerald-700">
+                      Starter Catalog Benchmark
+                    </span>
+                  </div>
+
+                  {/* 4 Core Macros */}
+                  <div className="grid grid-cols-4 gap-2 text-center">
+                    <div className="p-2.5 rounded-xl bg-[#faf9f8] border border-neutral-200/70">
+                      <span className="text-[10px] font-bold text-neutral-400 uppercase block">Calories</span>
+                      <span className="text-base font-black text-neutral-900">{selectedBasketItem.calories}</span>
+                      <span className="text-[10px] text-neutral-400">kcal</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-[#faf9f8] border border-neutral-200/70">
+                      <span className="text-[10px] font-bold text-blue-600 uppercase block">Protein</span>
+                      <span className="text-base font-black text-blue-900">{selectedBasketItem.protein_g}g</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-[#faf9f8] border border-neutral-200/70">
+                      <span className="text-[10px] font-bold text-emerald-600 uppercase block">Carbs</span>
+                      <span className="text-base font-black text-emerald-900">{selectedBasketItem.carbs_g}g</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-[#faf9f8] border border-neutral-200/70">
+                      <span className="text-[10px] font-bold text-amber-600 uppercase block">Fat</span>
+                      <span className="text-base font-black text-amber-900">{selectedBasketItem.fat_g}g</span>
+                    </div>
+                  </div>
+
+                  {/* Fiber, Sugar, Sodium */}
+                  <div className="space-y-2 pt-2">
+                    {[
+                      { label: 'Dietary Fiber', val: selectedBasketItem.fiber_g, max: 20, color: 'bg-emerald-600', unit: 'g' },
+                      { label: 'Sugar', val: selectedBasketItem.sugar_g, max: 30, color: 'bg-purple-500', unit: 'g' },
+                      { label: 'Sodium', val: selectedBasketItem.sodium_mg, max: 1500, color: 'bg-neutral-400', unit: 'mg' },
+                    ].map((m) => (
+                      <div key={m.label}>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="font-medium text-neutral-600">{m.label}</span>
+                          <span className="font-bold text-neutral-900">{m.val}{m.unit}</span>
+                        </div>
+                        {macroBar(m.val, m.max, m.color)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Notes and Limitations Box */}
+                {selectedBasketItem.notes && (
+                  <div className="p-3.5 rounded-2xl bg-neutral-50 border border-neutral-200 space-y-1">
+                    <span className="text-xs font-bold text-neutral-800 flex items-center gap-1.5">
+                      <Info className="w-3.5 h-3.5 text-neutral-500" />
+                      Catalog Reference Notes
+                    </span>
+                    <p className="text-xs text-neutral-600 leading-relaxed font-medium">
+                      {selectedBasketItem.notes}
+                    </p>
+                  </div>
+                )}
+
+                {/* Modal Action Buttons */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-neutral-100">
+                  <button
+                    onClick={() => handleDownloadImage(selectedBasketItem, selectedBasketItem.has_photo ? 'photo' : 'svg')}
+                    disabled={downloadingId === selectedBasketItem.id}
+                    className="py-3 px-4 rounded-xl text-xs font-bold bg-neutral-900 hover:bg-neutral-800 text-white transition-all flex items-center justify-center gap-2 shadow-xs"
+                  >
+                    <Download className="w-4 h-4 text-emerald-400" />
+                    <span>Download {selectedBasketItem.download_filename}</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleTestInScanner(selectedBasketItem)}
+                    className="py-3 px-4 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all flex items-center justify-center gap-2 shadow-xs"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>Test in AI Vision Scanner</span>
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>
-      </div>
+      )}
 
-      {/* Quick Select Strip */}
-      <div className="premium-card p-5">
-        <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-          <Info className="w-3.5 h-3.5 text-neutral-400" />
-          Quick Select Reference Starter Foods ({dbFoods.length} in database)
-        </h3>
-        <div className="flex gap-2 flex-wrap">
-          {dbFoods.slice(0, 18).map((food) => (
-            <button
-              key={food.catalog_id || food.name}
-              onClick={() => handleSelectFood(food)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#faf9f8] border border-neutral-200 hover:border-emerald-300 hover:bg-emerald-50/50 text-xs font-medium text-neutral-700 transition-all"
+      {/* ━━━ SCANNER VIEW (Upload, Camera, Browse) ━━━ */}
+      {activeTab !== 'basket' && (
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+          {/* ━━━ LEFT: Scanner Panel (6 cols) ━━━ */}
+          <div className="xl:col-span-6 space-y-4">
+            {/* Quick Banner Linking to Food Basket */}
+            <div
+              onClick={() => setActiveTab('basket')}
+              className="p-3 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-200/80 hover:border-emerald-400 cursor-pointer transition-all flex items-center justify-between gap-3 group"
             >
-              <span>{food.emoji}</span>
-              <span>{food.name}</span>
-            </button>
-          ))}
-          <button
-            onClick={() => setActiveTab('browse')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-all"
-          >
-            +{Math.max(0, dbFoods.length - 18)} more in Catalog →
-          </button>
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                  <ShoppingBasket className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <span className="text-xs font-black text-neutral-900 group-hover:text-emerald-700">
+                    Food Basket Library
+                  </span>
+                  <p className="text-[10px] text-neutral-500 font-medium">
+                    233 benchmark foods & 42 real photos available to browse & download
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-emerald-700 flex items-center gap-1 shrink-0">
+                Open Basket →
+              </span>
+            </div>
+
+            {/* UPLOAD TAB */}
+            {activeTab === 'upload' && (
+              <div className="premium-card p-6 space-y-4">
+                {preview ? (
+                  <div className="relative rounded-2xl overflow-hidden border border-neutral-200">
+                    <img src={preview} alt="Food capture" className="w-full h-64 object-cover" />
+                    <button
+                      onClick={() => {
+                        setPreview(null);
+                        setFile(null);
+                        setDetectedItems([]);
+                        setPlateSummary(null);
+                      }}
+                      className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white text-neutral-700 rounded-xl shadow-md transition-all"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    onDragEnter={() => setDragActive(true)}
+                    onDragLeave={() => setDragActive(false)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`border-2 border-dashed rounded-2xl h-60 flex flex-col items-center justify-center cursor-pointer transition-all ${
+                      dragActive
+                        ? 'border-emerald-500 bg-emerald-50/50'
+                        : 'border-neutral-200 hover:border-emerald-400 hover:bg-[#faf9f8]/50'
+                    }`}
+                  >
+                    <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-3 border border-emerald-200/80">
+                      <Upload className="w-6 h-6" />
+                    </div>
+                    <p className="text-sm font-bold text-neutral-800">Drop food photograph here</p>
+                    <p className="text-xs text-neutral-400 mt-1 font-medium">or click to browse local files</p>
+                    <span className="text-[10px] text-neutral-400 font-bold bg-neutral-100 px-2.5 py-0.5 rounded-full mt-2.5">
+                      JPG, PNG, WEBP (Supports single or multi-food meals)
+                    </span>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFileChange}
+                    />
+                  </div>
+                )}
+
+                <button
+                  onClick={handleAnalyze}
+                  disabled={(!file && !preview) || loading}
+                  className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Analyzing image with Gemini Vision...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      <span>Run AI Food Recognition</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* CAMERA TAB */}
+            {activeTab === 'camera' && (
+              <div className="premium-card p-6 space-y-4">
+                <div className="relative bg-neutral-900 rounded-2xl overflow-hidden min-h-[256px] flex items-center justify-center border border-neutral-800">
+                  {preview ? (
+                    <div className="relative w-full">
+                      <img src={preview} alt="Captured food" className="w-full h-64 object-cover" />
+                      <button
+                        onClick={() => {
+                          setPreview(null);
+                          setDetectedItems([]);
+                          setPlateSummary(null);
+                          startCamera(cameraFacing);
+                        }}
+                        className="absolute top-3 right-3 p-2 bg-white/90 text-neutral-700 rounded-xl shadow-md"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : cameraError ? (
+                    <div className="text-center p-8">
+                      <Camera className="w-10 h-10 text-neutral-500 mx-auto mb-2" />
+                      <p className="text-neutral-300 text-xs font-medium">{cameraError}</p>
+                    </div>
+                  ) : (
+                    <>
+                      <video ref={videoRef} autoPlay playsInline muted className="w-full h-64 object-cover" />
+                      <div className="absolute inset-0 border-4 border-transparent pointer-events-none">
+                        <div className="absolute top-4 left-4 w-7 h-7 border-t-2 border-l-2 border-emerald-400 rounded-tl" />
+                        <div className="absolute top-4 right-4 w-7 h-7 border-t-2 border-r-2 border-emerald-400 rounded-tr" />
+                        <div className="absolute bottom-4 left-4 w-7 h-7 border-b-2 border-l-2 border-emerald-400 rounded-bl" />
+                        <div className="absolute bottom-4 right-4 w-7 h-7 border-b-2 border-r-2 border-emerald-400 rounded-br" />
+                      </div>
+                      <button
+                        onClick={() => {
+                          setCameraFacing((f) => (f === 'environment' ? 'user' : 'environment'));
+                          startCamera(cameraFacing === 'environment' ? 'user' : 'environment');
+                        }}
+                        className="absolute top-4 right-4 p-2 bg-neutral-900/60 hover:bg-neutral-900/80 text-white rounded-xl backdrop-blur-sm"
+                      >
+                        <FlipHorizontal className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {preview ? (
+                  <button
+                    onClick={handleAnalyze}
+                    disabled={loading}
+                    className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs"
+                  >
+                    {loading ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>Analyzing Food...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        <span>Analyze Captured Photo</span>
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  !cameraError && (
+                    <button
+                      onClick={capturePhoto}
+                      className="w-full py-3.5 rounded-2xl bg-neutral-900 hover:bg-neutral-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs"
+                    >
+                      <Camera className="w-4 h-4" />
+                      <span>Capture Photo</span>
+                    </button>
+                  )
+                )}
+              </div>
+            )}
+
+            {/* BROWSE TAB */}
+            {activeTab === 'browse' && (
+              <div className="premium-card p-5 space-y-4">
+                <div className="relative">
+                  <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Filter 233 reference foods..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-[#faf9f8] border border-neutral-200 focus:border-emerald-500 focus:outline-none font-medium"
+                  />
+                </div>
+
+                {/* Category filter */}
+                <div className="flex gap-1.5 flex-wrap max-h-24 overflow-y-auto pr-1">
+                  {categories.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setActiveCategory(cat)}
+                      className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all border ${
+                        activeCategory === cat
+                          ? 'bg-neutral-900 text-white border-neutral-900'
+                          : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Food grid */}
+                <div className="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-1">
+                  {filteredFoods.map((food) => (
+                    <button
+                      key={food.catalog_id || food.name}
+                      onClick={() => handleSelectFood(food)}
+                      className="flex items-center gap-2 p-2.5 rounded-xl border border-neutral-200/80 hover:border-emerald-400 hover:bg-emerald-50/50 transition-all text-left"
+                    >
+                      {food.image_file ? (
+                        <img
+                          src={`/food_reference_images/${food.image_file.replace(/^images\//, '')}`}
+                          alt={food.name}
+                          className="w-7 h-7 object-contain shrink-0"
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <span className="text-xl shrink-0">{food.emoji}</span>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-neutral-900 truncate">{food.name}</p>
+                        <p className="text-[10px] text-neutral-400">{food.calories} kcal • {food.protein_g}g P</p>
+                      </div>
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${scoreColor[food.health_score] || 'bg-[#faf9f8] text-neutral-500 border-neutral-200'}`}>
+                        {food.health_score}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ━━━ RIGHT: Nutrition Result Panel (6 cols) ━━━ */}
+          <div className="xl:col-span-6">
+            {errorMessage && !loading && detectedItems.length === 0 && (
+              <div className="premium-card p-6 mb-4 border border-rose-200 bg-rose-50/50 space-y-3">
+                <div className="flex items-center gap-2 text-rose-700 font-bold text-xs">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>Recognition Note</span>
+                </div>
+                <p className="text-xs text-rose-600 leading-relaxed font-medium">
+                  {errorMessage}
+                </p>
+                <button
+                  onClick={() => {
+                    setErrorMessage(null);
+                    setActiveTab('basket');
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all"
+                >
+                  Browse Food Basket Gallery →
+                </button>
+              </div>
+            )}
+
+            {detectedItems.length === 0 && !loading && (
+              <div className="premium-card p-8 flex flex-col items-center justify-center min-h-[420px] text-center">
+                <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-700 flex items-center justify-center mb-4">
+                  <Camera className="w-7 h-7" />
+                </div>
+                <h3 className="text-base font-bold text-neutral-900">Food Analysis Panel</h3>
+                <p className="text-xs text-neutral-400 mt-1 max-w-xs font-medium">
+                  Upload or capture a photo. NutriLens recognizes multiple items, cross-references verified reference data, and calculates plate nutrition totals.
+                </p>
+                <div className="grid grid-cols-3 gap-2.5 mt-6 w-full max-w-xs">
+                  {[['🥦', 'Broccoli'], ['🍗', 'Chicken breast cooked'], ['🍎', 'Apple']].map(([e, n]) => (
+                    <button
+                      key={n}
+                      onClick={() => {
+                        setErrorMessage(null);
+                        const target = dbFoods.find((f) => f.name.toLowerCase() === n.toLowerCase()) || dbFoods[0];
+                        handleSelectFood(target);
+                      }}
+                      className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-[#faf9f8] hover:bg-emerald-50 border border-neutral-200/80 hover:border-emerald-300 transition-all"
+                    >
+                      <span className="text-xl">{e}</span>
+                      <span className="text-[11px] font-bold text-neutral-700 truncate w-full text-center">{n}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {loading && (
+              <div className="premium-card p-8 flex flex-col items-center justify-center min-h-[420px]">
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center animate-pulse">
+                    <Sparkles className="w-8 h-8 text-emerald-600" />
+                  </div>
+                </div>
+                <p className="mt-4 text-sm font-bold text-neutral-800">Analyzing your meal with Gemini Vision...</p>
+                <p className="text-xs text-neutral-400 mt-1 font-medium">Segmenting plate foods & cross-referencing catalog</p>
+                <div className="mt-4 space-y-2 w-full max-w-xs">
+                  {['Inspecting image with vision AI...', 'Matching food items in NutriEmotion catalog...', 'Calculating multi-item plate totals & macros...'].map((s, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.2}s` }} />
+                      <span className="text-xs text-neutral-500 font-medium">{s}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {detectedItems.length > 0 && !loading && (
+              <div className="space-y-4">
+                {/* ━━━ Combined Plate Summary Banner ━━━ */}
+                {plateSummary && (
+                  <div className="premium-card p-5 bg-gradient-to-br from-emerald-50/60 to-teal-50/40 border border-emerald-200/80">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold tracking-wide">
+                            PLATE TOTALS • {plateSummary.item_count} {plateSummary.item_count === 1 ? 'ITEM' : 'ITEMS'}
+                          </span>
+                          {plateSummary.matched_count > 0 && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-white/80 px-2 py-0.5 rounded-full border border-emerald-200">
+                              <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                              {plateSummary.matched_count} Catalog Verified
+                            </span>
+                          )}
+                          {plateSummary.unmatched_count > 0 && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                              <HelpCircle className="w-3 h-3 text-amber-600" />
+                              {plateSummary.unmatched_count} AI Estimate
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="text-lg font-black text-neutral-900 mt-1">
+                          Plate Nutrition Overview
+                        </h3>
+                        {statusMessage && (
+                          <p className="text-xs text-neutral-600 mt-0.5">{statusMessage}</p>
+                        )}
+                      </div>
+
+                      <div className="text-right">
+                        <span className="text-2xl font-black text-emerald-700 block">
+                          {plateSummary.total_calories} <span className="text-xs font-bold text-neutral-500">kcal</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Combined Totals Grid */}
+                    <div className="grid grid-cols-4 gap-2 text-center pt-2 border-t border-emerald-200/60">
+                      <div className="bg-white/90 p-2 rounded-xl border border-emerald-100">
+                        <span className="text-[10px] font-bold text-blue-600 uppercase block">Protein</span>
+                        <span className="text-sm font-black text-blue-900">{plateSummary.total_protein_g}g</span>
+                      </div>
+                      <div className="bg-white/90 p-2 rounded-xl border border-emerald-100">
+                        <span className="text-[10px] font-bold text-emerald-600 uppercase block">Carbs</span>
+                        <span className="text-sm font-black text-emerald-900">{plateSummary.total_carbs_g}g</span>
+                      </div>
+                      <div className="bg-white/90 p-2 rounded-xl border border-emerald-100">
+                        <span className="text-[10px] font-bold text-amber-600 uppercase block">Fat</span>
+                        <span className="text-sm font-black text-amber-900">{plateSummary.total_fat_g}g</span>
+                      </div>
+                      <div className="bg-white/90 p-2 rounded-xl border border-emerald-100">
+                        <span className="text-[10px] font-bold text-purple-600 uppercase block">Fiber</span>
+                        <span className="text-sm font-black text-purple-900">{plateSummary.total_fiber_g}g</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Multi-Item Tabs (If > 1 item) */}
+                {detectedItems.length > 1 && (
+                  <div className="flex gap-1.5 overflow-x-auto pb-1">
+                    {detectedItems.map((item, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setActiveItemIndex(idx)}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition-all whitespace-nowrap ${
+                          activeItemIndex === idx
+                            ? 'bg-neutral-900 text-white border-neutral-900 shadow-2xs'
+                            : 'bg-white text-neutral-700 border-neutral-200 hover:border-neutral-300'
+                        }`}
+                      >
+                        <span>{item.emoji}</span>
+                        <span>{item.name}</span>
+                        <span className="opacity-70 text-[10px]">({item.calories} kcal)</span>
+                        {item.matched_catalog && (
+                          <ShieldCheck className="w-3 h-3 text-emerald-400 shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Active Item Details Card */}
+                {activeItem && (
+                  <div className="premium-card overflow-hidden">
+                    {/* Item Header */}
+                    <div className="p-6 border-b border-neutral-100 bg-[#faf9f8]/50">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3.5">
+                          {activeItem.image_url ? (
+                            <div className="w-14 h-14 rounded-2xl bg-white border border-neutral-200/80 p-2 flex items-center justify-center shrink-0 shadow-2xs">
+                              <img
+                                src={activeItem.image_url}
+                                alt={activeItem.name}
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                          ) : (
+                            <span className="text-4xl shrink-0">{activeItem.emoji}</span>
+                          )}
+
+                          <div>
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                                {activeItem.category}
+                              </span>
+                              {activeItem.matched_catalog ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
+                                  <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                                  Catalog Verified Benchmark
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold border border-amber-200">
+                                  <HelpCircle className="w-3 h-3 text-amber-600" />
+                                  AI Estimate (Unverified)
+                                </span>
+                              )}
+                              <span className="px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 text-[10px] font-bold">
+                                {activeItem.confidence.toFixed(1)}% Confidence
+                              </span>
+                            </div>
+                            <h3 className="text-xl font-extrabold text-neutral-900 tracking-tight">
+                              {activeItem.name}
+                            </h3>
+                            <p className="text-xs text-neutral-400 mt-0.5 font-medium">
+                              Current Portion: {activeItem.serving_grams}g ({activeItem.quantity} serving)
+                            </p>
+                          </div>
+                        </div>
+
+                        <span className={`text-xs font-black px-3 py-1 rounded-xl border shrink-0 ${scoreColor[activeItem.health_score] || ''}`}>
+                          Score: {activeItem.health_score}
+                        </span>
+                      </div>
+
+                      {/* Active Item Macros */}
+                      <div className="mt-5 grid grid-cols-4 gap-2 text-center">
+                        <div className="p-2.5 rounded-xl bg-white border border-neutral-200/70">
+                          <span className="text-[10px] font-bold text-neutral-400 uppercase block">Calories</span>
+                          <span className="text-base font-black text-neutral-900">{activeItem.calories}</span>
+                          <span className="text-[10px] text-neutral-400">kcal</span>
+                        </div>
+                        <div className="p-2.5 rounded-xl bg-white border border-neutral-200/70">
+                          <span className="text-[10px] font-bold text-blue-600 uppercase block">Protein</span>
+                          <span className="text-base font-black text-blue-900">{activeItem.protein_g}g</span>
+                        </div>
+                        <div className="p-2.5 rounded-xl bg-white border border-neutral-200/70">
+                          <span className="text-[10px] font-bold text-emerald-600 uppercase block">Carbs</span>
+                          <span className="text-base font-black text-emerald-900">{activeItem.carbs_g}g</span>
+                        </div>
+                        <div className="p-2.5 rounded-xl bg-white border border-neutral-200/70">
+                          <span className="text-[10px] font-bold text-amber-600 uppercase block">Fat</span>
+                          <span className="text-base font-black text-amber-900">{activeItem.fat_g}g</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-6 space-y-4">
+                      {/* Portion-Size Adjustment Controls */}
+                      <div className="p-4 rounded-2xl bg-neutral-50/80 border border-neutral-200/80 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <Sliders className="w-3.5 h-3.5 text-neutral-600" />
+                            <span className="text-xs font-bold text-neutral-800">Portion Adjustment ({activeItem.name})</span>
+                          </div>
+                          <span className="text-xs font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
+                            {activeItem.serving_grams} grams
+                          </span>
+                        </div>
+
+                        {/* Gram Slider */}
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-[11px] text-neutral-400 font-bold">
+                            <span>25g</span>
+                            <span>100g</span>
+                            <span>200g</span>
+                            <span>300g</span>
+                            <span>500g</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="20"
+                            max="500"
+                            step="10"
+                            value={activeItem.serving_grams}
+                            onChange={(e) => handleUpdatePortion(activeItemIndex, parseFloat(e.target.value), activeItem.quantity)}
+                            className="w-full accent-emerald-600 cursor-pointer"
+                          />
+                        </div>
+
+                        {/* Quick Gram Preset Buttons & Quantity Stepper */}
+                        <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
+                          <div className="flex gap-1 flex-wrap">
+                            {[50, 100, 150, 200, 250].map((presetG) => (
+                              <button
+                                key={presetG}
+                                type="button"
+                                onClick={() => handleUpdatePortion(activeItemIndex, presetG, activeItem.quantity)}
+                                className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ${
+                                  activeItem.serving_grams === presetG
+                                    ? 'bg-emerald-600 text-white border-emerald-600'
+                                    : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300'
+                                }`}
+                              >
+                                {presetG}g
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* Serving Multiplier Stepper */}
+                          <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded-xl border border-neutral-200">
+                            <span className="text-[10px] font-bold text-neutral-400 uppercase">Qty:</span>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdatePortion(activeItemIndex, activeItem.serving_grams, Math.max(0.5, activeItem.quantity - 0.5))}
+                              className="w-5 h-5 rounded bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold text-xs flex items-center justify-center"
+                            >
+                              -
+                            </button>
+                            <span className="text-xs font-bold text-neutral-800 min-w-[24px] text-center">
+                              {activeItem.quantity}x
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdatePortion(activeItemIndex, activeItem.serving_grams, activeItem.quantity + 0.5)}
+                              className="w-5 h-5 rounded bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold text-xs flex items-center justify-center"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Detailed macro profile */}
+                      <div className="space-y-2.5">
+                        <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                          Detailed Macro Profile
+                        </h4>
+                        {[
+                          { label: 'Dietary Fiber', val: activeItem.fiber_g, max: 20, color: 'bg-emerald-600', unit: 'g' },
+                          { label: 'Sugar', val: activeItem.sugar_g, max: 30, color: 'bg-purple-500', unit: 'g' },
+                          { label: 'Sodium', val: activeItem.sodium_mg, max: 1500, color: 'bg-neutral-400', unit: 'mg' },
+                        ].map((m) => (
+                          <div key={m.label}>
+                            <div className="flex justify-between text-xs mb-1">
+                              <span className="font-medium text-neutral-600">{m.label}</span>
+                              <span className="font-bold text-neutral-900">{m.val}{m.unit}</span>
+                            </div>
+                            {macroBar(m.val, m.max, m.color)}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Reference & Transparency Box */}
+                      <div className="p-3.5 rounded-2xl bg-neutral-50 border border-neutral-200/80 space-y-1">
+                        <div className="flex items-center gap-1.5 text-neutral-700">
+                          <Info className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
+                          <span className="text-xs font-bold text-neutral-800">Data Source & Verification</span>
+                        </div>
+                        <p className="text-[11px] text-neutral-600 font-medium">
+                          {activeItem.reference_source}
+                          {activeItem.catalog_id ? ` (ID: ${activeItem.catalog_id})` : ''}
+                        </p>
+                        {activeItem.notes && (
+                          <p className="text-[11px] text-neutral-500 italic mt-0.5">
+                            "{activeItem.notes}"
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Micronutrients */}
+                      <div>
+                        <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">
+                          Key Micronutrients
+                        </h4>
+                        <div className="flex flex-wrap gap-1.5">
+                          {activeItem.micronutrients.map((m) => (
+                            <span key={m} className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold">
+                              {m}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Benefits */}
+                      <div className="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200/60">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <Star className="w-3.5 h-3.5 text-blue-600" />
+                          <span className="text-xs font-bold text-blue-800">Nutritional Health Benefit</span>
+                        </div>
+                        <p className="text-xs text-blue-700 leading-relaxed font-medium">{activeItem.benefits}</p>
+                      </div>
+
+                      {/* AI Tip */}
+                      <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/60">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                          <span className="text-xs font-bold text-emerald-800">Dietary Recommendation</span>
+                        </div>
+                        <p className="text-xs text-emerald-700 leading-relaxed font-medium">{activeItem.ai_tip}</p>
+                      </div>
+
+                      {/* Meal Type Selector & Log Meal Button */}
+                      <div className="space-y-2 pt-2 border-t border-neutral-100">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-neutral-600">Log As Meal:</span>
+                          <div className="flex gap-1">
+                            {(['Breakfast', 'Lunch', 'Dinner', 'Snack'] as const).map((m) => (
+                              <button
+                                key={m}
+                                type="button"
+                                onClick={() => setMealType(m)}
+                                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border ${
+                                  mealType === m
+                                    ? 'bg-neutral-900 text-white border-neutral-900'
+                                    : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300'
+                                }`}
+                              >
+                                {m}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={handleLogToMeals}
+                          disabled={loggingMeal}
+                          className={`w-full py-3.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs disabled:opacity-50 ${
+                            logSuccess
+                              ? 'bg-emerald-600 text-white'
+                              : 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer'
+                          }`}
+                        >
+                          {logSuccess ? (
+                            <>
+                              <CheckCircle2 className="w-4 h-4" />
+                              <span>Logged {detectedItems.length} item(s) to {mealType} & Saved in Database!</span>
+                            </>
+                          ) : loggingMeal ? (
+                            <>
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                              <span>Saving Meal to Database...</span>
+                            </>
+                          ) : (
+                            <>
+                              <PlusCircle className="w-4 h-4" />
+                              <span>
+                                Log {detectedItems.length} {detectedItems.length === 1 ? 'Item' : 'Items'} to {mealType} (+{plateSummary?.total_calories || activeItem.calories} kcal)
+                              </span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Quick Select Strip (When not on Basket tab) */}
+      {activeTab !== 'basket' && (
+        <div className="premium-card p-5">
+          <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <Info className="w-3.5 h-3.5 text-neutral-400" />
+            Quick Select Reference Starter Foods ({dbFoods.length} in database)
+          </h3>
+          <div className="flex gap-2 flex-wrap">
+            {dbFoods.slice(0, 18).map((food) => (
+              <button
+                key={food.catalog_id || food.name}
+                onClick={() => handleSelectFood(food)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#faf9f8] border border-neutral-200 hover:border-emerald-300 hover:bg-emerald-50/50 text-xs font-medium text-neutral-700 transition-all"
+              >
+                <span>{food.emoji}</span>
+                <span>{food.name}</span>
+              </button>
+            ))}
+            <button
+              onClick={() => setActiveTab('basket')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-all"
+            >
+              +Open Food Basket ({dbFoods.length}) →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

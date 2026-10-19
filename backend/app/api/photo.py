@@ -7,7 +7,8 @@ retrieves verified nutrition benchmarks, supports multi-item plates, portion adj
 and provides transparent disclaimers for unverified foods.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List, Any, Dict, Tuple
 from pathlib import Path
@@ -17,7 +18,12 @@ import re
 
 from ..dependencies import get_current_user
 from ..api.chat import get_gemini_client
-from ..services.food_catalog import match_food_in_catalog, calculate_nutrition_for_portion, get_catalog_item_by_id
+from ..services.food_catalog import (
+    match_food_in_catalog,
+    calculate_nutrition_for_portion,
+    get_catalog_item_by_id,
+    get_all_catalog_items,
+)
 
 router = APIRouter()
 
@@ -644,3 +650,210 @@ def recalculate_plate(
         plate_summary=plate_summary,
         message=f"Recalculated nutrition for {len(detected)} item(s) on plate.",
     )
+
+
+# ── Food Basket Gallery & Download ───────────────────────────────────────────
+BASKET_CATEGORY_ORDER = [
+    "All Foods",
+    "Fruits",
+    "Vegetables",
+    "Indian Dishes",
+    "International Dishes",
+    "Protein Foods",
+    "Grains",
+    "Dairy",
+    "Snacks",
+    "Desserts",
+    "Drinks",
+]
+
+
+def map_to_basket_category(raw_cat: str) -> str:
+    c = (raw_cat or "").lower().strip()
+    if "fruit" in c:
+        return "Fruits"
+    if "vegetable" in c:
+        return "Vegetables"
+    if "indian" in c or "legume dish" in c or "chana" in c or "rajma" in c or "roti" in c:
+        return "Indian Dishes"
+    if any(k in c for k in ["international", "japanese", "thai", "mexican", "asian", "middle eastern", "salad", "soup", "sandwich", "side dish", "breakfast"]):
+        return "International Dishes"
+    if any(k in c for k in ["protein", "seafood", "legume", "grilled dish", "chicken", "fish", "meat", "egg"]):
+        return "Protein Foods"
+    if any(k in c for k in ["grain", "bread", "bakery", "pasta", "oats", "rice"]):
+        return "Grains"
+    if any(k in c for k in ["dairy"]):
+        return "Dairy"
+    if any(k in c for k in ["snack", "nuts and seeds", "spread", "oil", "fat"]):
+        return "Snacks"
+    if any(k in c for k in ["dessert", "sweetener"]):
+        return "Desserts"
+    if any(k in c for k in ["drink"]):
+        return "Drinks"
+    return "International Dishes"
+
+
+@router.get("/basket")
+def get_food_basket(
+    category: Optional[str] = Query(None),
+    q: Optional[str] = Query(None),
+    user=Depends(get_current_user),
+):
+    """
+    Searchable Food Basket gallery:
+    Lists all 233 reference items with mapped categories, verified nutrition,
+    genuine high-resolution photo availability, and exact category counts.
+    """
+    items = get_all_catalog_items()
+    photo_dir = Path(__file__).resolve().parent.parent / "data" / "food_photos"
+
+    category_counts: Dict[str, int] = {cat: 0 for cat in BASKET_CATEGORY_ORDER}
+    category_counts["All Foods"] = len(items)
+
+    search_q = q.strip().lower() if q else None
+    basket_items = []
+    total_photos = 0
+
+    for item in items:
+        raw_cat = item.get("category", "")
+        basket_cat = map_to_basket_category(raw_cat)
+        category_counts[basket_cat] = category_counts.get(basket_cat, 0) + 1
+
+        image_file = item.get("image_file", "")
+        stem = Path(image_file).stem if image_file else ""
+        svg_filename = f"{stem}.svg" if stem else ""
+        jpg_filename = f"{stem}.jpg" if stem else ""
+
+        has_photo = False
+        if photo_dir.exists() and (photo_dir / jpg_filename).exists() and (photo_dir / jpg_filename).stat().st_size > 5000:
+            has_photo = True
+            total_photos += 1
+
+        # Filtering
+        if category and category != "All Foods" and basket_cat != category:
+            continue
+        if search_q:
+            aliases_text = " ".join(item.get("aliases", [])).lower()
+            name_text = item.get("name", "").lower()
+            if search_q not in name_text and search_q not in aliases_text and search_q not in raw_cat.lower():
+                continue
+
+        nutr = item.get("nutrition_per_100g", {})
+        basket_items.append({
+            "id": item.get("id"),
+            "name": item.get("name"),
+            "category": raw_cat,
+            "basket_category": basket_cat,
+            "typical_serving": item.get("typical_serving", "100 g"),
+            "serving_grams": 100.0,
+            "calories": float(nutr.get("calories_kcal", 0.0)),
+            "protein_g": float(nutr.get("protein_g", 0.0)),
+            "carbs_g": float(nutr.get("carbohydrates_g", 0.0)),
+            "fat_g": float(nutr.get("fat_g", 0.0)),
+            "fiber_g": float(nutr.get("fiber_g", 0.0)),
+            "sugar_g": float(nutr.get("sugar_g", 0.0)),
+            "sodium_mg": float(nutr.get("sodium_mg", 0.0)),
+            "notes": item.get("notes", ""),
+            "image_file": image_file,
+            "svg_url": f"/food_reference_images/{svg_filename}" if svg_filename else None,
+            "photo_url": f"/food_photos/{jpg_filename}" if has_photo else None,
+            "has_photo": has_photo,
+            "image_type": "photograph" if has_photo else "reference_illustration",
+            "download_filename": jpg_filename if has_photo else svg_filename,
+            "is_approximate": item.get("nutrition_is_approximate", True),
+            "reference_source": "NutriEmotion Food Reference Starter Catalog",
+        })
+
+    categories_list = [
+        {"name": cat, "count": category_counts.get(cat, 0)}
+        for cat in BASKET_CATEGORY_ORDER
+    ]
+
+    return {
+        "success": True,
+        "total_items": len(items),
+        "total_photos": total_photos,
+        "displayed_items": len(basket_items),
+        "categories": categories_list,
+        "items": basket_items,
+    }
+
+
+@router.get("/basket/download")
+def download_food_image(
+    item_id: Optional[str] = Query(None, description="Catalog Food ID e.g. food_0001 or food name"),
+    filename: Optional[str] = Query(None, description="Direct filename e.g. apple.jpg or apple.svg"),
+    preferred: Optional[str] = Query("photo", description="Preferred image format: 'photo' or 'svg'"),
+    user=Depends(get_current_user),
+):
+    """
+    Safely download genuine food photographs or verified reference SVG cards.
+    Streams actual local file with attachment headers.
+    """
+    base_dir = Path(__file__).resolve().parent.parent / "data"
+    photo_dir = base_dir / "food_photos"
+    svg_dir = base_dir / "food_reference" / "images"
+
+    target_file: Optional[Path] = None
+    download_name: str = "food_image"
+
+    # 1. Direct filename request
+    if filename:
+        clean_name = Path(filename).name
+        if not re.match(r"^[a-zA-Z0-9_\-\.]+\.(jpg|jpeg|png|webp|svg)$", clean_name, re.IGNORECASE):
+            raise HTTPException(status_code=400, detail="Invalid filename format requested.")
+
+        if (photo_dir / clean_name).exists():
+            target_file = photo_dir / clean_name
+            download_name = clean_name
+        elif (svg_dir / clean_name).exists():
+            target_file = svg_dir / clean_name
+            download_name = clean_name
+
+    # 2. Lookup by item_id or food name
+    elif item_id:
+        item = get_catalog_item_by_id(item_id)
+        if not item:
+            item = match_food_in_catalog(item_id)
+        if not item:
+            raise HTTPException(status_code=404, detail="Food item not found in catalog.")
+
+        stem = Path(item.get("image_file", "")).stem
+        if not stem:
+            raise HTTPException(status_code=404, detail="No registered image file for this food.")
+
+        jpg_candidate = photo_dir / f"{stem}.jpg"
+        svg_candidate = svg_dir / f"{stem}.svg"
+
+        if preferred == "svg" and svg_candidate.exists():
+            target_file = svg_candidate
+            download_name = f"{stem}.svg"
+        elif jpg_candidate.exists() and jpg_candidate.stat().st_size > 5000:
+            target_file = jpg_candidate
+            download_name = f"{stem}.jpg"
+        elif svg_candidate.exists():
+            target_file = svg_candidate
+            download_name = f"{stem}.svg"
+
+    if not target_file or not target_file.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="The requested food image file is not locally available on the server.",
+        )
+
+    mime = "image/jpeg" if target_file.suffix.lower() in [".jpg", ".jpeg"] else "image/svg+xml"
+    if target_file.suffix.lower() == ".png":
+        mime = "image/png"
+    elif target_file.suffix.lower() == ".webp":
+        mime = "image/webp"
+
+    return FileResponse(
+        path=str(target_file),
+        media_type=mime,
+        filename=download_name,
+        headers={
+            "Content-Disposition": f'attachment; filename="{download_name}"',
+            "Access-Control-Expose-Headers": "Content-Disposition",
+        },
+    )
+

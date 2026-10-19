@@ -459,3 +459,75 @@ def test_scanned_meal_saved_to_food_diary_and_daily_totals(test_user_token):
     logged_meal = next(m for m in meals if m["id"] == created_meal["id"])
     assert logged_meal["total_calories"] == 421.0
 
+def test_food_basket_gallery_listing(test_user_token):
+    token, _ = test_user_token
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Fetch full Food Basket
+    res = client.get("/api/photo/basket", headers=headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert data["total_items"] == 233
+    assert data["total_photos"] >= 40
+
+    # Verify category counts
+    cats = {c["name"]: c["count"] for c in data["categories"]}
+    assert cats["All Foods"] == 233
+    assert cats["Fruits"] == 30
+    assert cats["Vegetables"] == 30
+    assert cats["Indian Dishes"] >= 60
+    assert cats["International Dishes"] >= 30
+    assert cats["Protein Foods"] >= 15
+    assert cats["Grains"] >= 8
+    assert cats["Dairy"] >= 7
+    assert cats["Snacks"] >= 15
+    assert cats["Desserts"] >= 7
+    assert cats["Drinks"] >= 12
+
+    # Filter by category: Fruits
+    res_fruit = client.get("/api/photo/basket?category=Fruits", headers=headers)
+    assert res_fruit.status_code == 200
+    fruit_data = res_fruit.json()
+    assert fruit_data["displayed_items"] == 30
+    assert all(it["basket_category"] == "Fruits" for it in fruit_data["items"])
+
+    # Search for "chicken biryani"
+    res_search = client.get("/api/photo/basket?q=chicken%20biryani", headers=headers)
+    assert res_search.status_code == 200
+    search_data = res_search.json()
+    assert len(search_data["items"]) >= 1
+    biryani = search_data["items"][0]
+    assert "biryani" in biryani["name"].lower()
+    assert biryani["has_photo"] is True
+    assert biryani["download_filename"] == "chicken_biryani.jpg"
+
+def test_food_basket_download_actions(test_user_token):
+    token, _ = test_user_token
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. Download real JPEG photo for Apple
+    res_photo = client.get("/api/photo/basket/download?item_id=food_0001&preferred=photo", headers=headers)
+    assert res_photo.status_code == 200
+    assert res_photo.headers["content-type"] == "image/jpeg"
+    assert 'filename="apple.jpg"' in res_photo.headers.get("content-disposition", "")
+    assert len(res_photo.content) > 5000  # genuine high-res image file
+
+    # 2. Download SVG reference card for Apple
+    res_svg = client.get("/api/photo/basket/download?item_id=food_0001&preferred=svg", headers=headers)
+    assert res_svg.status_code == 200
+    assert res_svg.headers["content-type"] == "image/svg+xml"
+    assert 'filename="apple.svg"' in res_svg.headers.get("content-disposition", "")
+    assert b"<svg" in res_svg.content
+
+    # 3. Download by direct filename
+    res_direct = client.get("/api/photo/basket/download?filename=spinach.jpg", headers=headers)
+    assert res_direct.status_code == 200
+    assert res_direct.headers["content-type"] == "image/jpeg"
+    assert len(res_direct.content) > 5000
+
+    # 4. Unknown food item error handling
+    res_404 = client.get("/api/photo/basket/download?item_id=non_existent_food_9999", headers=headers)
+    assert res_404.status_code == 404
+
+
