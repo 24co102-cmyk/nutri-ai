@@ -16,7 +16,7 @@ import base64
 import json
 import re
 
-from ..dependencies import get_current_user
+from ..dependencies import get_current_user, get_optional_current_user
 from ..api.chat import get_gemini_client
 from ..services.food_catalog import (
     match_food_in_catalog,
@@ -697,7 +697,7 @@ def map_to_basket_category(raw_cat: str) -> str:
 def get_food_basket(
     category: Optional[str] = Query(None),
     q: Optional[str] = Query(None),
-    user=Depends(get_current_user),
+    user=Depends(get_optional_current_user),
 ):
     """
     Searchable Food Basket gallery:
@@ -784,7 +784,7 @@ def download_food_image(
     item_id: Optional[str] = Query(None, description="Catalog Food ID e.g. food_0001 or food name"),
     filename: Optional[str] = Query(None, description="Direct filename e.g. apple.jpg or apple.svg"),
     preferred: Optional[str] = Query("photo", description="Preferred image format: 'photo' or 'svg'"),
-    user=Depends(get_current_user),
+    user=Depends(get_optional_current_user),
 ):
     """
     Safely download genuine food photographs or verified reference SVG cards.

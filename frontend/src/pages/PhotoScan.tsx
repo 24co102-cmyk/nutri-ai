@@ -1,4 +1,3 @@
-// src/pages/PhotoScan.tsx
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import api from '../api/axios';
 import {
@@ -7,6 +6,13 @@ import {
   ShieldCheck, HelpCircle, Sliders, ShoppingBasket, Download, Eye,
   Check, Layers
 } from 'lucide-react';
+import {
+  DEFAULT_BASKET_ITEMS,
+  DEFAULT_BASKET_CATEGORIES,
+  TOTAL_CATALOG_ITEMS,
+  type BasketItem,
+  type BasketCategory,
+} from '../data/foodBasketData';
 
 // ────────────────────────────────────────────────────────────────────────────
 // TYPES
@@ -62,35 +68,7 @@ export interface PlateSummary {
   unmatched_count: number;
 }
 
-export interface BasketItem {
-  id: string;
-  name: string;
-  category: string;
-  basket_category: string;
-  typical_serving: string;
-  serving_grams: number;
-  calories: number;
-  protein_g: number;
-  carbs_g: number;
-  fat_g: number;
-  fiber_g: number;
-  sugar_g: number;
-  sodium_mg: number;
-  notes: string;
-  image_file: string;
-  svg_url: string | null;
-  photo_url: string | null;
-  has_photo: boolean;
-  image_type: 'photograph' | 'reference_illustration';
-  download_filename: string;
-  is_approximate: boolean;
-  reference_source: string;
-}
-
-export interface BasketCategory {
-  name: string;
-  count: number;
-}
+export type { BasketItem, BasketCategory };
 
 interface FoodInfo {
   name: string;
@@ -173,9 +151,9 @@ const PhotoScan: React.FC = () => {
   // Database food catalog for Browse tab
   const [dbFoods, setDbFoods] = useState<FoodInfo[]>(DEFAULT_POPULAR_FOODS);
 
-  // Food Basket Gallery State
-  const [basketItems, setBasketItems] = useState<BasketItem[]>([]);
-  const [basketCategories, setBasketCategories] = useState<BasketCategory[]>([]);
+  // Food Basket Gallery State (Initialized with all 233 verified catalog items)
+  const [basketItems, setBasketItems] = useState<BasketItem[]>(DEFAULT_BASKET_ITEMS);
+  const [basketCategories, setBasketCategories] = useState<BasketCategory[]>(DEFAULT_BASKET_CATEGORIES);
   const [basketActiveCategory, setBasketActiveCategory] = useState<string>('All Foods');
   const [basketSearch, setBasketSearch] = useState<string>('');
   const [basketPhotosOnly, setBasketPhotosOnly] = useState<boolean>(false);
@@ -223,23 +201,27 @@ const PhotoScan: React.FC = () => {
     fetchCatalog();
   }, []);
 
-  // Fetch Food Basket items from backend
+  // Sync Food Basket items from backend
   useEffect(() => {
+    let isMounted = true;
     const fetchBasket = async () => {
-      setBasketLoading(true);
       try {
+        setBasketLoading(true);
         const res = await api.get('/photo/basket');
-        if (res.data?.success && Array.isArray(res.data?.items)) {
+        if (isMounted && res.data?.success && Array.isArray(res.data?.items) && res.data.items.length > 0) {
           setBasketItems(res.data.items);
-          setBasketCategories(res.data.categories || []);
+          if (Array.isArray(res.data?.categories) && res.data.categories.length > 0) {
+            setBasketCategories(res.data.categories);
+          }
         }
       } catch (e) {
-        console.error('Failed to load Food Basket items:', e);
+        console.warn('Food Basket server sync deferred; using verified reference library.', e);
       } finally {
-        setBasketLoading(false);
+        if (isMounted) setBasketLoading(false);
       }
     };
     fetchBasket();
+    return () => { isMounted = false; };
   }, []);
 
   const startCamera = async (facing: 'environment' | 'user') => {
@@ -514,21 +496,48 @@ const PhotoScan: React.FC = () => {
     setActiveTab('upload');
   };
 
-  // Download genuine image from Food Basket
+  // Download genuine image from Food Basket with fail-safe direct asset fallback
   const handleDownloadImage = async (item: BasketItem, preferredFormat: 'photo' | 'svg' = 'photo') => {
     setDownloadingId(item.id);
     try {
-      const filename = (preferredFormat === 'photo' && item.has_photo)
+      const isPhoto = (preferredFormat === 'photo' && item.has_photo);
+      const filename = isPhoto
         ? item.download_filename
         : (item.image_file ? item.image_file.replace(/^images\//, '') : `${item.name.toLowerCase().replace(/\s+/g, '_')}.svg`);
 
-      const res = await api.get(`/photo/basket/download?item_id=${item.id}&preferred=${preferredFormat}`, {
-        responseType: 'blob',
-      });
+      let blob: Blob | null = null;
 
-      const mimeType = preferredFormat === 'photo' && item.has_photo ? 'image/jpeg' : 'image/svg+xml';
-      const blob = new Blob([res.data], { type: mimeType });
-      const downloadUrl = window.URL.createObjectURL(blob);
+      // 1. Try backend streaming download endpoint first
+      try {
+        const res = await api.get(`/photo/basket/download?item_id=${encodeURIComponent(item.id)}&preferred=${preferredFormat}`, {
+          responseType: 'blob',
+          timeout: 10000,
+        });
+        if (res.data && res.data.size > 200 && !res.data.type?.includes('application/json')) {
+          blob = res.data;
+        }
+      } catch {
+        // Fall back to direct static asset fetch
+      }
+
+      // 2. Direct static asset fallback
+      if (!blob) {
+        const targetUrl = (isPhoto && item.photo_url) ? item.photo_url : (item.svg_url || item.photo_url);
+        if (targetUrl) {
+          const directRes = await fetch(targetUrl);
+          if (directRes.ok) {
+            blob = await directRes.blob();
+          }
+        }
+      }
+
+      if (!blob || blob.size < 50) {
+        throw new Error(`Image file not available for ${item.name}`);
+      }
+
+      const mimeType = isPhoto ? 'image/jpeg' : 'image/svg+xml';
+      const fileBlob = new Blob([blob], { type: mimeType });
+      const downloadUrl = window.URL.createObjectURL(fileBlob);
       const link = document.createElement('a');
       link.href = downloadUrl;
       link.download = filename;
@@ -541,7 +550,7 @@ const PhotoScan: React.FC = () => {
       setTimeout(() => setDownloadSuccessId(null), 2500);
     } catch (err: any) {
       console.error('Failed to download image:', err);
-      alert(`Could not download image for ${item.name}. Please ensure the server is online.`);
+      alert(`Could not download image for ${item.name}. Please ensure the image asset is available.`);
     } finally {
       setDownloadingId(null);
     }
@@ -576,12 +585,37 @@ const PhotoScan: React.FC = () => {
     });
   }, [dbFoods, activeCategory, searchQuery]);
 
+  // Dynamic categories with live counts based on current items and photo filter
+  const liveCategories = useMemo(() => {
+    const counts: Record<string, number> = { 'All Foods': 0 };
+    basketCategories.forEach(c => { counts[c.name] = 0; });
+
+    basketItems.forEach(item => {
+      if (!basketPhotosOnly || item.has_photo) {
+        counts['All Foods'] = (counts['All Foods'] || 0) + 1;
+        counts[item.basket_category] = (counts[item.basket_category] || 0) + 1;
+      }
+    });
+
+    return basketCategories.map(cat => ({
+      name: cat.name,
+      count: counts[cat.name] || 0,
+    }));
+  }, [basketItems, basketCategories, basketPhotosOnly]);
+
+  const totalPhotosCount = useMemo(() => {
+    return basketItems.filter(i => i.has_photo).length;
+  }, [basketItems]);
+
   // Filtered Food Basket items
   const filteredBasketItems = useMemo(() => {
     const q = basketSearch.toLowerCase().trim();
     return basketItems.filter(item => {
       const matchCat = basketActiveCategory === 'All Foods' || item.basket_category === basketActiveCategory;
-      const matchSearch = !q || item.name.toLowerCase().includes(q) || item.category.toLowerCase().includes(q);
+      const matchSearch = !q ||
+        item.name.toLowerCase().includes(q) ||
+        item.category.toLowerCase().includes(q) ||
+        (item.notes && item.notes.toLowerCase().includes(q));
       const matchPhotos = !basketPhotosOnly || item.has_photo;
       return matchCat && matchSearch && matchPhotos;
     });
@@ -602,7 +636,7 @@ const PhotoScan: React.FC = () => {
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-50 text-cyan-800 text-xs font-semibold mb-2 border border-cyan-200/80">
             <Sparkles className="w-3.5 h-3.5 text-cyan-600" />
-            <span>Computer Vision • 233 Reference Catalog Foods • 42 HD Photographs</span>
+            <span>Computer Vision • {TOTAL_CATALOG_ITEMS} Reference Catalog Foods • {totalPhotosCount} HD Photographs</span>
           </div>
           <h1 className="text-2xl font-extrabold text-neutral-900 tracking-tight">
             Food Photo Scanner
@@ -627,7 +661,7 @@ const PhotoScan: React.FC = () => {
           { key: 'upload', label: 'Upload Image', icon: Upload },
           { key: 'camera', label: 'Camera Scan', icon: Camera },
           { key: 'browse', label: 'Browse Quick List', icon: Search },
-          { key: 'basket', label: 'Food Basket Gallery', icon: ShoppingBasket, count: 233 },
+          { key: 'basket', label: 'Food Basket Gallery', icon: ShoppingBasket, count: TOTAL_CATALOG_ITEMS },
         ].map((tab) => {
           const Icon = tab.icon;
           return (
@@ -668,7 +702,7 @@ const PhotoScan: React.FC = () => {
                   <h2 className="text-xl font-extrabold text-neutral-900">Food Basket Reference Library</h2>
                 </div>
                 <p className="text-xs text-neutral-500 mt-1 font-medium">
-                  Search 233 authenticated food reference items across 10 categories, download real image files with descriptive filenames, or send directly into the AI Photo Scanner.
+                  Search {TOTAL_CATALOG_ITEMS} authenticated food reference items across 10 categories, download real image files with descriptive filenames, or send directly into the AI Photo Scanner.
                 </p>
               </div>
 
@@ -682,7 +716,7 @@ const PhotoScan: React.FC = () => {
                 }`}
               >
                 <Camera className="w-4 h-4" />
-                <span>Show Real Photos Only (42)</span>
+                <span>Show Real Photos Only ({totalPhotosCount})</span>
               </button>
             </div>
 
@@ -708,7 +742,7 @@ const PhotoScan: React.FC = () => {
 
             {/* Category Filter Pills with Live Accurate Counts */}
             <div className="flex gap-1.5 flex-wrap">
-              {basketCategories.map((cat) => (
+              {liveCategories.map((cat) => (
                 <button
                   key={cat.name}
                   onClick={() => setBasketActiveCategory(cat.name)}
@@ -1074,7 +1108,7 @@ const PhotoScan: React.FC = () => {
                     Food Basket Library
                   </span>
                   <p className="text-[10px] text-neutral-500 font-medium">
-                    233 benchmark foods & 42 real photos available to browse & download
+                    {TOTAL_CATALOG_ITEMS} benchmark foods & {totalPhotosCount} real photos available to browse & download
                   </p>
                 </div>
               </div>

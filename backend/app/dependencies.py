@@ -41,3 +41,24 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
+
+
+def get_optional_current_user(
+    token: Optional[str] = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+) -> Optional[models.User]:
+    """
+    Extracts the authenticated user if a valid JWT token is provided.
+    Does not raise 401 if unauthenticated, allowing public read-only catalog browsing.
+    """
+    if not token:
+        return None
+    try:
+        payload = decode_access_token(token)
+        if not payload or "user_id" not in payload:
+            return None
+        user_id = payload.get("user_id")
+        return db.query(models.User).filter(models.User.id == user_id).first()
+    except Exception:
+        return None
+
