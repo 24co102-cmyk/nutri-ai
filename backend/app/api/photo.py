@@ -280,9 +280,9 @@ def _process_detected_items(raw_items: List[Dict[str, Any]]) -> Tuple[List[Detec
 
         if cat_match:
             matched_count += 1
-            cat_id = cat_match.get("id")
-            cat_name = cat_match.get("name")
-            cat_category = cat_match.get("category") or it.get("category") or "Meal"
+            cat_id = str(cat_match.get("id") or "")
+            cat_name = str(cat_match.get("name") or raw_name)
+            cat_category = str(cat_match.get("category") or it.get("category") or "Meal")
             image_file = cat_match.get("image_file", "")
             filename = Path(image_file).name if image_file else ""
             image_url = f"/food_reference_images/{filename}" if filename else None
@@ -558,8 +558,8 @@ def recalculate_plate(
             matched_count += 1
             nutr = calculate_nutrition_for_portion(cat_item, grams=grams, quantity_multiplier=qty)
             item = DetectedFoodItem(
-                name=cat_item.get("name"),
-                category=cat_item.get("category", "Meal"),
+                name=str(cat_item.get("name") or it.name),
+                category=str(cat_item.get("category") or it.category or "Meal"),
                 serving=f"{round(effective_grams, 1)}g",
                 serving_grams=round(grams, 1),
                 quantity=qty,

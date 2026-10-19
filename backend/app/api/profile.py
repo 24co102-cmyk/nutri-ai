@@ -45,7 +45,7 @@ def update_profile(update: schemas.ProfileUpdate, current_user: models.User = De
         profile = models.Profile(user_id=current_user.id)
         db.add(profile)
         db.flush()
-    for field, value in update.dict(exclude_unset=True).items():
+    for field, value in update.model_dump(exclude_unset=True).items():
         setattr(profile, field, value)
     # Recalculate nutrition targets when enough data present
     if profile.age and profile.sex and profile.height_cm and profile.weight_kg and profile.activity_level and profile.goal:
