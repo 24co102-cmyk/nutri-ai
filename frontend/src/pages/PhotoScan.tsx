@@ -3,12 +3,64 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import api from '../api/axios';
 import {
   Camera, Upload, Sparkles, CheckCircle2, RefreshCw,
-  FlipHorizontal, PlusCircle, Search, X, Info, Star, AlertCircle
+  FlipHorizontal, PlusCircle, Search, X, Info, Star, AlertCircle,
+  ShieldCheck, HelpCircle, Sliders
 } from 'lucide-react';
 
 // ────────────────────────────────────────────────────────────────────────────
-// FOOD DATABASE — All foods with nutrition info
+// TYPES
 // ────────────────────────────────────────────────────────────────────────────
+export interface DetectedFoodItem {
+  name: string;
+  category: string;
+  serving: string;
+  serving_grams: number;
+  quantity: number;
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  fiber_g: number;
+  sugar_g: number;
+  sodium_mg: number;
+  health_score: string;
+  emoji: string;
+  confidence: number;
+  micronutrients: string[];
+  benefits: string;
+  ai_tip: string;
+  matched_catalog: boolean;
+  catalog_id?: string | null;
+  catalog_name?: string | null;
+  reference_source: string;
+  is_approximate: boolean;
+  notes?: string | null;
+  image_file?: string | null;
+  image_url?: string | null;
+  nutrition_per_100g?: {
+    calories_kcal: number;
+    protein_g: number;
+    carbohydrates_g: number;
+    fat_g: number;
+    fiber_g: number;
+    sugar_g: number;
+    sodium_mg: number;
+  };
+}
+
+export interface PlateSummary {
+  total_calories: number;
+  total_protein_g: number;
+  total_carbs_g: number;
+  total_fat_g: number;
+  total_fiber_g: number;
+  total_sugar_g: number;
+  total_sodium_mg: number;
+  item_count: number;
+  matched_count: number;
+  unmatched_count: number;
+}
+
 interface FoodInfo {
   name: string;
   emoji: string;
@@ -25,119 +77,32 @@ interface FoodInfo {
   micronutrients: string[];
   benefits: string;
   ai_tip: string;
+  catalog_id?: string;
+  image_file?: string;
+  notes?: string;
 }
 
-const FOOD_DATABASE: FoodInfo[] = [
-  // ── VEGETABLES ──
-  { name: 'Potato', emoji: '🥔', category: 'Vegetables', calories: 77, protein_g: 2, carbs_g: 17, fat_g: 0.1, fiber_g: 2.2, sugar_g: 0.8, sodium_mg: 6, serving: '100g', health_score: 'B+', micronutrients: ['Vitamin C', 'Potassium', 'Vitamin B6'], benefits: 'Good source of potassium and vitamin C. Provides sustained energy.', ai_tip: 'Boil or bake for healthier preparation. Avoid deep frying.' },
-  { name: 'Tomato', emoji: '🍅', category: 'Vegetables', calories: 18, protein_g: 0.9, carbs_g: 3.9, fat_g: 0.2, fiber_g: 1.2, sugar_g: 2.6, sodium_mg: 5, serving: '100g', health_score: 'A', micronutrients: ['Lycopene', 'Vitamin C', 'Vitamin K'], benefits: 'Rich in lycopene, a powerful antioxidant. Supports heart health.', ai_tip: 'Cooking increases lycopene absorption. Add to curries and salads.' },
-  { name: 'Onion', emoji: '🧅', category: 'Vegetables', calories: 40, protein_g: 1.1, carbs_g: 9.3, fat_g: 0.1, fiber_g: 1.7, sugar_g: 4.2, sodium_mg: 4, serving: '100g', health_score: 'A', micronutrients: ['Quercetin', 'Vitamin C', 'Folate'], benefits: 'Contains quercetin with anti-inflammatory properties. Supports immunity.', ai_tip: 'Raw onion has more nutrients. Use in salads for maximum benefit.' },
-  { name: 'Garlic', emoji: '🧄', category: 'Vegetables', calories: 149, protein_g: 6.4, carbs_g: 33, fat_g: 0.5, fiber_g: 2.1, sugar_g: 1, sodium_mg: 17, serving: '100g', health_score: 'A+', micronutrients: ['Allicin', 'Manganese', 'Vitamin B6'], benefits: 'Powerful immunity booster. Contains allicin with antibacterial properties.', ai_tip: 'Crush garlic and let sit 10 mins before cooking to preserve allicin.' },
-  { name: 'Ginger', emoji: '🫚', category: 'Vegetables', calories: 80, protein_g: 1.8, carbs_g: 18, fat_g: 0.8, fiber_g: 2, sugar_g: 1.7, sodium_mg: 13, serving: '100g', health_score: 'A+', micronutrients: ['Gingerol', 'Vitamin C', 'Magnesium'], benefits: 'Anti-nausea and anti-inflammatory. Aids digestion and reduces muscle pain.', ai_tip: 'Add to teas, curries, and smoothies. Fresh ginger is most potent.' },
-  { name: 'Carrot', emoji: '🥕', category: 'Vegetables', calories: 41, protein_g: 0.9, carbs_g: 10, fat_g: 0.2, fiber_g: 2.8, sugar_g: 4.7, sodium_mg: 69, serving: '100g', health_score: 'A', micronutrients: ['Beta-Carotene', 'Vitamin A', 'Vitamin K'], benefits: 'Excellent for eye health. Rich in beta-carotene and antioxidants.', ai_tip: 'Cooking enhances beta-carotene absorption. Great raw as a crunchy snack.' },
-  { name: 'Spinach', emoji: '🌿', category: 'Vegetables', calories: 23, protein_g: 2.9, carbs_g: 3.6, fat_g: 0.4, fiber_g: 2.2, sugar_g: 0.4, sodium_mg: 79, serving: '100g', health_score: 'A+', micronutrients: ['Iron', 'Folate', 'Vitamin K', 'Vitamin A'], benefits: 'Iron-rich superfood. Supports blood health and bone strength.', ai_tip: 'Pair with vitamin C foods to boost iron absorption. Great in smoothies.' },
-  { name: 'Broccoli', emoji: '🥦', category: 'Vegetables', calories: 34, protein_g: 2.8, carbs_g: 7, fat_g: 0.4, fiber_g: 2.6, sugar_g: 1.7, sodium_mg: 33, serving: '100g', health_score: 'A+', micronutrients: ['Vitamin C', 'Vitamin K', 'Folate', 'Sulforaphane'], benefits: 'Cancer-fighting sulforaphane. Supports immune system and bone health.', ai_tip: 'Light steaming preserves nutrients best. Avoid overcooking.' },
-  { name: 'Cauliflower', emoji: '🥬', category: 'Vegetables', calories: 25, protein_g: 1.9, carbs_g: 5, fat_g: 0.3, fiber_g: 2, sugar_g: 1.9, sodium_mg: 30, serving: '100g', health_score: 'A', micronutrients: ['Vitamin C', 'Vitamin K', 'Choline'], benefits: 'Low calorie and versatile. Supports detoxification and brain health.', ai_tip: 'Great roasted as a rice substitute or in curries.' },
-  { name: 'Cabbage', emoji: '🥬', category: 'Vegetables', calories: 25, protein_g: 1.3, carbs_g: 6, fat_g: 0.1, fiber_g: 2.5, sugar_g: 3.2, sodium_mg: 18, serving: '100g', health_score: 'A', micronutrients: ['Vitamin K', 'Vitamin C', 'Folate'], benefits: 'Rich in vitamin K for bone health. Contains gut-friendly fiber.', ai_tip: 'Fermented cabbage (sauerkraut) is excellent for gut microbiome.' },
-  { name: 'Capsicum / Bell Pepper', emoji: '🫑', category: 'Vegetables', calories: 31, protein_g: 1, carbs_g: 6, fat_g: 0.3, fiber_g: 2.1, sugar_g: 4.2, sodium_mg: 4, serving: '100g', health_score: 'A+', micronutrients: ['Vitamin C', 'Vitamin A', 'Vitamin B6'], benefits: 'Highest vitamin C content among vegetables. Excellent antioxidant.', ai_tip: 'Red bell peppers have 3x more vitamin C than green. Eat raw for max benefit.' },
-  { name: 'Cucumber', emoji: '🥒', category: 'Vegetables', calories: 16, protein_g: 0.7, carbs_g: 3.6, fat_g: 0.1, fiber_g: 0.5, sugar_g: 1.7, sodium_mg: 2, serving: '100g', health_score: 'A', micronutrients: ['Vitamin K', 'Potassium', 'Magnesium'], benefits: '95% water content. Excellent for hydration and cooling the body.', ai_tip: 'Keep the peel on for extra nutrients and fiber.' },
-  { name: 'Bitter Gourd (Karela)', emoji: '🥬', category: 'Vegetables', calories: 17, protein_g: 1, carbs_g: 3.7, fat_g: 0.2, fiber_g: 2.8, sugar_g: 1.9, sodium_mg: 5, serving: '100g', health_score: 'A+', micronutrients: ['Charantin', 'Vitamin C', 'Iron'], benefits: 'Excellent for blood sugar control. Charantin helps regulate glucose levels.', ai_tip: 'Soak in salt water to reduce bitterness. Best for diabetics.' },
-  { name: 'Bottle Gourd (Lauki)', emoji: '🥬', category: 'Vegetables', calories: 14, protein_g: 0.6, carbs_g: 3.4, fat_g: 0.1, fiber_g: 0.5, sugar_g: 1.4, sodium_mg: 2, serving: '100g', health_score: 'A', micronutrients: ['Vitamin C', 'Vitamin B', 'Zinc'], benefits: 'Very low calorie. Cooling and hydrating. Aids digestion.', ai_tip: 'Great for weight loss. Make lauki juice for liver health.' },
-  { name: 'Sweet Potato', emoji: '🍠', category: 'Vegetables', calories: 86, protein_g: 1.6, carbs_g: 20, fat_g: 0.1, fiber_g: 3, sugar_g: 4.2, sodium_mg: 55, serving: '100g', health_score: 'A', micronutrients: ['Beta-Carotene', 'Vitamin A', 'Potassium'], benefits: 'High in beta-carotene and fiber. Sustained energy with low glycemic index.', ai_tip: 'Boil or bake with skin on for maximum nutrients.' },
-  { name: 'Pumpkin', emoji: '🎃', category: 'Vegetables', calories: 26, protein_g: 1, carbs_g: 6.5, fat_g: 0.1, fiber_g: 0.5, sugar_g: 2.8, sodium_mg: 1, serving: '100g', health_score: 'A', micronutrients: ['Beta-Carotene', 'Vitamin A', 'Zinc'], benefits: 'Rich in antioxidants. Supports eye health and immunity.', ai_tip: 'Roasted pumpkin seeds are a great source of zinc and magnesium.' },
-  { name: 'Mushroom', emoji: '🍄', category: 'Vegetables', calories: 22, protein_g: 3.1, carbs_g: 3.3, fat_g: 0.3, fiber_g: 1, sugar_g: 2, sodium_mg: 5, serving: '100g', health_score: 'A', micronutrients: ['Vitamin D', 'Selenium', 'B Vitamins'], benefits: 'One of the few plant sources of Vitamin D. Supports immune function.', ai_tip: 'Sun-dried mushrooms have much higher vitamin D content.' },
-  { name: 'Okra (Bhindi)', emoji: '🌿', category: 'Vegetables', calories: 33, protein_g: 1.9, carbs_g: 7.5, fat_g: 0.2, fiber_g: 3.2, sugar_g: 1.5, sodium_mg: 7, serving: '100g', health_score: 'A', micronutrients: ['Vitamin K', 'Folate', 'Magnesium'], benefits: 'Rich in soluble fiber that helps control blood sugar. Excellent for gut health.', ai_tip: 'Avoid cutting in oil immediately. Add at end of cooking.' },
-  { name: 'Green Peas', emoji: '🟢', category: 'Vegetables', calories: 81, protein_g: 5.4, carbs_g: 14, fat_g: 0.4, fiber_g: 5.7, sugar_g: 5.7, sodium_mg: 5, serving: '100g', health_score: 'A', micronutrients: ['Vitamin K', 'Vitamin C', 'Iron'], benefits: 'High plant protein. Supports muscle health and blood sugar control.', ai_tip: 'Frozen peas retain most nutrients. Add to rice, curries, and soups.' },
-  { name: 'Beetroot', emoji: '🟣', category: 'Vegetables', calories: 43, protein_g: 1.6, carbs_g: 10, fat_g: 0.2, fiber_g: 2.8, sugar_g: 7, sodium_mg: 78, serving: '100g', health_score: 'A', micronutrients: ['Folate', 'Nitrates', 'Manganese'], benefits: 'Boosts exercise performance via dietary nitrates. Supports liver health.', ai_tip: 'Beetroot juice before workout can enhance endurance.' },
-  { name: 'Eggplant (Brinjal)', emoji: '🍆', category: 'Vegetables', calories: 25, protein_g: 1, carbs_g: 5.9, fat_g: 0.2, fiber_g: 3, sugar_g: 3.5, sodium_mg: 2, serving: '100g', health_score: 'B+', micronutrients: ['Anthocyanins', 'Vitamin B6', 'Potassium'], benefits: 'Contains nasunin, a powerful brain-protecting antioxidant.', ai_tip: 'Roasting or grilling is healthier than deep frying for baingan bharta.' },
-  { name: 'Corn', emoji: '🌽', category: 'Vegetables', calories: 86, protein_g: 3.3, carbs_g: 19, fat_g: 1.4, fiber_g: 2.4, sugar_g: 3.2, sodium_mg: 15, serving: '100g', health_score: 'B+', micronutrients: ['Vitamin B1', 'Folate', 'Magnesium'], benefits: 'Good source of energy and fiber. Contains lutein for eye health.', ai_tip: 'Boiled corn is healthier than popcorn with butter. Great post-workout snack.' },
-  { name: 'Radish', emoji: '🌶️', category: 'Vegetables', calories: 16, protein_g: 0.7, carbs_g: 3.4, fat_g: 0.1, fiber_g: 1.6, sugar_g: 1.9, sodium_mg: 39, serving: '100g', health_score: 'A', micronutrients: ['Vitamin C', 'Folate', 'Potassium'], benefits: 'Supports liver detox and digestion. Excellent for weight loss.', ai_tip: 'Eat raw in salads or make mooli paratha for a nutritious meal.' },
-  { name: 'Colocasia (Arbi)', emoji: '🥬', category: 'Vegetables', calories: 112, protein_g: 1.5, carbs_g: 26, fat_g: 0.2, fiber_g: 4.3, sugar_g: 0.4, sodium_mg: 11, serving: '100g', health_score: 'B+', micronutrients: ['Potassium', 'Vitamin E', 'Manganese'], benefits: 'High fiber content. Good source of resistant starch for gut health.', ai_tip: 'Always cook taro thoroughly. Avoid if you have kidney problems.' },
-  { name: 'Raw Banana', emoji: '🍌', category: 'Vegetables', calories: 89, protein_g: 1.1, carbs_g: 23, fat_g: 0.3, fiber_g: 2.6, sugar_g: 12, sodium_mg: 1, serving: '100g', health_score: 'B+', micronutrients: ['Potassium', 'Vitamin B6', 'Resistant Starch'], benefits: 'Excellent prebiotic. Resistant starch feeds beneficial gut bacteria.', ai_tip: 'Less ripe bananas have more resistant starch which is better for gut health.' },
-  { name: 'Drumstick (Moringa)', emoji: '🌿', category: 'Vegetables', calories: 37, protein_g: 2.1, carbs_g: 8.5, fat_g: 0.2, fiber_g: 3.2, sugar_g: 3.7, sodium_mg: 42, serving: '100g', health_score: 'A+', micronutrients: ['Vitamin C', 'Iron', 'Calcium', 'Vitamin A'], benefits: 'Superfood with 7x more vitamin C than oranges. Anti-inflammatory.', ai_tip: 'Moringa leaves can be dried and powdered for a nutritious supplement.' },
-  { name: 'Lettuce', emoji: '🥬', category: 'Vegetables', calories: 15, protein_g: 1.4, carbs_g: 2.9, fat_g: 0.2, fiber_g: 1.3, sugar_g: 1.5, sodium_mg: 28, serving: '100g', health_score: 'A', micronutrients: ['Vitamin K', 'Vitamin A', 'Folate'], benefits: 'Low calorie with high water content. Excellent for hydration.', ai_tip: 'Darker lettuce leaves like romaine have more nutrients than iceberg.' },
-  { name: 'Kale', emoji: '🥬', category: 'Vegetables', calories: 49, protein_g: 4.3, carbs_g: 9, fat_g: 0.9, fiber_g: 3.6, sugar_g: 2.3, sodium_mg: 38, serving: '100g', health_score: 'A+', micronutrients: ['Vitamin K', 'Vitamin C', 'Vitamin A', 'Calcium'], benefits: 'Nutrient density powerhouse. One of the most nutritious vegetables.', ai_tip: 'Massage kale with olive oil to soften. Great for chips and salads.' },
-  { name: 'Spring Onion', emoji: '🌱', category: 'Vegetables', calories: 32, protein_g: 1.8, carbs_g: 7.3, fat_g: 0.2, fiber_g: 2.6, sugar_g: 2.3, sodium_mg: 16, serving: '100g', health_score: 'A', micronutrients: ['Vitamin K', 'Vitamin C', 'Folate'], benefits: 'Rich in flavonoids and antioxidants. Supports heart health.', ai_tip: 'Use raw as garnish to retain maximum vitamin C content.' },
-  { name: 'Fenugreek Leaves (Methi)', emoji: '🌿', category: 'Vegetables', calories: 49, protein_g: 4.4, carbs_g: 6, fat_g: 0.9, fiber_g: 3.9, sugar_g: 1, sodium_mg: 67, serving: '100g', health_score: 'A+', micronutrients: ['Iron', 'Folate', 'Vitamin K'], benefits: 'Excellent for blood sugar control. Rich in iron for anemia prevention.', ai_tip: 'Fresh methi is superior to dried. Add to rotis, sabzi, and dal.' },
-  { name: 'Coriander', emoji: '🌿', category: 'Vegetables', calories: 23, protein_g: 2.1, carbs_g: 3.7, fat_g: 0.5, fiber_g: 2.8, sugar_g: 0.9, sodium_mg: 46, serving: '100g', health_score: 'A', micronutrients: ['Vitamin K', 'Vitamin A', 'Vitamin C'], benefits: 'Digestive aid and detoxifier. Helps lower blood sugar.', ai_tip: 'Add fresh coriander at end of cooking to preserve nutrients.' },
-
-  // ── FRUITS ──
-  { name: 'Apple', emoji: '🍎', category: 'Fruits', calories: 52, protein_g: 0.3, carbs_g: 14, fat_g: 0.2, fiber_g: 2.4, sugar_g: 10, sodium_mg: 1, serving: '100g', health_score: 'A', micronutrients: ['Vitamin C', 'Potassium', 'Quercetin', 'Fiber'], benefits: 'High in pectin fiber for gut health. Quercetin is a powerful antioxidant.', ai_tip: 'Eat with skin for maximum fiber and quercetin content.' },
-  { name: 'Banana', emoji: '🍌', category: 'Fruits', calories: 89, protein_g: 1.1, carbs_g: 23, fat_g: 0.3, fiber_g: 2.6, sugar_g: 12, sodium_mg: 1, serving: '100g', health_score: 'A', micronutrients: ['Potassium', 'Vitamin B6', 'Magnesium'], benefits: 'Excellent pre-workout energy source. High in potassium for muscle function.', ai_tip: 'Riper bananas have more antioxidants. Greener ones have more resistant starch.' },
-  { name: 'Orange', emoji: '🍊', category: 'Fruits', calories: 47, protein_g: 0.9, carbs_g: 12, fat_g: 0.1, fiber_g: 2.4, sugar_g: 9.4, sodium_mg: 0, serving: '100g', health_score: 'A', micronutrients: ['Vitamin C', 'Folate', 'Thiamine'], benefits: 'Excellent source of vitamin C. Boosts iron absorption and immunity.', ai_tip: 'Eat whole fruit rather than juice to get full fiber benefits.' },
-  { name: 'Mango', emoji: '🥭', category: 'Fruits', calories: 60, protein_g: 0.8, carbs_g: 15, fat_g: 0.4, fiber_g: 1.6, sugar_g: 14, sodium_mg: 1, serving: '100g', health_score: 'B+', micronutrients: ['Vitamin A', 'Vitamin C', 'Folate'], benefits: 'King of fruits! Rich in vitamin A for eye health. Excellent antioxidant.', ai_tip: 'Best consumed in moderation due to high natural sugar content.' },
-  { name: 'Papaya', emoji: '🍑', category: 'Fruits', calories: 43, protein_g: 0.5, carbs_g: 11, fat_g: 0.3, fiber_g: 1.7, sugar_g: 7.8, sodium_mg: 8, serving: '100g', health_score: 'A', micronutrients: ['Vitamin C', 'Folate', 'Papain'], benefits: 'Contains papain enzyme for digestion. Excellent for skin health.', ai_tip: 'Papain enzyme in papaya tenderizes meat and aids protein digestion.' },
-  { name: 'Guava', emoji: '🍈', category: 'Fruits', calories: 68, protein_g: 2.6, carbs_g: 14, fat_g: 1, fiber_g: 5.4, sugar_g: 8.9, sodium_mg: 2, serving: '100g', health_score: 'A+', micronutrients: ['Vitamin C', 'Folate', 'Lycopene'], benefits: '4x more vitamin C than oranges. Excellent fiber for blood sugar control.', ai_tip: 'Eat with seeds for maximum fiber. Excellent diabetic-friendly fruit.' },
-  { name: 'Watermelon', emoji: '🍉', category: 'Fruits', calories: 30, protein_g: 0.6, carbs_g: 7.6, fat_g: 0.2, fiber_g: 0.4, sugar_g: 6.2, sodium_mg: 1, serving: '100g', health_score: 'A', micronutrients: ['Lycopene', 'Vitamin C', 'Citrulline'], benefits: '92% water. Contains citrulline which improves blood flow. Post-workout hydration.', ai_tip: 'Best hydrating fruit. Eat post-workout to reduce muscle soreness.' },
-  { name: 'Pomegranate', emoji: '🍎', category: 'Fruits', calories: 83, protein_g: 1.7, carbs_g: 19, fat_g: 1.2, fiber_g: 4, sugar_g: 14, sodium_mg: 3, serving: '100g', health_score: 'A+', micronutrients: ['Punicalagins', 'Vitamin C', 'Folate'], benefits: 'Powerful antioxidants 3x more than green tea. Supports heart health.', ai_tip: 'Pomegranate juice can help lower blood pressure.' },
-  { name: 'Grapes', emoji: '🍇', category: 'Fruits', calories: 69, protein_g: 0.7, carbs_g: 18, fat_g: 0.2, fiber_g: 0.9, sugar_g: 15, sodium_mg: 2, serving: '100g', health_score: 'B+', micronutrients: ['Resveratrol', 'Vitamin C', 'Vitamin K'], benefits: 'Resveratrol supports heart health and longevity. Anti-inflammatory.', ai_tip: 'Dark grapes have more antioxidants than green. Eat in moderation.' },
-  { name: 'Kiwi', emoji: '🥝', category: 'Fruits', calories: 61, protein_g: 1.1, carbs_g: 15, fat_g: 0.5, fiber_g: 3, sugar_g: 9, sodium_mg: 3, serving: '100g', health_score: 'A+', micronutrients: ['Vitamin C', 'Vitamin K', 'Folate'], benefits: 'Contains twice the vitamin C of oranges. Promotes better sleep.', ai_tip: 'Eat 2 kiwis before bed to improve sleep quality naturally.' },
-  { name: 'Avocado', emoji: '🥑', category: 'Fruits', calories: 160, protein_g: 2, carbs_g: 9, fat_g: 15, fiber_g: 7, sugar_g: 0.7, sodium_mg: 7, serving: '100g', health_score: 'A+', micronutrients: ['Oleic Acid', 'Potassium', 'Folate', 'Vitamin E'], benefits: 'Heart-healthy monounsaturated fats. More potassium than bananas.', ai_tip: 'Healthy fat makes other nutrients more absorbable. Great with salads.' },
-  { name: 'Pineapple', emoji: '🍍', category: 'Fruits', calories: 50, protein_g: 0.5, carbs_g: 13, fat_g: 0.1, fiber_g: 1.4, sugar_g: 10, sodium_mg: 1, serving: '100g', health_score: 'A', micronutrients: ['Bromelain', 'Vitamin C', 'Manganese'], benefits: 'Bromelain enzyme aids protein digestion and reduces inflammation.', ai_tip: 'Fresh pineapple has more bromelain than canned. Great digestive aid.' },
-
-  // ── CHICKEN DISHES ──
-  { name: 'Chicken Biryani', emoji: '🍛', category: 'Chicken Dishes', calories: 290, protein_g: 18, carbs_g: 35, fat_g: 8, fiber_g: 1.5, sugar_g: 2, sodium_mg: 560, serving: '250g serving', health_score: 'B+', micronutrients: ['Iron', 'Zinc', 'Vitamin B12', 'Niacin'], benefits: 'High protein meal with complex carbohydrates. Spices provide anti-inflammatory benefits.', ai_tip: 'Use brown rice for more fiber. Add raita to balance macros and aid digestion.' },
-  { name: 'Butter Chicken', emoji: '🍛', category: 'Chicken Dishes', calories: 220, protein_g: 24, carbs_g: 8, fat_g: 11, fiber_g: 1, sugar_g: 4, sodium_mg: 480, serving: '200g serving', health_score: 'B+', micronutrients: ['Vitamin A', 'Iron', 'Vitamin B12'], benefits: 'High protein. Tomato base provides lycopene. Great for muscle building.', ai_tip: 'Request less cream/butter. Pair with roti instead of naan to reduce calories.' },
-  { name: 'Chicken Curry', emoji: '🍛', category: 'Chicken Dishes', calories: 180, protein_g: 22, carbs_g: 6, fat_g: 8, fiber_g: 2, sugar_g: 2.5, sodium_mg: 420, serving: '200g serving', health_score: 'A', micronutrients: ['Iron', 'Zinc', 'Niacin', 'Selenium'], benefits: 'Lean protein source. Spices like turmeric, cumin add antioxidant benefits.', ai_tip: 'Home-cooked chicken curry controls sodium. Add more vegetables to increase nutrients.' },
-  { name: 'Chicken Tikka', emoji: '🍗', category: 'Chicken Dishes', calories: 165, protein_g: 28, carbs_g: 4, fat_g: 5, fiber_g: 0.5, sugar_g: 2, sodium_mg: 380, serving: '150g serving', health_score: 'A', micronutrients: ['Vitamin B12', 'Niacin', 'Phosphorus'], benefits: 'Lean grilled protein. Low fat and carbs. Perfect for weight management.', ai_tip: 'One of the healthiest chicken preparations. Great post-workout meal.' },
-  { name: 'Grilled Chicken', emoji: '🍗', category: 'Chicken Dishes', calories: 165, protein_g: 31, carbs_g: 0, fat_g: 3.6, fiber_g: 0, sugar_g: 0, sodium_mg: 74, serving: '100g serving', health_score: 'A+', micronutrients: ['Vitamin B12', 'Niacin', 'Selenium', 'Phosphorus'], benefits: 'Highest protein with lowest fat ratio. Ideal for muscle building and weight loss.', ai_tip: 'Best protein source per calorie. Marinate with herbs for flavor without extra calories.' },
-  { name: 'Chicken Wings', emoji: '🍗', category: 'Chicken Dishes', calories: 203, protein_g: 18, carbs_g: 0, fat_g: 14, fiber_g: 0, sugar_g: 0, sodium_mg: 174, serving: '100g', health_score: 'B', micronutrients: ['Niacin', 'Vitamin B6', 'Zinc'], benefits: 'Good protein source. Skin contains collagen.', ai_tip: 'Baked wings instead of fried save 40% calories. Avoid heavy sauces.' },
-  { name: 'Chicken Kebab', emoji: '🍢', category: 'Chicken Dishes', calories: 148, protein_g: 26, carbs_g: 2, fat_g: 4, fiber_g: 0.5, sugar_g: 1, sodium_mg: 290, serving: '150g serving', health_score: 'A', micronutrients: ['Iron', 'Niacin', 'Vitamin B12'], benefits: 'Lean protein snack. Herbs and spices add antioxidants without calories.', ai_tip: 'Great lean protein option. Pair with mint chutney and salad.' },
-  { name: 'Chicken Shawarma', emoji: '🌯', category: 'Chicken Dishes', calories: 310, protein_g: 22, carbs_g: 28, fat_g: 12, fiber_g: 2, sugar_g: 3, sodium_mg: 680, serving: '1 wrap', health_score: 'B', micronutrients: ['Iron', 'Calcium', 'Vitamin B12'], benefits: 'Complete meal with protein and carbs. Vegetables add micronutrients.', ai_tip: 'Ask for extra salad and less sauce to reduce sodium and calories.' },
-  { name: 'Chicken 65', emoji: '🍗', category: 'Chicken Dishes', calories: 280, protein_g: 22, carbs_g: 15, fat_g: 14, fiber_g: 1, sugar_g: 1, sodium_mg: 520, serving: '150g serving', health_score: 'B', micronutrients: ['Niacin', 'Phosphorus', 'Iron'], benefits: 'High protein. Spices provide antioxidant and anti-inflammatory benefits.', ai_tip: 'Deep fried version adds fat. Air-fried or baked version is much healthier.' },
-  { name: 'Chicken Soup', emoji: '🍲', category: 'Chicken Dishes', calories: 75, protein_g: 8, carbs_g: 5, fat_g: 2, fiber_g: 1, sugar_g: 1.5, sodium_mg: 860, serving: '240ml bowl', health_score: 'A+', micronutrients: ['Zinc', 'Vitamin B12', 'Collagen'], benefits: 'Immunity booster. Collagen from bones supports joints and skin.', ai_tip: 'Use bone broth base for maximum collagen and mineral content. Reduce sodium by making at home.' },
-
-  // ── MUTTON / GOAT DISHES ──
-  { name: 'Mutton Biryani', emoji: '🍛', category: 'Mutton Dishes', calories: 350, protein_g: 22, carbs_g: 38, fat_g: 12, fiber_g: 1.5, sugar_g: 2, sodium_mg: 620, serving: '300g serving', health_score: 'B', micronutrients: ['Iron', 'Zinc', 'Vitamin B12'], benefits: 'High protein and iron rich. Spices provide antioxidant benefits.', ai_tip: 'Choose lean cuts and reduce oil. Pair with cucumber raita.' },
-  { name: 'Mutton Curry', emoji: '🍛', category: 'Mutton Dishes', calories: 243, protein_g: 26, carbs_g: 6, fat_g: 13, fiber_g: 2, sugar_g: 2, sodium_mg: 480, serving: '200g serving', health_score: 'B+', micronutrients: ['Iron', 'Zinc', 'Vitamin B12', 'Selenium'], benefits: 'Rich in heme iron for blood health. High complete protein content.', ai_tip: 'Trim visible fat before cooking. Skim fat from curry for lighter version.' },
-  { name: 'Mutton Rogan Josh', emoji: '🍛', category: 'Mutton Dishes', calories: 260, protein_g: 24, carbs_g: 7, fat_g: 15, fiber_g: 2.5, sugar_g: 3, sodium_mg: 510, serving: '200g serving', health_score: 'B+', micronutrients: ['Iron', 'Zinc', 'Kashmiri Spices'], benefits: 'Aromatic Kashmiri spices have anti-inflammatory properties. High protein.', ai_tip: 'Traditional recipe uses minimal ghee. Pair with steamed rice.' },
-  { name: 'Seekh Kebab', emoji: '🍢', category: 'Mutton Dishes', calories: 180, protein_g: 24, carbs_g: 4, fat_g: 8, fiber_g: 1, sugar_g: 1, sodium_mg: 380, serving: '150g serving', health_score: 'A', micronutrients: ['Iron', 'Zinc', 'Vitamin B12'], benefits: 'Lean protein cooked on open flame. Minimal fat when grilled properly.', ai_tip: 'Grilled seekh kebab is much healthier than fried. Best protein snack.' },
-  { name: 'Mutton Keema', emoji: '🍛', category: 'Mutton Dishes', calories: 230, protein_g: 22, carbs_g: 8, fat_g: 13, fiber_g: 2, sugar_g: 2, sodium_mg: 440, serving: '200g serving', health_score: 'B+', micronutrients: ['Iron', 'Zinc', 'Vitamin B12'], benefits: 'Ground meat with high protein. Spices and tomatoes add antioxidants.', ai_tip: 'Use lean mutton and add more vegetables like peas for extra nutrition.' },
-
-  // ── FISH DISHES ──
-  { name: 'Grilled Fish', emoji: '🐟', category: 'Fish Dishes', calories: 136, protein_g: 27, carbs_g: 0, fat_g: 3, fiber_g: 0, sugar_g: 0, sodium_mg: 104, serving: '150g serving', health_score: 'A+', micronutrients: ['Omega-3', 'Vitamin D', 'Selenium', 'B12'], benefits: 'Lean protein with heart-healthy omega-3 fats. Excellent brain food.', ai_tip: 'One of the healthiest protein sources. Aim for 2 servings of fish per week.' },
-  { name: 'Fish Curry', emoji: '🍛', category: 'Fish Dishes', calories: 142, protein_g: 18, carbs_g: 6, fat_g: 5, fiber_g: 2, sugar_g: 2, sodium_mg: 380, serving: '200g serving', health_score: 'A', micronutrients: ['Omega-3', 'Vitamin D', 'Iodine'], benefits: 'Omega-3 rich protein. Turmeric in curry adds anti-inflammatory benefits.', ai_tip: 'Coconut-based South Indian fish curry provides extra MCTs for energy.' },
-  { name: 'Fish Tikka', emoji: '🐟', category: 'Fish Dishes', calories: 155, protein_g: 25, carbs_g: 4, fat_g: 4, fiber_g: 0.5, sugar_g: 1, sodium_mg: 340, serving: '150g serving', health_score: 'A+', micronutrients: ['Omega-3', 'Vitamin B12', 'Selenium'], benefits: 'Protein-packed with healthy fats. Low calorie and high nutrient density.', ai_tip: 'Marinating in yogurt and spices before grilling adds probiotics and flavor.' },
-  { name: 'Salmon', emoji: '🐟', category: 'Fish Dishes', calories: 208, protein_g: 20, carbs_g: 0, fat_g: 13, fiber_g: 0, sugar_g: 0, sodium_mg: 59, serving: '100g', health_score: 'A+', micronutrients: ['Omega-3 DHA', 'Vitamin D', 'Vitamin B12', 'Selenium'], benefits: 'Best source of omega-3 DHA for brain health. Excellent vitamin D source.', ai_tip: 'Wild salmon has more omega-3 than farmed. Bake or grill for best results.' },
-  { name: 'Sardines', emoji: '🐟', category: 'Fish Dishes', calories: 208, protein_g: 25, carbs_g: 0, fat_g: 11, fiber_g: 0, sugar_g: 0, sodium_mg: 307, serving: '100g', health_score: 'A+', micronutrients: ['Omega-3', 'Calcium', 'Vitamin B12', 'Vitamin D'], benefits: 'Calcium from edible bones. Most nutrient-dense small fish. Budget-friendly superfood.', ai_tip: 'Canned sardines with bones are an excellent calcium and omega-3 source.' },
-  { name: 'Prawn Curry', emoji: '🦐', category: 'Fish Dishes', calories: 135, protein_g: 20, carbs_g: 4, fat_g: 4.5, fiber_g: 0.5, sugar_g: 1.5, sodium_mg: 420, serving: '200g serving', health_score: 'A', micronutrients: ['Iodine', 'Selenium', 'Zinc', 'Vitamin B12'], benefits: 'High protein, low fat seafood. Excellent source of iodine for thyroid health.', ai_tip: 'Avoid breaded and fried prawns. Grilled or in curry is much healthier.' },
-
-  // ── EGG DISHES ──
-  { name: 'Boiled Eggs', emoji: '🥚', category: 'Egg Dishes', calories: 155, protein_g: 13, carbs_g: 1.1, fat_g: 11, fiber_g: 0, sugar_g: 1.1, sodium_mg: 124, serving: '2 eggs (100g)', health_score: 'A+', micronutrients: ['Choline', 'Vitamin B12', 'Vitamin D', 'Selenium'], benefits: 'Complete protein with all essential amino acids. Choline for brain health.', ai_tip: 'Eat whole eggs. Yolk contains most nutrients including fat-soluble vitamins.' },
-  { name: 'Scrambled Eggs', emoji: '🍳', category: 'Egg Dishes', calories: 180, protein_g: 13, carbs_g: 2, fat_g: 13, fiber_g: 0, sugar_g: 1, sodium_mg: 178, serving: '2 eggs cooked', health_score: 'A', micronutrients: ['Choline', 'Vitamin A', 'Vitamin B12'], benefits: 'High quality protein. Adding vegetables increases fiber and micronutrients.', ai_tip: 'Cook with minimal oil. Add spinach, tomatoes for a nutrient boost.' },
-  { name: 'Omelette', emoji: '🍳', category: 'Egg Dishes', calories: 154, protein_g: 11, carbs_g: 1, fat_g: 12, fiber_g: 0, sugar_g: 0.5, sodium_mg: 207, serving: '1 plain omelette', health_score: 'A', micronutrients: ['Choline', 'Selenium', 'Vitamin B12'], benefits: 'Quick protein meal. Adding vegetables creates a complete nutritious dish.', ai_tip: 'Masala omelette with onions, tomatoes, green chilli adds nutrients and flavor.' },
-  { name: 'Egg Curry', emoji: '🍛', category: 'Egg Dishes', calories: 180, protein_g: 12, carbs_g: 8, fat_g: 11, fiber_g: 2, sugar_g: 3, sodium_mg: 380, serving: '2 eggs with gravy', health_score: 'A', micronutrients: ['Iron', 'Vitamin A', 'Choline'], benefits: 'Protein-rich with antioxidant-rich spice gravy. Budget-friendly nutrition.', ai_tip: 'Use hard boiled eggs in tomato onion masala for a healthy complete meal.' },
-  { name: 'Egg Bhurji', emoji: '🍳', category: 'Egg Dishes', calories: 200, protein_g: 14, carbs_g: 5, fat_g: 14, fiber_g: 1, sugar_g: 2, sodium_mg: 290, serving: '2 eggs with vegetables', health_score: 'A', micronutrients: ['Choline', 'Vitamin C', 'Iron'], benefits: 'Scrambled eggs with vegetables. One of the healthiest Indian egg dishes.', ai_tip: 'Add onions, tomatoes, peppers and minimal oil for a balanced meal.' },
-
-  // ── RICE & GRAINS ──
-  { name: 'Rice (Cooked)', emoji: '🍚', category: 'Grains', calories: 130, protein_g: 2.7, carbs_g: 28, fat_g: 0.3, fiber_g: 0.4, sugar_g: 0, sodium_mg: 1, serving: '100g cooked', health_score: 'B+', micronutrients: ['Manganese', 'Thiamine', 'Niacin'], benefits: 'Gluten-free carbohydrate source. Easy to digest and gentle on stomach.', ai_tip: 'Brown rice has 3x more fiber than white. Cool cooked rice creates resistant starch.' },
-  { name: 'Brown Rice', emoji: '🍚', category: 'Grains', calories: 112, protein_g: 2.6, carbs_g: 23, fat_g: 0.9, fiber_g: 1.8, sugar_g: 0.3, sodium_mg: 5, serving: '100g cooked', health_score: 'A', micronutrients: ['Magnesium', 'Phosphorus', 'B Vitamins'], benefits: 'More fiber and nutrients than white rice. Better blood sugar control.', ai_tip: 'Brown rice takes longer to cook but significantly better for blood sugar.' },
-  { name: 'Roti / Chapati', emoji: '🫓', category: 'Grains', calories: 264, protein_g: 9, carbs_g: 54, fat_g: 3, fiber_g: 7, sugar_g: 1, sodium_mg: 5, serving: '2 medium rotis', health_score: 'A', micronutrients: ['Iron', 'Magnesium', 'Fiber', 'B Vitamins'], benefits: 'Whole wheat provides sustained energy and digestive fiber.', ai_tip: 'Whole wheat atta roti is much better than maida. Use minimal ghee.' },
-  { name: 'Oats', emoji: '🥣', category: 'Grains', calories: 389, protein_g: 17, carbs_g: 66, fat_g: 7, fiber_g: 10, sugar_g: 1, sodium_mg: 2, serving: '100g dry', health_score: 'A+', micronutrients: ['Beta-Glucan', 'Manganese', 'Phosphorus', 'Iron'], benefits: 'Beta-glucan reduces cholesterol. Best breakfast for sustained energy.', ai_tip: 'Overnight oats improve digestibility. Add fruits and nuts for complete nutrition.' },
-  { name: 'Quinoa', emoji: '🥣', category: 'Grains', calories: 120, protein_g: 4.4, carbs_g: 22, fat_g: 1.9, fiber_g: 2.8, sugar_g: 0.9, sodium_mg: 7, serving: '100g cooked', health_score: 'A+', micronutrients: ['Folate', 'Magnesium', 'All 9 Essential Amino Acids'], benefits: 'Complete plant protein with all 9 amino acids. Excellent for vegetarians.', ai_tip: 'Rinse before cooking to remove bitter saponins. Great rice substitute.' },
-
-  // ── LENTILS & LEGUMES ──
-  { name: 'Dal (Lentils)', emoji: '🥘', category: 'Legumes', calories: 116, protein_g: 9, carbs_g: 20, fat_g: 0.4, fiber_g: 8, sugar_g: 1.8, sodium_mg: 4, serving: '100g cooked', health_score: 'A+', micronutrients: ['Folate', 'Iron', 'Potassium', 'Plant Protein'], benefits: 'Excellent plant protein and iron source. High fiber for gut health.', ai_tip: 'Pair dal with vitamin C foods to enhance iron absorption. Dal tadka with roti is a complete meal.' },
-  { name: 'Chickpeas (Chana)', emoji: '🫘', category: 'Legumes', calories: 164, protein_g: 8.9, carbs_g: 27, fat_g: 2.6, fiber_g: 7.6, sugar_g: 4.8, sodium_mg: 7, serving: '100g cooked', health_score: 'A', micronutrients: ['Folate', 'Iron', 'Manganese', 'Fiber'], benefits: 'Excellent protein-fiber combination for satiety. Helps blood sugar control.', ai_tip: 'Sprout chickpeas before cooking to enhance nutrient absorption and digestibility.' },
-  { name: 'Rajma (Kidney Beans)', emoji: '🫘', category: 'Legumes', calories: 127, protein_g: 8.7, carbs_g: 22.8, fat_g: 0.5, fiber_g: 6.4, sugar_g: 0.3, sodium_mg: 2, serving: '100g cooked', health_score: 'A', micronutrients: ['Iron', 'Folate', 'Potassium', 'Manganese'], benefits: 'Plant protein with high fiber. Excellent for heart health and diabetes management.', ai_tip: 'Rajma chawal is a nutritionally complete meal. Always soak before cooking.' },
-  { name: 'Paneer', emoji: '🧀', category: 'Dairy', calories: 265, protein_g: 18, carbs_g: 4, fat_g: 20, fiber_g: 0, sugar_g: 2, sodium_mg: 27, serving: '100g', health_score: 'B+', micronutrients: ['Calcium', 'Phosphorus', 'Vitamin A', 'Protein'], benefits: 'Highest protein Indian dairy. Excellent calcium source for bone health.', ai_tip: 'Use toned milk paneer to reduce fat. Grilled paneer is healthier than deep fried.' },
-
-  // ── BEEF DISHES ──
-  { name: 'Beef Biryani', emoji: '🍛', category: 'Beef Dishes', calories: 380, protein_g: 20, carbs_g: 40, fat_g: 14, fiber_g: 1.5, sugar_g: 2, sodium_mg: 640, serving: '300g serving', health_score: 'B', micronutrients: ['Iron', 'Zinc', 'Vitamin B12'], benefits: 'High protein and iron. Spices provide antioxidant benefits.', ai_tip: 'Use lean beef cuts. Brown rice variation improves fiber content.' },
-  { name: 'Beef Steak', emoji: '🥩', category: 'Beef Dishes', calories: 271, protein_g: 26, carbs_g: 0, fat_g: 18, fiber_g: 0, sugar_g: 0, sodium_mg: 56, serving: '150g serving', health_score: 'B+', micronutrients: ['Iron', 'Zinc', 'Vitamin B12', 'Creatine'], benefits: 'Complete protein with heme iron. Rich in creatine for muscle performance.', ai_tip: 'Choose lean cuts like sirloin. Grill instead of fry. Limit to 2-3 times per week.' },
-  { name: 'Beef Burger', emoji: '🍔', category: 'Beef Dishes', calories: 354, protein_g: 20, carbs_g: 28, fat_g: 17, fiber_g: 2, sugar_g: 6, sodium_mg: 750, serving: '1 burger', health_score: 'C+', micronutrients: ['Iron', 'Zinc', 'Calcium'], benefits: 'Provides protein and iron. Vegetable toppings add micronutrients.', ai_tip: 'Choose whole grain bun, extra salad and no sauce to make it healthier.' },
-
-  // ── INTERNATIONAL DISHES ──
-  { name: 'Pasta', emoji: '🍝', category: 'International', calories: 131, protein_g: 5, carbs_g: 25, fat_g: 1.1, fiber_g: 1.8, sugar_g: 0.6, sodium_mg: 3, serving: '100g cooked', health_score: 'B+', micronutrients: ['Folate', 'Iron', 'Manganese'], benefits: 'Good carbohydrate source. Whole wheat pasta provides more fiber.', ai_tip: 'Whole wheat pasta has double the fiber. Use olive oil and vegetable sauces.' },
-  { name: 'Pizza', emoji: '🍕', category: 'International', calories: 266, protein_g: 11, carbs_g: 33, fat_g: 10, fiber_g: 2.3, sugar_g: 3.6, sodium_mg: 598, serving: '1 slice (107g)', health_score: 'C+', micronutrients: ['Calcium', 'Iron', 'Lycopene'], benefits: 'Cheese provides calcium. Tomato sauce contains lycopene.', ai_tip: 'Thin crust with vegetables and less cheese is much healthier. Limit frequency.' },
-  { name: 'Chicken Ramen', emoji: '🍜', category: 'International', calories: 380, protein_g: 22, carbs_g: 45, fat_g: 12, fiber_g: 2, sugar_g: 4, sodium_mg: 1200, serving: '1 bowl', health_score: 'B', micronutrients: ['Iron', 'Selenium', 'Vitamin B12'], benefits: 'Complete meal with protein, carbs and broth. Warming and filling.', ai_tip: 'Very high sodium. Add extra vegetables. Reduce sodium by using half the broth seasoning.' },
-  { name: 'Spaghetti Bolognese', emoji: '🍝', category: 'International', calories: 350, protein_g: 18, carbs_g: 40, fat_g: 12, fiber_g: 3, sugar_g: 6, sodium_mg: 520, serving: '1 plate (280g)', health_score: 'B+', micronutrients: ['Iron', 'Lycopene', 'Zinc'], benefits: 'Complete meal with protein and carbs. Tomato sauce provides lycopene.', ai_tip: 'Use whole wheat pasta and lean ground beef. Add extra vegetables.' },
-  { name: 'Chicken Tacos', emoji: '🌮', category: 'International', calories: 226, protein_g: 18, carbs_g: 20, fat_g: 8, fiber_g: 3, sugar_g: 3, sodium_mg: 480, serving: '2 tacos', health_score: 'B+', micronutrients: ['Calcium', 'Iron', 'Vitamin C'], benefits: 'Balanced meal with protein, carbs and vegetables. Salsa adds vitamins.', ai_tip: 'Corn tortillas have more nutrients than flour. Load with salsa and avocado.' },
+const DEFAULT_POPULAR_FOODS: FoodInfo[] = [
+  { name: 'Apple', emoji: '🍎', category: 'Fruits', calories: 52, protein_g: 0.3, carbs_g: 13.8, fat_g: 0.2, fiber_g: 2.4, sugar_g: 10.4, sodium_mg: 1, serving: '100g', health_score: 'A', micronutrients: ['Vitamin C', 'Potassium', 'Fiber'], benefits: 'Pectin fiber promotes digestive health and satiety.', ai_tip: 'Eat fresh with peel for optimal fiber intake.', catalog_id: 'food_0001', image_file: 'images/apple.svg', notes: 'Generic raw fruit estimate; variety and ripeness change values.' },
+  { name: 'Banana', emoji: '🍌', category: 'Fruits', calories: 89, protein_g: 1.1, carbs_g: 22.8, fat_g: 0.3, fiber_g: 2.6, sugar_g: 12.2, sodium_mg: 1, serving: '100g', health_score: 'A', micronutrients: ['Potassium', 'Vitamin B6', 'Magnesium'], benefits: 'Rich in potassium supporting muscle contraction and energy.', ai_tip: 'Great natural pre-workout snack.', catalog_id: 'food_0002', image_file: 'images/banana.svg', notes: 'Generic raw fruit estimate.' },
+  { name: 'Orange', emoji: '🍊', category: 'Fruits', calories: 47, protein_g: 0.9, carbs_g: 11.8, fat_g: 0.1, fiber_g: 2.4, sugar_g: 9.4, sodium_mg: 1, serving: '100g', health_score: 'A', micronutrients: ['Vitamin C', 'Folate'], benefits: 'High vitamin C strengthens immunity and iron absorption.', ai_tip: 'Eat whole segments rather than juice to retain fiber.', catalog_id: 'food_0003', image_file: 'images/orange.svg' },
+  { name: 'Mango', emoji: '🥭', category: 'Fruits', calories: 60, protein_g: 0.8, carbs_g: 15.0, fat_g: 0.4, fiber_g: 1.6, sugar_g: 13.7, sodium_mg: 1, serving: '100g', health_score: 'B+', micronutrients: ['Vitamin A', 'Vitamin C'], benefits: 'Vitamin A supports eye and immune health.', ai_tip: 'Pair with protein to moderate glycemic impact.', catalog_id: 'food_0004', image_file: 'images/mango.svg' },
+  { name: 'Spinach', emoji: '🌿', category: 'Vegetables', calories: 23, protein_g: 2.9, carbs_g: 3.6, fat_g: 0.4, fiber_g: 2.2, sugar_g: 0.4, sodium_mg: 30, serving: '100g', health_score: 'A+', micronutrients: ['Iron', 'Folate', 'Vitamin K'], benefits: 'Dense in iron and folate for blood vitality.', ai_tip: 'Lightly sauté or add to eggs and smoothies.', catalog_id: 'food_0037', image_file: 'images/spinach.svg' },
+  { name: 'Broccoli', emoji: '🥦', category: 'Vegetables', calories: 34, protein_g: 2.8, carbs_g: 6.6, fat_g: 0.4, fiber_g: 2.6, sugar_g: 1.7, sodium_mg: 30, serving: '100g', health_score: 'A+', micronutrients: ['Sulforaphane', 'Vitamin C'], benefits: 'Potent glucosinolates and antioxidant defenses.', ai_tip: 'Steam lightly for maximum micronutrient retention.', catalog_id: 'food_0039', image_file: 'images/broccoli.svg' },
+  { name: 'Chicken breast cooked', emoji: '🍗', category: 'Protein', calories: 165, protein_g: 31.0, carbs_g: 0.0, fat_g: 3.6, fiber_g: 0.0, sugar_g: 0.0, sodium_mg: 120, serving: '100g', health_score: 'A+', micronutrients: ['Niacin', 'Selenium', 'Phosphorus'], benefits: 'Lean complete protein ideal for muscle repair and satiety.', ai_tip: 'Grill or bake with aromatic herbs.', catalog_id: 'food_0088', image_file: 'images/chicken_breast_cooked.svg' },
+  { name: 'Salmon cooked', emoji: '🐟', category: 'Protein', calories: 206, protein_g: 22.1, carbs_g: 0.0, fat_g: 12.4, fiber_g: 0.0, sugar_g: 0.0, sodium_mg: 120, serving: '100g', health_score: 'A+', micronutrients: ['Omega-3 DHA', 'Vitamin D', 'B12'], benefits: 'Heart-healthy omega-3 fatty acids for cognitive and joint health.', ai_tip: 'Bake with lemon and fresh dill.', catalog_id: 'food_0090', image_file: 'images/salmon_cooked.svg' },
+  { name: 'Egg whole cooked', emoji: '🥚', category: 'Protein', calories: 155, protein_g: 12.6, carbs_g: 1.1, fat_g: 10.6, fiber_g: 0.0, sugar_g: 1.1, sodium_mg: 120, serving: '100g', health_score: 'A', micronutrients: ['Choline', 'Vitamin D', 'Lutein'], benefits: 'Complete amino acid profile plus choline for brain health.', ai_tip: 'Hard boil for convenient high-protein meal prep.', catalog_id: 'food_0087', image_file: 'images/egg_whole_cooked.svg' },
+  { name: 'Dal cooked', emoji: '🥘', category: 'Legumes', calories: 116, protein_g: 9.0, carbs_g: 20.0, fat_g: 0.4, fiber_g: 7.9, sugar_g: 1.8, sodium_mg: 10, serving: '100g', health_score: 'A+', micronutrients: ['Folate', 'Plant Iron', 'Potassium'], benefits: 'High plant protein and prebiotic dietary fiber.', ai_tip: 'Pair with whole grains for a complete protein profile.', catalog_id: 'food_0075', image_file: 'images/dal_cooked.svg' },
+  { name: 'White rice cooked', emoji: '🍚', category: 'Grains', calories: 130, protein_g: 2.7, carbs_g: 28.2, fat_g: 0.3, fiber_g: 0.4, sugar_g: 0.1, sodium_mg: 10, serving: '100g', health_score: 'B+', micronutrients: ['Manganese', 'Selenium'], benefits: 'Clean, easily digestible complex carbohydrate fuel.', ai_tip: 'Pair with fiber-rich lentils and vegetable curries.', catalog_id: 'food_0061', image_file: 'images/white_rice_cooked.svg' },
+  { name: 'Roti chapati', emoji: '🫓', category: 'Indian bread', calories: 297, protein_g: 9.0, carbs_g: 50.0, fat_g: 7.0, fiber_g: 7.0, sugar_g: 2.0, sodium_mg: 10, serving: '100g', health_score: 'A', micronutrients: ['Fiber', 'B Vitamins', 'Iron'], benefits: 'Whole wheat dietary fiber supports gut motility.', ai_tip: 'Make with minimal oil for light, nutritious carbs.', catalog_id: 'food_0065', image_file: 'images/roti_chapati.svg' },
+  { name: 'Chicken biryani', emoji: '🍛', category: 'Indian rice dish', calories: 180, protein_g: 10.0, carbs_g: 20.0, fat_g: 6.0, fiber_g: 1.0, sugar_g: 2.0, sodium_mg: 300, serving: '100g', health_score: 'B+', micronutrients: ['Protein', 'Spices', 'Iron'], benefits: 'Complete savory meal with turmeric and warming digestive spices.', ai_tip: 'Serve with cucumber yogurt raita for cooling balance.', catalog_id: 'food_0100', image_file: 'images/chicken_biryani.svg' },
+  { name: 'Paneer butter masala', emoji: '🧀', category: 'Indian curry', calories: 220, protein_g: 9.0, carbs_g: 10.0, fat_g: 16.0, fiber_g: 2.0, sugar_g: 5.0, sodium_mg: 300, serving: '100g', health_score: 'B', micronutrients: ['Calcium', 'Phosphorus', 'Lycopene'], benefits: 'Calcium and dairy protein in a rich spiced tomato gravy.', ai_tip: 'Enjoy in moderation alongside whole grain roti.', catalog_id: 'food_0107', image_file: 'images/paneer_butter_masala.svg' },
+  { name: 'Almonds', emoji: '🥜', category: 'Nuts and seeds', calories: 579, protein_g: 21.2, carbs_g: 21.6, fat_g: 49.9, fiber_g: 12.5, sugar_g: 4.4, sodium_mg: 10, serving: '100g', health_score: 'A+', micronutrients: ['Vitamin E', 'Magnesium', 'Fiber'], benefits: 'Heart-healthy monounsaturated fats and powerful vitamin E.', ai_tip: 'A small palm (25-30g) makes an optimal daily portion.', catalog_id: 'food_0093', image_file: 'images/almonds.svg' },
+  { name: 'Oats dry', emoji: '🥣', category: 'Grains', calories: 389, protein_g: 16.9, carbs_g: 66.3, fat_g: 6.9, fiber_g: 10.6, sugar_g: 0.9, sodium_mg: 10, serving: '100g', health_score: 'A+', micronutrients: ['Beta-glucan', 'Iron', 'Zinc'], benefits: 'Soluble beta-glucan fiber helps maintain healthy cholesterol.', ai_tip: 'Prepare as overnight oats with berries and seeds.', catalog_id: 'food_0063', image_file: 'images/oats_dry.svg' },
+  { name: 'Greek yogurt plain', emoji: '🥛', category: 'Dairy', calories: 97, protein_g: 9.0, carbs_g: 3.9, fat_g: 5.0, fiber_g: 0.0, sugar_g: 3.2, sodium_mg: 10, serving: '100g', health_score: 'A+', micronutrients: ['Probiotics', 'Calcium', 'Protein'], benefits: 'Living active probiotics support gut microbiome balance.', ai_tip: 'Top with chia seeds and blueberries for morning energy.', catalog_id: 'food_0085', image_file: 'images/greek_yogurt_plain.svg' },
+  { name: 'Avocado', emoji: '🥑', category: 'Fruits', calories: 160, protein_g: 2.0, carbs_g: 8.5, fat_g: 14.7, fiber_g: 6.7, sugar_g: 0.7, sodium_mg: 1, serving: '100g', health_score: 'A+', micronutrients: ['Oleic acid', 'Potassium', 'Folate'], benefits: 'Monounsaturated fats enhance nutrient bioavailability.', ai_tip: 'Slice into fresh salads or mash with lemon.', catalog_id: 'food_0017', image_file: 'images/avocado.svg' },
 ];
 
-// ────────────────────────────────────────────────────────────────────────────
-// SCORE COLOR HELPER
-// ────────────────────────────────────────────────────────────────────────────
 const scoreColor: Record<string, string> = {
   'A+': 'text-emerald-700 bg-emerald-50 border-emerald-200',
   'A': 'text-green-700 bg-green-50 border-green-200',
@@ -145,9 +110,8 @@ const scoreColor: Record<string, string> = {
   'B': 'text-indigo-700 bg-indigo-50 border-indigo-200',
   'C+': 'text-amber-700 bg-amber-50 border-amber-200',
   'C': 'text-orange-700 bg-orange-50 border-orange-200',
+  'D': 'text-rose-700 bg-rose-50 border-rose-200',
 };
-
-const CATEGORIES = ['All', ...Array.from(new Set(FOOD_DATABASE.map(f => f.category)))];
 
 // ────────────────────────────────────────────────────────────────────────────
 // MAIN COMPONENT
@@ -156,12 +120,18 @@ const PhotoScan: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'camera' | 'upload' | 'browse'>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [result, setResult] = useState<FoodInfo | null>(null);
+
+  // Multi-item plate state
+  const [detectedItems, setDetectedItems] = useState<DetectedFoodItem[]>([]);
+  const [activeItemIndex, setActiveItemIndex] = useState<number>(0);
+  const [plateSummary, setPlateSummary] = useState<PlateSummary | null>(null);
+
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [logSuccess, setLogSuccess] = useState(false);
   const [loggingMeal, setLoggingMeal] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [mealType, setMealType] = useState<'Breakfast' | 'Lunch' | 'Dinner' | 'Snack'>('Lunch');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
@@ -169,9 +139,47 @@ const PhotoScan: React.FC = () => {
   const [cameraFacing, setCameraFacing] = useState<'environment' | 'user'>('environment');
   const [cameraError, setCameraError] = useState<string | null>(null);
 
+  // Database food catalog for Browse tab
+  const [dbFoods, setDbFoods] = useState<FoodInfo[]>(DEFAULT_POPULAR_FOODS);
+
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Load complete catalog from backend on mount
+  useEffect(() => {
+    const fetchCatalog = async () => {
+      try {
+        const res = await api.get('/foods/?limit=300');
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          const mapped: FoodInfo[] = res.data.map((f: any) => ({
+            name: f.name,
+            emoji: f.emoji || (f.category?.toLowerCase().includes('fruit') ? '🍎' : f.category?.toLowerCase().includes('vegetable') ? '🥦' : '🍲'),
+            category: f.category || 'General',
+            calories: Number(f.calories) || 0,
+            protein_g: Number(f.protein) || 0,
+            carbs_g: Number(f.carbs) || 0,
+            fat_g: Number(f.fat) || 0,
+            fiber_g: Number(f.fiber) || 0,
+            sugar_g: typeof f.sugar === 'string' ? parseFloat(f.sugar) || 0 : 0,
+            sodium_mg: typeof f.sodium === 'string' ? parseFloat(f.sodium) || 0 : 0,
+            serving: f.serving_size || '100g',
+            health_score: f.nutrition_grade || 'A',
+            micronutrients: ['NutriEmotion Benchmark'],
+            benefits: f.notes || 'Nutrient benchmark from reference starter catalog.',
+            ai_tip: 'Reference food item verified in local database.',
+            catalog_id: f.catalog_id,
+            image_file: f.image_file,
+            notes: f.notes,
+          }));
+          setDbFoods(mapped);
+        }
+      } catch (e) {
+        console.warn('Using default starter catalog items for browse.');
+      }
+    };
+    fetchCatalog();
+  }, []);
 
   const startCamera = async (facing: 'environment' | 'user') => {
     if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
@@ -212,7 +220,9 @@ const PhotoScan: React.FC = () => {
       canvas.toBlob(blob => {
         if (blob) {
           const f = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
-          setFile(f); setResult(null);
+          setFile(f);
+          setDetectedItems([]);
+          setPlateSummary(null);
         }
       }, 'image/jpeg');
       stopCamera();
@@ -227,7 +237,10 @@ const PhotoScan: React.FC = () => {
       }
       setFile(selected);
       setPreview(URL.createObjectURL(selected));
-      setResult(null);
+      setDetectedItems([]);
+      setPlateSummary(null);
+      setErrorMessage(null);
+      setStatusMessage(null);
     }
   };
 
@@ -241,14 +254,42 @@ const PhotoScan: React.FC = () => {
       }
       setFile(selected);
       setPreview(URL.createObjectURL(selected));
-      setResult(null);
+      setDetectedItems([]);
+      setPlateSummary(null);
+      setErrorMessage(null);
+      setStatusMessage(null);
     }
+  };
+
+  // Helper to recalculate plate totals locally
+  const recalculatePlateTotals = (items: DetectedFoodItem[]): PlateSummary => {
+    const total_cal = Math.round(items.reduce((acc, it) => acc + (it.calories || 0), 0) * 10) / 10;
+    const total_prot = Math.round(items.reduce((acc, it) => acc + (it.protein_g || 0), 0) * 10) / 10;
+    const total_carb = Math.round(items.reduce((acc, it) => acc + (it.carbs_g || 0), 0) * 10) / 10;
+    const total_fat = Math.round(items.reduce((acc, it) => acc + (it.fat_g || 0), 0) * 10) / 10;
+    const total_fiber = Math.round(items.reduce((acc, it) => acc + (it.fiber_g || 0), 0) * 10) / 10;
+    const total_sugar = Math.round(items.reduce((acc, it) => acc + (it.sugar_g || 0), 0) * 10) / 10;
+    const total_sodium = Math.round(items.reduce((acc, it) => acc + (it.sodium_mg || 0), 0) * 10) / 10;
+    const matched = items.filter(it => it.matched_catalog).length;
+    return {
+      total_calories: total_cal,
+      total_protein_g: total_prot,
+      total_carbs_g: total_carb,
+      total_fat_g: total_fat,
+      total_fiber_g: total_fiber,
+      total_sugar_g: total_sugar,
+      total_sodium_mg: total_sodium,
+      item_count: items.length,
+      matched_count: matched,
+      unmatched_count: items.length - matched,
+    };
   };
 
   const handleAnalyze = async () => {
     if (!file && !preview) return;
     setLoading(true);
     setErrorMessage(null);
+    setStatusMessage(null);
 
     try {
       let res;
@@ -265,59 +306,87 @@ const PhotoScan: React.FC = () => {
       }
 
       if (res.data?.success && res.data?.is_food && res.data.detected_items?.length > 0) {
-        const detected = res.data.detected_items[0];
-        setResult({
-          name: detected.name,
-          emoji: detected.emoji || '🍲',
-          category: detected.category || 'Meal',
-          calories: detected.calories,
-          protein_g: detected.protein_g,
-          carbs_g: detected.carbs_g,
-          fat_g: detected.fat_g,
-          fiber_g: detected.fiber_g || 0,
-          sugar_g: detected.sugar_g || 0,
-          sodium_mg: detected.sodium_mg || 0,
-          serving: detected.serving || '1 serving',
-          health_score: detected.health_score || 'B',
-          micronutrients: detected.micronutrients || [],
-          benefits: detected.benefits || 'Provides essential dietary nourishment and balanced energy.',
-          ai_tip: detected.ai_tip || 'Pairs well with fresh leafy greens and adequate water intake.',
-        });
+        const items: DetectedFoodItem[] = res.data.detected_items;
+        setDetectedItems(items);
+        setActiveItemIndex(0);
+        setPlateSummary(res.data.plate_summary || recalculatePlateTotals(items));
+        setStatusMessage(res.data.message || `Identified ${items.length} food item(s) on plate.`);
       } else {
-        setResult(null);
+        setDetectedItems([]);
+        setPlateSummary(null);
         setErrorMessage(
           res.data?.message || 'No food could be recognized in this image. Please pick from the food database or enter values manually.'
         );
       }
     } catch (err: any) {
       console.error('Vision analysis error:', err);
-      setResult(null);
+      setDetectedItems([]);
+      setPlateSummary(null);
       setErrorMessage(
-        err.response?.data?.detail || err.message || 'AI vision service unavailable. Please select from the database.'
+        err.response?.data?.detail || err.message || 'AI vision service unavailable. Please check your connection or select from catalog.'
       );
     } finally {
       setLoading(false);
     }
   };
 
+  // Adjust grams or quantity for a detected item
+  const handleUpdatePortion = (index: number, newGrams: number, newQty: number) => {
+    setDetectedItems(prev => {
+      const updated = [...prev];
+      if (!updated[index]) return prev;
+      const item = { ...updated[index] };
+      const grams = Math.max(1, newGrams);
+      const qty = Math.max(0.1, newQty);
+      const factor = (grams / 100.0) * qty;
+
+      const base = item.nutrition_per_100g || {
+        calories_kcal: (item.calories / ((item.serving_grams || 100) / 100 * (item.quantity || 1))) || 0,
+        protein_g: (item.protein_g / ((item.serving_grams || 100) / 100 * (item.quantity || 1))) || 0,
+        carbohydrates_g: (item.carbs_g / ((item.serving_grams || 100) / 100 * (item.quantity || 1))) || 0,
+        fat_g: (item.fat_g / ((item.serving_grams || 100) / 100 * (item.quantity || 1))) || 0,
+        fiber_g: (item.fiber_g / ((item.serving_grams || 100) / 100 * (item.quantity || 1))) || 0,
+        sugar_g: (item.sugar_g / ((item.serving_grams || 100) / 100 * (item.quantity || 1))) || 0,
+        sodium_mg: (item.sodium_mg / ((item.serving_grams || 100) / 100 * (item.quantity || 1))) || 0,
+      };
+
+      item.serving_grams = Math.round(grams);
+      item.quantity = Math.round(qty * 10) / 10;
+      item.serving = `${Math.round(grams * qty)}g`;
+      item.calories = Math.round((base.calories_kcal || 0) * factor * 10) / 10;
+      item.protein_g = Math.round((base.protein_g || 0) * factor * 10) / 10;
+      item.carbs_g = Math.round((base.carbohydrates_g || 0) * factor * 10) / 10;
+      item.fat_g = Math.round((base.fat_g || 0) * factor * 10) / 10;
+      item.fiber_g = Math.round((base.fiber_g || 0) * factor * 10) / 10;
+      item.sugar_g = Math.round((base.sugar_g || 0) * factor * 10) / 10;
+      item.sodium_mg = Math.round((base.sodium_mg || 0) * factor * 10) / 10;
+
+      updated[index] = item;
+      setPlateSummary(recalculatePlateTotals(updated));
+      return updated;
+    });
+  };
+
+  // Log all scanned plate items to meals database
   const handleLogToMeals = async () => {
-    if (!result || loggingMeal) return;
+    if (detectedItems.length === 0 || loggingMeal) return;
     setLoggingMeal(true);
     try {
+      const mealItems = detectedItems.map(it => ({
+        food_name: it.name,
+        quantity: it.quantity,
+        calories: it.calories,
+        protein: it.protein_g,
+        carbs: it.carbs_g,
+        fat: it.fat_g,
+      }));
+
       await api.post('/meals/', {
         meal_type: mealType,
         date: new Date().toISOString(),
-        items: [
-          {
-            food_name: result.name,
-            quantity: 1.0,
-            calories: result.calories,
-            protein: result.protein_g,
-            carbs: result.carbs_g,
-            fat: result.fat_g,
-          },
-        ],
+        items: mealItems,
       });
+
       setLogSuccess(true);
       try {
         localStorage.removeItem('nutrilens:cached-meals');
@@ -336,19 +405,68 @@ const PhotoScan: React.FC = () => {
     if (preview && preview.startsWith('blob:')) {
       URL.revokeObjectURL(preview);
     }
-    setResult(food);
+    const filename = food.image_file ? food.image_file.replace(/^images\//, '') : '';
+    const imgUrl = filename ? `/food_reference_images/${filename}` : null;
+
+    const item: DetectedFoodItem = {
+      name: food.name,
+      category: food.category || 'Meal',
+      serving: food.serving || '100g',
+      serving_grams: 100.0,
+      quantity: 1.0,
+      calories: food.calories,
+      protein_g: food.protein_g,
+      carbs_g: food.carbs_g,
+      fat_g: food.fat_g,
+      fiber_g: food.fiber_g,
+      sugar_g: food.sugar_g,
+      sodium_mg: food.sodium_mg,
+      health_score: food.health_score || 'A',
+      emoji: food.emoji || '🥗',
+      confidence: 100.0,
+      micronutrients: food.micronutrients || ['NutriEmotion Benchmark'],
+      benefits: food.benefits || 'Reference item from NutriEmotion starter catalog.',
+      ai_tip: food.ai_tip || 'Portion adjustable via reference controls.',
+      matched_catalog: true,
+      catalog_id: food.catalog_id || null,
+      catalog_name: food.name,
+      reference_source: 'NutriEmotion Food Reference Starter Catalog',
+      is_approximate: true,
+      notes: food.notes || 'Generic reference estimate from starter catalog.',
+      image_file: food.image_file,
+      image_url: imgUrl,
+      nutrition_per_100g: {
+        calories_kcal: food.calories,
+        protein_g: food.protein_g,
+        carbohydrates_g: food.carbs_g,
+        fat_g: food.fat_g,
+        fiber_g: food.fiber_g,
+        sugar_g: food.sugar_g,
+        sodium_mg: food.sodium_mg,
+      },
+    };
+
+    setDetectedItems([item]);
+    setActiveItemIndex(0);
+    setPlateSummary(recalculatePlateTotals([item]));
     setPreview(null);
     setActiveTab('upload');
   };
 
+  const categories = useMemo(() => {
+    return ['All', ...Array.from(new Set(dbFoods.map(f => f.category)))];
+  }, [dbFoods]);
+
   const filteredFoods = useMemo(() => {
     const searchLower = searchQuery.toLowerCase().trim();
-    return FOOD_DATABASE.filter(f => {
+    return dbFoods.filter(f => {
       const matchCat = activeCategory === 'All' || f.category === activeCategory;
       const matchSearch = !searchLower || f.name.toLowerCase().includes(searchLower);
       return matchCat && matchSearch;
     });
-  }, [activeCategory, searchQuery]);
+  }, [dbFoods, activeCategory, searchQuery]);
+
+  const activeItem = detectedItems[activeItemIndex] || null;
 
   const macroBar = (val: number, max: number, color: string) => (
     <div className="w-full bg-neutral-100 rounded-full h-2">
@@ -363,20 +481,20 @@ const PhotoScan: React.FC = () => {
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-50 text-cyan-800 text-xs font-semibold mb-2 border border-cyan-200/80">
             <Sparkles className="w-3.5 h-3.5 text-cyan-600" />
-            <span>Computer Vision • {FOOD_DATABASE.length}+ Trained Foods</span>
+            <span>Computer Vision • {dbFoods.length} Reference Foods in Catalog</span>
           </div>
           <h1 className="text-2xl font-extrabold text-neutral-900 tracking-tight">
             Food Photo Scanner
           </h1>
           <p className="text-xs sm:text-sm text-neutral-500 mt-1 font-medium max-w-xl">
-            Upload a meal photograph, capture via live camera, or browse database items for instant macronutrient estimation.
+            Upload meal photos, capture with live camera, cross-reference the 233-food starter catalog, adjust portions, and log full plates to Food Diary.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5 p-2 rounded-2xl bg-[#faf9f8] border border-neutral-200/60">
           <div className="text-right px-2">
-            <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider block">Model Status</span>
-            <span className="text-xs font-black text-emerald-700">Online & Active</span>
+            <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider block">Vision Engine</span>
+            <span className="text-xs font-black text-emerald-700">Gemini Vision Active</span>
           </div>
           <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse mr-2" />
         </div>
@@ -392,7 +510,8 @@ const PhotoScan: React.FC = () => {
                 key={tab}
                 onClick={() => {
                   setActiveTab(tab);
-                  setResult(null);
+                  setDetectedItems([]);
+                  setPlateSummary(null);
                   setPreview(null);
                 }}
                 className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all capitalize ${
@@ -401,7 +520,7 @@ const PhotoScan: React.FC = () => {
                     : 'text-neutral-600 hover:text-neutral-900'
                 }`}
               >
-                {tab === 'upload' ? 'Upload Image' : tab === 'camera' ? 'Camera Scan' : 'Browse Foods'}
+                {tab === 'upload' ? 'Upload Image' : tab === 'camera' ? 'Camera Scan' : 'Browse Catalog'}
               </button>
             ))}
           </div>
@@ -416,7 +535,8 @@ const PhotoScan: React.FC = () => {
                     onClick={() => {
                       setPreview(null);
                       setFile(null);
-                      setResult(null);
+                      setDetectedItems([]);
+                      setPlateSummary(null);
                     }}
                     className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white text-neutral-700 rounded-xl shadow-md transition-all"
                   >
@@ -442,7 +562,7 @@ const PhotoScan: React.FC = () => {
                   <p className="text-sm font-bold text-neutral-800">Drop food photograph here</p>
                   <p className="text-xs text-neutral-400 mt-1 font-medium">or click to browse local files</p>
                   <span className="text-[10px] text-neutral-400 font-bold bg-neutral-100 px-2.5 py-0.5 rounded-full mt-2.5">
-                    JPG, PNG, WEBP (Max 15MB)
+                    JPG, PNG, WEBP (Supports single or multi-food meals)
                   </span>
                   <input
                     ref={fileInputRef}
@@ -462,7 +582,7 @@ const PhotoScan: React.FC = () => {
                 {loading ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>Analyzing your food...</span>
+                    <span>Analyzing image with Gemini Vision...</span>
                   </>
                 ) : (
                   <>
@@ -484,7 +604,8 @@ const PhotoScan: React.FC = () => {
                     <button
                       onClick={() => {
                         setPreview(null);
-                        setResult(null);
+                        setDetectedItems([]);
+                        setPlateSummary(null);
                         startCamera(cameraFacing);
                       }}
                       className="absolute top-3 right-3 p-2 bg-white/90 text-neutral-700 rounded-xl shadow-md"
@@ -558,7 +679,7 @@ const PhotoScan: React.FC = () => {
                 <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Filter foods..."
+                  placeholder="Filter 233 reference foods..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-[#faf9f8] border border-neutral-200 focus:border-emerald-500 focus:outline-none font-medium"
@@ -566,8 +687,8 @@ const PhotoScan: React.FC = () => {
               </div>
 
               {/* Category filter */}
-              <div className="flex gap-1.5 flex-wrap">
-                {CATEGORIES.map((cat) => (
+              <div className="flex gap-1.5 flex-wrap max-h-24 overflow-y-auto pr-1">
+                {categories.map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setActiveCategory(cat)}
@@ -586,11 +707,22 @@ const PhotoScan: React.FC = () => {
               <div className="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-1">
                 {filteredFoods.map((food) => (
                   <button
-                    key={food.name}
+                    key={food.catalog_id || food.name}
                     onClick={() => handleSelectFood(food)}
                     className="flex items-center gap-2 p-2.5 rounded-xl border border-neutral-200/80 hover:border-emerald-400 hover:bg-emerald-50/50 transition-all text-left"
                   >
-                    <span className="text-xl">{food.emoji}</span>
+                    {food.image_file ? (
+                      <img
+                        src={`/food_reference_images/${food.image_file.replace(/^images\//, '')}`}
+                        alt={food.name}
+                        className="w-7 h-7 object-contain shrink-0"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <span className="text-xl shrink-0">{food.emoji}</span>
+                    )}
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold text-neutral-900 truncate">{food.name}</p>
                       <p className="text-[10px] text-neutral-400">{food.calories} kcal • {food.protein_g}g P</p>
@@ -607,7 +739,7 @@ const PhotoScan: React.FC = () => {
 
         {/* ━━━ RIGHT: Nutrition Result Panel (6 cols) ━━━ */}
         <div className="xl:col-span-6">
-          {errorMessage && !loading && !result && (
+          {errorMessage && !loading && detectedItems.length === 0 && (
             <div className="premium-card p-6 mb-4 border border-rose-200 bg-rose-50/50 space-y-3">
               <div className="flex items-center gap-2 text-rose-700 font-bold text-xs">
                 <AlertCircle className="w-4 h-4 shrink-0" />
@@ -623,32 +755,33 @@ const PhotoScan: React.FC = () => {
                 }}
                 className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all"
               >
-                Browse Food Database →
+                Browse Reference Food Database →
               </button>
             </div>
           )}
 
-          {!result && !loading && (
+          {detectedItems.length === 0 && !loading && (
             <div className="premium-card p-8 flex flex-col items-center justify-center min-h-[420px] text-center">
               <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-700 flex items-center justify-center mb-4">
                 <Camera className="w-7 h-7" />
               </div>
               <h3 className="text-base font-bold text-neutral-900">Food Analysis Panel</h3>
               <p className="text-xs text-neutral-400 mt-1 max-w-xs font-medium">
-                Upload a photo or capture an image to identify nutrients, calories, and confidence score.
+                Upload or capture a photo. NutriLens recognizes multiple items, cross-references verified reference data, and calculates plate nutrition totals.
               </p>
               <div className="grid grid-cols-3 gap-2.5 mt-6 w-full max-w-xs">
-                {[['🥦', 'Broccoli'], ['🍗', 'Chicken'], ['🍎', 'Apple']].map(([e, n]) => (
+                {[['🥦', 'Broccoli'], ['🍗', 'Chicken breast cooked'], ['🍎', 'Apple']].map(([e, n]) => (
                   <button
                     key={n}
                     onClick={() => {
                       setErrorMessage(null);
-                      handleSelectFood(FOOD_DATABASE.find((f) => f.name === n) || FOOD_DATABASE[0]);
+                      const target = dbFoods.find((f) => f.name.toLowerCase() === n.toLowerCase()) || dbFoods[0];
+                      handleSelectFood(target);
                     }}
                     className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-[#faf9f8] hover:bg-emerald-50 border border-neutral-200/80 hover:border-emerald-300 transition-all"
                   >
                     <span className="text-xl">{e}</span>
-                    <span className="text-[11px] font-bold text-neutral-700">{n}</span>
+                    <span className="text-[11px] font-bold text-neutral-700 truncate w-full text-center">{n}</span>
                   </button>
                 ))}
               </div>
@@ -662,10 +795,10 @@ const PhotoScan: React.FC = () => {
                   <Sparkles className="w-8 h-8 text-emerald-600" />
                 </div>
               </div>
-              <p className="mt-4 text-sm font-bold text-neutral-800">Analyzing your food...</p>
-              <p className="text-xs text-neutral-400 mt-1 font-medium">Segmenting ingredients & computing macros</p>
+              <p className="mt-4 text-sm font-bold text-neutral-800">Analyzing your meal with Gemini Vision...</p>
+              <p className="text-xs text-neutral-400 mt-1 font-medium">Segmenting plate foods & cross-referencing catalog</p>
               <div className="mt-4 space-y-2 w-full max-w-xs">
-                {['Detecting food boundaries...', 'Cross-referencing nutritional database...', 'Calculating portion & confidence...'].map((s, i) => (
+                {['Inspecting image with vision AI...', 'Matching food items in NutriEmotion catalog...', 'Calculating multi-item plate totals & macros...'].map((s, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.2}s` }} />
                     <span className="text-xs text-neutral-500 font-medium">{s}</span>
@@ -675,157 +808,365 @@ const PhotoScan: React.FC = () => {
             </div>
           )}
 
-          {result && !loading && (
-            <div className="premium-card overflow-hidden">
-              {/* Product Header Card */}
-              <div className="p-6 border-b border-neutral-100 bg-[#faf9f8]/50">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3.5">
-                    <span className="text-4xl">{result.emoji}</span>
+          {detectedItems.length > 0 && !loading && (
+            <div className="space-y-4">
+              {/* ━━━ Combined Plate Summary Banner ━━━ */}
+              {plateSummary && (
+                <div className="premium-card p-5 bg-gradient-to-br from-emerald-50/60 to-teal-50/40 border border-emerald-200/80">
+                  <div className="flex items-start justify-between gap-3 mb-3">
                     <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                          {result.category}
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold tracking-wide">
+                          PLATE TOTALS • {plateSummary.item_count} {plateSummary.item_count === 1 ? 'ITEM' : 'ITEMS'}
                         </span>
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
-                          98.4% Confidence
-                        </span>
+                        {plateSummary.matched_count > 0 && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-white/80 px-2 py-0.5 rounded-full border border-emerald-200">
+                            <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                            {plateSummary.matched_count} Catalog Verified
+                          </span>
+                        )}
+                        {plateSummary.unmatched_count > 0 && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                            <HelpCircle className="w-3 h-3 text-amber-600" />
+                            {plateSummary.unmatched_count} AI Estimate
+                          </span>
+                        )}
                       </div>
-                      <h3 className="text-xl font-extrabold text-neutral-900 tracking-tight">{result.name}</h3>
-                      <p className="text-xs text-neutral-400 mt-0.5 font-medium">Estimated portion: {result.serving}</p>
+                      <h3 className="text-lg font-black text-neutral-900 mt-1">
+                        Plate Nutrition Overview
+                      </h3>
+                      {statusMessage && (
+                        <p className="text-xs text-neutral-600 mt-0.5">{statusMessage}</p>
+                      )}
+                    </div>
+
+                    <div className="text-right">
+                      <span className="text-2xl font-black text-emerald-700 block">
+                        {plateSummary.total_calories} <span className="text-xs font-bold text-neutral-500">kcal</span>
+                      </span>
                     </div>
                   </div>
 
-                  <span className={`text-xs font-black px-3 py-1 rounded-xl border ${scoreColor[result.health_score] || ''}`}>
-                    Score: {result.health_score}
-                  </span>
-                </div>
-
-                {/* Main Macro Chips */}
-                <div className="mt-5 grid grid-cols-4 gap-2 text-center">
-                  <div className="p-2.5 rounded-xl bg-white border border-neutral-200/70">
-                    <span className="text-[10px] font-bold text-neutral-400 uppercase block">Calories</span>
-                    <span className="text-base font-black text-neutral-900">{result.calories}</span>
-                    <span className="text-[10px] text-neutral-400">kcal</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-white border border-neutral-200/70">
-                    <span className="text-[10px] font-bold text-blue-600 uppercase block">Protein</span>
-                    <span className="text-base font-black text-blue-900">{result.protein_g}g</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-white border border-neutral-200/70">
-                    <span className="text-[10px] font-bold text-emerald-600 uppercase block">Carbs</span>
-                    <span className="text-base font-black text-emerald-900">{result.carbs_g}g</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-white border border-neutral-200/70">
-                    <span className="text-[10px] font-bold text-amber-600 uppercase block">Fat</span>
-                    <span className="text-base font-black text-amber-900">{result.fat_g}g</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-6 space-y-4">
-                {/* Macro progress bars */}
-                <div className="space-y-2.5">
-                  <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
-                    Detailed Macro Profile
-                  </h4>
-                  {[
-                    { label: 'Dietary Fiber', val: result.fiber_g, max: 20, color: 'bg-emerald-600', unit: 'g' },
-                    { label: 'Sugar', val: result.sugar_g, max: 30, color: 'bg-purple-500', unit: 'g' },
-                    { label: 'Sodium', val: result.sodium_mg, max: 1500, color: 'bg-neutral-400', unit: 'mg' },
-                  ].map((m) => (
-                    <div key={m.label}>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="font-medium text-neutral-600">{m.label}</span>
-                        <span className="font-bold text-neutral-900">{m.val}{m.unit}</span>
-                      </div>
-                      {macroBar(m.val, m.max, m.color)}
+                  {/* Combined Totals Grid */}
+                  <div className="grid grid-cols-4 gap-2 text-center pt-2 border-t border-emerald-200/60">
+                    <div className="bg-white/90 p-2 rounded-xl border border-emerald-100">
+                      <span className="text-[10px] font-bold text-blue-600 uppercase block">Protein</span>
+                      <span className="text-sm font-black text-blue-900">{plateSummary.total_protein_g}g</span>
                     </div>
+                    <div className="bg-white/90 p-2 rounded-xl border border-emerald-100">
+                      <span className="text-[10px] font-bold text-emerald-600 uppercase block">Carbs</span>
+                      <span className="text-sm font-black text-emerald-900">{plateSummary.total_carbs_g}g</span>
+                    </div>
+                    <div className="bg-white/90 p-2 rounded-xl border border-emerald-100">
+                      <span className="text-[10px] font-bold text-amber-600 uppercase block">Fat</span>
+                      <span className="text-sm font-black text-amber-900">{plateSummary.total_fat_g}g</span>
+                    </div>
+                    <div className="bg-white/90 p-2 rounded-xl border border-emerald-100">
+                      <span className="text-[10px] font-bold text-purple-600 uppercase block">Fiber</span>
+                      <span className="text-sm font-black text-purple-900">{plateSummary.total_fiber_g}g</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Multi-Item Tabs (If > 1 item) */}
+              {detectedItems.length > 1 && (
+                <div className="flex gap-1.5 overflow-x-auto pb-1">
+                  {detectedItems.map((item, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveItemIndex(idx)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition-all whitespace-nowrap ${
+                        activeItemIndex === idx
+                          ? 'bg-neutral-900 text-white border-neutral-900 shadow-2xs'
+                          : 'bg-white text-neutral-700 border-neutral-200 hover:border-neutral-300'
+                      }`}
+                    >
+                      <span>{item.emoji}</span>
+                      <span>{item.name}</span>
+                      <span className="opacity-70 text-[10px]">({item.calories} kcal)</span>
+                      {item.matched_catalog && (
+                        <ShieldCheck className="w-3 h-3 text-emerald-400 shrink-0" />
+                      )}
+                    </button>
                   ))}
                 </div>
+              )}
 
-                {/* Micronutrients */}
-                <div>
-                  <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">
-                    Key Micronutrients
-                  </h4>
-                  <div className="flex flex-wrap gap-1.5">
-                    {result.micronutrients.map((m) => (
-                      <span key={m} className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold">
-                        {m}
+              {/* Active Item Details Card */}
+              {activeItem && (
+                <div className="premium-card overflow-hidden">
+                  {/* Item Header */}
+                  <div className="p-6 border-b border-neutral-100 bg-[#faf9f8]/50">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3.5">
+                        {activeItem.image_url ? (
+                          <div className="w-14 h-14 rounded-2xl bg-white border border-neutral-200/80 p-2 flex items-center justify-center shrink-0 shadow-2xs">
+                            <img
+                              src={activeItem.image_url}
+                              alt={activeItem.name}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                        ) : (
+                          <span className="text-4xl shrink-0">{activeItem.emoji}</span>
+                        )}
+
+                        <div>
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                              {activeItem.category}
+                            </span>
+                            {activeItem.matched_catalog ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
+                                <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                                Catalog Verified Benchmark
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold border border-amber-200">
+                                <HelpCircle className="w-3 h-3 text-amber-600" />
+                                AI Estimate (Unverified)
+                              </span>
+                            )}
+                            <span className="px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 text-[10px] font-bold">
+                              {activeItem.confidence.toFixed(1)}% Confidence
+                            </span>
+                          </div>
+                          <h3 className="text-xl font-extrabold text-neutral-900 tracking-tight">
+                            {activeItem.name}
+                          </h3>
+                          <p className="text-xs text-neutral-400 mt-0.5 font-medium">
+                            Current Portion: {activeItem.serving_grams}g ({activeItem.quantity} serving)
+                          </p>
+                        </div>
+                      </div>
+
+                      <span className={`text-xs font-black px-3 py-1 rounded-xl border shrink-0 ${scoreColor[activeItem.health_score] || ''}`}>
+                        Score: {activeItem.health_score}
                       </span>
-                    ))}
-                  </div>
-                </div>
+                    </div>
 
-                {/* Benefits */}
-                <div className="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200/60">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Star className="w-3.5 h-3.5 text-blue-600" />
-                    <span className="text-xs font-bold text-blue-800">Health Benefits</span>
-                  </div>
-                  <p className="text-xs text-blue-700 leading-relaxed font-medium">{result.benefits}</p>
-                </div>
-
-                {/* AI Tip */}
-                <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/60">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                    <span className="text-xs font-bold text-emerald-800">AI Nutrition Recommendation</span>
-                  </div>
-                  <p className="text-xs text-emerald-700 leading-relaxed font-medium">{result.ai_tip}</p>
-                </div>
-
-                {/* Meal Type Selector & Log Meal Button */}
-                <div className="space-y-2 pt-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-neutral-600">Log As Meal:</span>
-                    <div className="flex gap-1">
-                      {(['Breakfast', 'Lunch', 'Dinner', 'Snack'] as const).map((m) => (
-                        <button
-                          key={m}
-                          type="button"
-                          onClick={() => setMealType(m)}
-                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border ${
-                            mealType === m
-                              ? 'bg-neutral-900 text-white border-neutral-900'
-                              : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300'
-                          }`}
-                        >
-                          {m}
-                        </button>
-                      ))}
+                    {/* Active Item Macros */}
+                    <div className="mt-5 grid grid-cols-4 gap-2 text-center">
+                      <div className="p-2.5 rounded-xl bg-white border border-neutral-200/70">
+                        <span className="text-[10px] font-bold text-neutral-400 uppercase block">Calories</span>
+                        <span className="text-base font-black text-neutral-900">{activeItem.calories}</span>
+                        <span className="text-[10px] text-neutral-400">kcal</span>
+                      </div>
+                      <div className="p-2.5 rounded-xl bg-white border border-neutral-200/70">
+                        <span className="text-[10px] font-bold text-blue-600 uppercase block">Protein</span>
+                        <span className="text-base font-black text-blue-900">{activeItem.protein_g}g</span>
+                      </div>
+                      <div className="p-2.5 rounded-xl bg-white border border-neutral-200/70">
+                        <span className="text-[10px] font-bold text-emerald-600 uppercase block">Carbs</span>
+                        <span className="text-base font-black text-emerald-900">{activeItem.carbs_g}g</span>
+                      </div>
+                      <div className="p-2.5 rounded-xl bg-white border border-neutral-200/70">
+                        <span className="text-[10px] font-bold text-amber-600 uppercase block">Fat</span>
+                        <span className="text-base font-black text-amber-900">{activeItem.fat_g}g</span>
+                      </div>
                     </div>
                   </div>
 
-                  <button
-                    onClick={handleLogToMeals}
-                    disabled={loggingMeal}
-                    className={`w-full py-3.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs disabled:opacity-50 ${
-                      logSuccess
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer'
-                    }`}
-                  >
-                    {logSuccess ? (
-                      <>
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>Logged to {mealType} & Saved in Database!</span>
-                      </>
-                    ) : loggingMeal ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Logging Meal...</span>
-                      </>
-                    ) : (
-                      <>
-                        <PlusCircle className="w-4 h-4" />
-                        <span>Log to {mealType} (+{result.calories} kcal)</span>
-                      </>
-                    )}
-                  </button>
+                  <div className="p-6 space-y-4">
+                    {/* Portion-Size Adjustment Controls */}
+                    <div className="p-4 rounded-2xl bg-neutral-50/80 border border-neutral-200/80 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <Sliders className="w-3.5 h-3.5 text-neutral-600" />
+                          <span className="text-xs font-bold text-neutral-800">Portion Adjustment ({activeItem.name})</span>
+                        </div>
+                        <span className="text-xs font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
+                          {activeItem.serving_grams} grams
+                        </span>
+                      </div>
+
+                      {/* Gram Slider */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[11px] text-neutral-400 font-bold">
+                          <span>25g</span>
+                          <span>100g</span>
+                          <span>200g</span>
+                          <span>300g</span>
+                          <span>500g</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="20"
+                          max="500"
+                          step="10"
+                          value={activeItem.serving_grams}
+                          onChange={(e) => handleUpdatePortion(activeItemIndex, parseFloat(e.target.value), activeItem.quantity)}
+                          className="w-full accent-emerald-600 cursor-pointer"
+                        />
+                      </div>
+
+                      {/* Quick Gram Preset Buttons & Quantity Stepper */}
+                      <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
+                        <div className="flex gap-1 flex-wrap">
+                          {[50, 100, 150, 200, 250].map((presetG) => (
+                            <button
+                              key={presetG}
+                              type="button"
+                              onClick={() => handleUpdatePortion(activeItemIndex, presetG, activeItem.quantity)}
+                              className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ${
+                                activeItem.serving_grams === presetG
+                                  ? 'bg-emerald-600 text-white border-emerald-600'
+                                  : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300'
+                              }`}
+                            >
+                              {presetG}g
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Serving Multiplier Stepper */}
+                        <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded-xl border border-neutral-200">
+                          <span className="text-[10px] font-bold text-neutral-400 uppercase">Qty:</span>
+                          <button
+                            type="button"
+                            onClick={() => handleUpdatePortion(activeItemIndex, activeItem.serving_grams, Math.max(0.5, activeItem.quantity - 0.5))}
+                            className="w-5 h-5 rounded bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold text-xs flex items-center justify-center"
+                          >
+                            -
+                          </button>
+                          <span className="text-xs font-bold text-neutral-800 min-w-[24px] text-center">
+                            {activeItem.quantity}x
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleUpdatePortion(activeItemIndex, activeItem.serving_grams, activeItem.quantity + 0.5)}
+                            className="w-5 h-5 rounded bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold text-xs flex items-center justify-center"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Detailed macro profile */}
+                    <div className="space-y-2.5">
+                      <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                        Detailed Macro Profile
+                      </h4>
+                      {[
+                        { label: 'Dietary Fiber', val: activeItem.fiber_g, max: 20, color: 'bg-emerald-600', unit: 'g' },
+                        { label: 'Sugar', val: activeItem.sugar_g, max: 30, color: 'bg-purple-500', unit: 'g' },
+                        { label: 'Sodium', val: activeItem.sodium_mg, max: 1500, color: 'bg-neutral-400', unit: 'mg' },
+                      ].map((m) => (
+                        <div key={m.label}>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="font-medium text-neutral-600">{m.label}</span>
+                            <span className="font-bold text-neutral-900">{m.val}{m.unit}</span>
+                          </div>
+                          {macroBar(m.val, m.max, m.color)}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Reference & Transparency Box */}
+                    <div className="p-3.5 rounded-2xl bg-neutral-50 border border-neutral-200/80 space-y-1">
+                      <div className="flex items-center gap-1.5 text-neutral-700">
+                        <Info className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
+                        <span className="text-xs font-bold text-neutral-800">Data Source & Verification</span>
+                      </div>
+                      <p className="text-[11px] text-neutral-600 font-medium">
+                        {activeItem.reference_source}
+                        {activeItem.catalog_id ? ` (ID: ${activeItem.catalog_id})` : ''}
+                      </p>
+                      {activeItem.notes && (
+                        <p className="text-[11px] text-neutral-500 italic mt-0.5">
+                          "{activeItem.notes}"
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Micronutrients */}
+                    <div>
+                      <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">
+                        Key Micronutrients
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {activeItem.micronutrients.map((m) => (
+                          <span key={m} className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold">
+                            {m}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Benefits */}
+                    <div className="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200/60">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Star className="w-3.5 h-3.5 text-blue-600" />
+                        <span className="text-xs font-bold text-blue-800">Nutritional Health Benefit</span>
+                      </div>
+                      <p className="text-xs text-blue-700 leading-relaxed font-medium">{activeItem.benefits}</p>
+                    </div>
+
+                    {/* AI Tip */}
+                    <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/60">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="text-xs font-bold text-emerald-800">Dietary Recommendation</span>
+                      </div>
+                      <p className="text-xs text-emerald-700 leading-relaxed font-medium">{activeItem.ai_tip}</p>
+                    </div>
+
+                    {/* Meal Type Selector & Log Meal Button */}
+                    <div className="space-y-2 pt-2 border-t border-neutral-100">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-neutral-600">Log As Meal:</span>
+                        <div className="flex gap-1">
+                          {(['Breakfast', 'Lunch', 'Dinner', 'Snack'] as const).map((m) => (
+                            <button
+                              key={m}
+                              type="button"
+                              onClick={() => setMealType(m)}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border ${
+                                mealType === m
+                                  ? 'bg-neutral-900 text-white border-neutral-900'
+                                  : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300'
+                              }`}
+                            >
+                              {m}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={handleLogToMeals}
+                        disabled={loggingMeal}
+                        className={`w-full py-3.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs disabled:opacity-50 ${
+                          logSuccess
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer'
+                        }`}
+                      >
+                        {logSuccess ? (
+                          <>
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>Logged {detectedItems.length} item(s) to {mealType} & Saved in Database!</span>
+                          </>
+                        ) : loggingMeal ? (
+                          <>
+                            <RefreshCw className="w-4 h-4 animate-spin" />
+                            <span>Saving Meal to Database...</span>
+                          </>
+                        ) : (
+                          <>
+                            <PlusCircle className="w-4 h-4" />
+                            <span>
+                              Log {detectedItems.length} {detectedItems.length === 1 ? 'Item' : 'Items'} to {mealType} (+{plateSummary?.total_calories || activeItem.calories} kcal)
+                            </span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </div>
@@ -835,12 +1176,12 @@ const PhotoScan: React.FC = () => {
       <div className="premium-card p-5">
         <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3 flex items-center gap-2">
           <Info className="w-3.5 h-3.5 text-neutral-400" />
-          Quick Select Popular Foods ({FOOD_DATABASE.length} in database)
+          Quick Select Reference Starter Foods ({dbFoods.length} in database)
         </h3>
         <div className="flex gap-2 flex-wrap">
-          {FOOD_DATABASE.slice(0, 18).map((food) => (
+          {dbFoods.slice(0, 18).map((food) => (
             <button
-              key={food.name}
+              key={food.catalog_id || food.name}
               onClick={() => handleSelectFood(food)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#faf9f8] border border-neutral-200 hover:border-emerald-300 hover:bg-emerald-50/50 text-xs font-medium text-neutral-700 transition-all"
             >
@@ -852,7 +1193,7 @@ const PhotoScan: React.FC = () => {
             onClick={() => setActiveTab('browse')}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-all"
           >
-            +{FOOD_DATABASE.length - 18} more →
+            +{Math.max(0, dbFoods.length - 18)} more in Catalog →
           </button>
         </div>
       </div>

@@ -68,6 +68,12 @@ class Food(Base):
     ingredients: Mapped[Optional[str]] = mapped_column(String, default="Not available")
     allergens: Mapped[Optional[str]] = mapped_column(String, default="Not available")
     nutrition_grade: Mapped[Optional[str]] = mapped_column(String, default="Not available")
+    category: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    fiber: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    image_file: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    aliases: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    catalog_id: Mapped[Optional[str]] = mapped_column(String, nullable=True, index=True)
 
 class Barcode(Base):
     __tablename__ = "barcodes"

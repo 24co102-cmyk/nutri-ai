@@ -64,6 +64,12 @@ class FoodBase(BaseModel):
     ingredients: Optional[str] = "Not available"
     allergens: Optional[str] = "Not available"
     nutrition_grade: Optional[str] = "Not available"
+    category: Optional[str] = None
+    fiber: Optional[float] = None
+    notes: Optional[str] = None
+    image_file: Optional[str] = None
+    aliases: Optional[str] = None
+    catalog_id: Optional[str] = None
 
 class FoodCreate(FoodBase):
     pass

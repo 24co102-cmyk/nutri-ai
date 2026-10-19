@@ -18,12 +18,17 @@ def seed_initial_data():
         with engine.connect() as conn:
             if "sqlite" in str(engine.url):
                 import sqlalchemy
-                for col in ["sugar", "sodium", "ingredients", "allergens", "nutrition_grade"]:
+                for col in ["sugar", "sodium", "ingredients", "allergens", "nutrition_grade", "category", "notes", "image_file", "aliases", "catalog_id"]:
                     try:
-                        conn.execute(sqlalchemy.text(f"ALTER TABLE foods ADD COLUMN {col} VARCHAR DEFAULT 'Not available'"))
+                        conn.execute(sqlalchemy.text(f"ALTER TABLE foods ADD COLUMN {col} VARCHAR DEFAULT NULL"))
                         conn.commit()
                     except Exception:
                         pass
+                try:
+                    conn.execute(sqlalchemy.text("ALTER TABLE foods ADD COLUMN fiber FLOAT DEFAULT NULL"))
+                    conn.commit()
+                except Exception:
+                    pass
                 try:
                     conn.execute(sqlalchemy.text("ALTER TABLE meals ADD COLUMN mood VARCHAR DEFAULT NULL"))
                     conn.commit()
@@ -66,6 +71,15 @@ def seed_initial_data():
             ]
             db.add_all(default_foods)
             db.commit()
+
+        # 2. Import NutriEmotion Food Reference Starter Catalog into database without deleting existing records
+        try:
+            from .services.food_catalog import import_catalog_into_db
+            created_cat, updated_cat = import_catalog_into_db(db)
+            if created_cat > 0 or updated_cat > 0:
+                print(f"[Food Catalog] Imported {created_cat} new foods, enriched {updated_cat} existing records.")
+        except Exception as cat_err:
+            print(f"[Food Catalog Import Warning]: {cat_err}")
 
         # 2. Seed default demo & guest users
         demo_user = db.query(models.User).filter(models.User.email == "demo@nutrilens.app").first()

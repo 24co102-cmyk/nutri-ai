@@ -1,0 +1,234 @@
+﻿id,name,category,aliases,typical_serving,calories_kcal_per_100g,protein_g_per_100g,carbohydrates_g_per_100g,fat_g_per_100g,fiber_g_per_100g,sugar_g_per_100g,sodium_mg_per_100g,notes,image_file
+food_0001,Apple,fruit,apple,100 g,52,0.3,13.8,0.2,2.4,10.4,1,Generic raw fruit estimate; variety and ripeness change values.,images/apple.svg
+food_0002,Banana,fruit,banana,100 g,89,1.1,22.8,0.3,2.6,12.2,1,Generic raw fruit estimate; variety and ripeness change values.,images/banana.svg
+food_0003,Orange,fruit,orange,100 g,47,0.9,11.8,0.1,2.4,9.4,1,Generic raw fruit estimate; variety and ripeness change values.,images/orange.svg
+food_0004,Mango,fruit,mango,100 g,60,0.8,15,0.4,1.6,13.7,1,Generic raw fruit estimate; variety and ripeness change values.,images/mango.svg
+food_0005,Grapes,fruit,grapes,100 g,69,0.7,18.1,0.2,0.9,15.5,1,Generic raw fruit estimate; variety and ripeness change values.,images/grapes.svg
+food_0006,Watermelon,fruit,watermelon,100 g,30,0.6,7.6,0.2,0.4,6.2,1,Generic raw fruit estimate; variety and ripeness change values.,images/watermelon.svg
+food_0007,Papaya,fruit,papaya,100 g,43,0.5,10.8,0.3,1.7,7.8,1,Generic raw fruit estimate; variety and ripeness change values.,images/papaya.svg
+food_0008,Pineapple,fruit,pineapple,100 g,50,0.5,13.1,0.1,1.4,9.9,1,Generic raw fruit estimate; variety and ripeness change values.,images/pineapple.svg
+food_0009,Guava,fruit,guava,100 g,68,2.6,14.3,1,5.4,8.9,1,Generic raw fruit estimate; variety and ripeness change values.,images/guava.svg
+food_0010,Pomegranate,fruit,pomegranate,100 g,83,1.7,18.7,1.2,4,13.7,1,Generic raw fruit estimate; variety and ripeness change values.,images/pomegranate.svg
+food_0011,Strawberry,fruit,strawberry,100 g,32,0.7,7.7,0.3,2,4.9,1,Generic raw fruit estimate; variety and ripeness change values.,images/strawberry.svg
+food_0012,Blueberry,fruit,blueberry,100 g,57,0.7,14.5,0.3,2.4,10,1,Generic raw fruit estimate; variety and ripeness change values.,images/blueberry.svg
+food_0013,Pear,fruit,pear,100 g,57,0.4,15.2,0.1,3.1,9.8,1,Generic raw fruit estimate; variety and ripeness change values.,images/pear.svg
+food_0014,Peach,fruit,peach,100 g,39,0.9,9.5,0.3,1.5,8.4,1,Generic raw fruit estimate; variety and ripeness change values.,images/peach.svg
+food_0015,Plum,fruit,plum,100 g,46,0.7,11.4,0.3,1.4,9.9,1,Generic raw fruit estimate; variety and ripeness change values.,images/plum.svg
+food_0016,Kiwi,fruit,kiwi,100 g,61,1.1,14.7,0.5,3,9,1,Generic raw fruit estimate; variety and ripeness change values.,images/kiwi.svg
+food_0017,Avocado,fruit,avocado,100 g,160,2,8.5,14.7,6.7,0.7,1,Generic raw fruit estimate; variety and ripeness change values.,images/avocado.svg
+food_0018,Lemon,fruit,lemon,100 g,29,1.1,9.3,0.3,2.8,2.5,1,Generic raw fruit estimate; variety and ripeness change values.,images/lemon.svg
+food_0019,Sweet lime,fruit,sweet lime,100 g,43,0.8,9.3,0.3,2.8,8.4,1,Generic raw fruit estimate; variety and ripeness change values.,images/sweet_lime.svg
+food_0020,Chikoo sapodilla,fruit,chikoo sapodilla,100 g,83,0.4,19.9,1.1,5.3,14.7,1,Generic raw fruit estimate; variety and ripeness change values.,images/chikoo_sapodilla.svg
+food_0021,Jackfruit,fruit,jackfruit,100 g,95,1.7,23.3,0.6,1.5,19.1,1,Generic raw fruit estimate; variety and ripeness change values.,images/jackfruit.svg
+food_0022,Coconut flesh,fruit,coconut flesh,100 g,354,3.3,15.2,33.5,9,6.2,1,Generic raw fruit estimate; variety and ripeness change values.,images/coconut_flesh.svg
+food_0023,Dragon fruit,fruit,dragon fruit,100 g,57,1.2,12.9,0.1,3,8,1,Generic raw fruit estimate; variety and ripeness change values.,images/dragon_fruit.svg
+food_0024,Custard apple,fruit,custard apple,100 g,101,2.1,25.2,0.6,4.4,18,1,Generic raw fruit estimate; variety and ripeness change values.,images/custard_apple.svg
+food_0025,Dates,fruit,dates,100 g,282,2.5,75,0.4,8,63.4,1,Generic raw fruit estimate; variety and ripeness change values.,images/dates.svg
+food_0026,Raisins,fruit,raisins,100 g,299,3.1,79.2,0.5,3.7,59.2,1,Generic raw fruit estimate; variety and ripeness change values.,images/raisins.svg
+food_0027,Litchi,fruit,litchi,100 g,66,0.8,16.5,0.4,1.3,15.2,1,Generic raw fruit estimate; variety and ripeness change values.,images/litchi.svg
+food_0028,Amla Indian gooseberry,fruit,amla indian gooseberry,100 g,44,0.9,10.2,0.6,4.3,0.0,1,Generic raw fruit estimate; variety and ripeness change values.,images/amla_indian_gooseberry.svg
+food_0029,Muskmelon,fruit,muskmelon,100 g,34,0.8,8.2,0.2,0.9,7.9,1,Generic raw fruit estimate; variety and ripeness change values.,images/muskmelon.svg
+food_0030,Blackberries,fruit,blackberries,100 g,43,1.4,9.6,0.5,5.3,4.9,1,Generic raw fruit estimate; variety and ripeness change values.,images/blackberries.svg
+food_0031,Potato,vegetable,potato,100 g,77,2,17.5,0.1,2.2,0.8,30,Generic raw vegetable estimate; cooked values differ.,images/potato.svg
+food_0032,Sweet potato,vegetable,sweet potato,100 g,86,1.6,20.1,0.1,3,4.2,30,Generic raw vegetable estimate; cooked values differ.,images/sweet_potato.svg
+food_0033,Tomato,vegetable,tomato,100 g,18,0.9,3.9,0.2,1.2,2.6,30,Generic raw vegetable estimate; cooked values differ.,images/tomato.svg
+food_0034,Onion,vegetable,onion,100 g,40,1.1,9.3,0.1,1.7,4.2,30,Generic raw vegetable estimate; cooked values differ.,images/onion.svg
+food_0035,Carrot,vegetable,carrot,100 g,41,0.9,9.6,0.2,2.8,4.7,30,Generic raw vegetable estimate; cooked values differ.,images/carrot.svg
+food_0036,Cucumber,vegetable,cucumber,100 g,15,0.7,3.6,0.1,0.5,1.7,30,Generic raw vegetable estimate; cooked values differ.,images/cucumber.svg
+food_0037,Spinach,vegetable,spinach,100 g,23,2.9,3.6,0.4,2.2,0.4,30,Generic raw vegetable estimate; cooked values differ.,images/spinach.svg
+food_0038,Cauliflower,vegetable,cauliflower,100 g,25,1.9,5,0.3,2,1.9,30,Generic raw vegetable estimate; cooked values differ.,images/cauliflower.svg
+food_0039,Broccoli,vegetable,broccoli,100 g,34,2.8,6.6,0.4,2.6,1.7,30,Generic raw vegetable estimate; cooked values differ.,images/broccoli.svg
+food_0040,Cabbage,vegetable,cabbage,100 g,25,1.3,5.8,0.1,2.5,3.2,30,Generic raw vegetable estimate; cooked values differ.,images/cabbage.svg
+food_0041,Capsicum bell pepper,vegetable,capsicum bell pepper,100 g,31,1,6,0.3,2.1,4.2,30,Generic raw vegetable estimate; cooked values differ.,images/capsicum_bell_pepper.svg
+food_0042,Eggplant brinjal,vegetable,eggplant brinjal,100 g,25,1,5.9,0.2,3,3.5,30,Generic raw vegetable estimate; cooked values differ.,images/eggplant_brinjal.svg
+food_0043,Okra bhindi,vegetable,okra bhindi,100 g,33,1.9,7.5,0.2,3.2,1.5,30,Generic raw vegetable estimate; cooked values differ.,images/okra_bhindi.svg
+food_0044,Bottle gourd lauki,vegetable,bottle gourd lauki,100 g,14,0.6,3.4,0.0,1.0,1.7,30,Generic raw vegetable estimate; cooked values differ.,images/bottle_gourd_lauki.svg
+food_0045,Bitter gourd karela,vegetable,bitter gourd karela,100 g,17,1,3.7,0.2,2.8,1.9,30,Generic raw vegetable estimate; cooked values differ.,images/bitter_gourd_karela.svg
+food_0046,Pumpkin,vegetable,pumpkin,100 g,26,1,6.5,0.1,0.5,2.8,30,Generic raw vegetable estimate; cooked values differ.,images/pumpkin.svg
+food_0047,Green peas,vegetable,green peas,100 g,81,5.4,14.5,0.4,5.1,5.7,30,Generic raw vegetable estimate; cooked values differ.,images/green_peas.svg
+food_0048,Corn sweet,vegetable,corn sweet,100 g,86,3.3,19,1.4,2.7,6.3,30,Generic raw vegetable estimate; cooked values differ.,images/corn_sweet.svg
+food_0049,Green beans,vegetable,green beans,100 g,31,1.8,7,0.2,3.4,3.3,30,Generic raw vegetable estimate; cooked values differ.,images/green_beans.svg
+food_0050,Beetroot,vegetable,beetroot,100 g,43,1.6,9.6,0.2,2.8,6.8,30,Generic raw vegetable estimate; cooked values differ.,images/beetroot.svg
+food_0051,Radish,vegetable,radish,100 g,16,0.7,3.4,0.1,1.6,1.9,30,Generic raw vegetable estimate; cooked values differ.,images/radish.svg
+food_0052,Turnip,vegetable,turnip,100 g,28,0.9,6.4,0.1,1.8,3.8,30,Generic raw vegetable estimate; cooked values differ.,images/turnip.svg
+food_0053,Mushroom,vegetable,mushroom,100 g,22,3.1,3.3,0.3,1,2,30,Generic raw vegetable estimate; cooked values differ.,images/mushroom.svg
+food_0054,Garlic,vegetable,garlic,100 g,149,6.4,33.1,0.5,2.1,1,30,Generic raw vegetable estimate; cooked values differ.,images/garlic.svg
+food_0055,Ginger,vegetable,ginger,100 g,80,1.8,17.8,0.8,2,1.7,30,Generic raw vegetable estimate; cooked values differ.,images/ginger.svg
+food_0056,Green chilli,vegetable,green chilli,100 g,40,2,9,0.2,1.5,5.3,30,Generic raw vegetable estimate; cooked values differ.,images/green_chilli.svg
+food_0057,Lettuce,vegetable,lettuce,100 g,15,1.4,2.9,0.2,1.3,0.8,30,Generic raw vegetable estimate; cooked values differ.,images/lettuce.svg
+food_0058,Celery,vegetable,celery,100 g,14,0.7,3,0.2,1.6,1.3,30,Generic raw vegetable estimate; cooked values differ.,images/celery.svg
+food_0059,Drumstick moringa pod,vegetable,drumstick moringa pod,100 g,37,2.1,8.5,0.2,3.2,2.0,30,Generic raw vegetable estimate; cooked values differ.,images/drumstick_moringa_pod.svg
+food_0060,Raw banana plantain,vegetable,raw banana plantain,100 g,122,1.3,31.9,0.4,2.3,15,30,Generic raw vegetable estimate; cooked values differ.,images/raw_banana_plantain.svg
+food_0061,White rice cooked,grain,white rice cooked,100 g,130,2.7,28.2,0.3,0.4,0.1,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/white_rice_cooked.svg
+food_0062,Brown rice cooked,grain,brown rice cooked,100 g,123,2.7,25.6,1,1.6,0.4,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/brown_rice_cooked.svg
+food_0063,Oats dry,grain,oats dry,100 g,389,16.9,66.3,6.9,10.6,0.9,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/oats_dry.svg
+food_0064,Whole wheat atta,grain,whole wheat atta,100 g,340,13.2,72,2.5,10.7,0.4,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/whole_wheat_atta.svg
+food_0065,Roti chapati,Indian bread,roti chapati,100 g,297,9,50,7,7,2,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/roti_chapati.svg
+food_0066,Plain naan,Indian bread,plain naan,100 g,290,9,48,6,2,3,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/plain_naan.svg
+food_0067,White bread,bread,white bread,100 g,266,8.9,49,3.2,2.7,5,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/white_bread.svg
+food_0068,Pasta cooked,grain,pasta cooked,100 g,157,5.8,30.9,0.9,1.8,0.6,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/pasta_cooked.svg
+food_0069,Quinoa cooked,grain,quinoa cooked,100 g,120,4.4,21.3,1.9,2.8,0.9,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/quinoa_cooked.svg
+food_0070,Poha cooked,Indian breakfast,poha cooked,100 g,130,2.5,26,2,1.5,1,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/poha_cooked.svg
+food_0071,Idli,Indian breakfast,idli,100 g,146,4.5,29,0.7,1.5,1,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/idli.svg
+food_0072,Dosa plain,Indian breakfast,dosa plain,100 g,168,4,29,3.7,1.5,1,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/dosa_plain.svg
+food_0073,Besan chilla,Indian breakfast,besan chilla,100 g,180,8,22,6,4,2,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/besan_chilla.svg
+food_0074,Upma,Indian breakfast,upma,100 g,150,4,23,4.5,2.5,2,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/upma.svg
+food_0075,Dal cooked,legume dish,dal cooked,100 g,116,9,20,0.4,7.9,1.8,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/dal_cooked.svg
+food_0076,Chana cooked,legume,chana cooked,100 g,164,8.9,27.4,2.6,7.6,4.8,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/chana_cooked.svg
+food_0077,Rajma cooked,legume,rajma cooked,100 g,127,8.7,22.8,0.5,6.4,0.3,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/rajma_cooked.svg
+food_0078,Lentils cooked,legume,lentils cooked,100 g,116,9,20.1,0.4,7.9,1.8,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/lentils_cooked.svg
+food_0079,Chickpeas cooked,legume,chickpeas cooked,100 g,164,8.9,27.4,2.6,7.6,4.8,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/chickpeas_cooked.svg
+food_0080,Soybeans cooked,legume,soybeans cooked,100 g,172,18.2,8.4,9,6,3,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/soybeans_cooked.svg
+food_0081,Tofu,protein,tofu,100 g,76,8,1.9,4.8,0.3,0.6,120,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/tofu.svg
+food_0082,Paneer,dairy protein,paneer,100 g,265,18.3,1.2,20.8,0,1.2,120,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/paneer.svg
+food_0083,Milk whole,dairy,milk whole,100 g,61,3.2,4.8,3.3,0,5.1,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/milk_whole.svg
+food_0084,Curd plain,dairy,curd plain,100 g,61,3.5,4.7,3.3,0,4.7,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/curd_plain.svg
+food_0085,Greek yogurt plain,dairy,greek yogurt plain,100 g,97,9,3.9,5,0,3.2,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/greek_yogurt_plain.svg
+food_0086,Cheddar cheese,dairy,cheddar cheese,100 g,403,25,1.3,33,0,0.5,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/cheddar_cheese.svg
+food_0087,Egg whole cooked,protein,egg whole cooked,100 g,155,12.6,1.1,10.6,0,1.1,120,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/egg_whole_cooked.svg
+food_0088,Chicken breast cooked,protein,chicken breast cooked,100 g,165,31,0,3.6,0,0,120,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/chicken_breast_cooked.svg
+food_0089,Chicken thigh cooked,protein,chicken thigh cooked,100 g,209,26,0,10.9,0,0,120,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/chicken_thigh_cooked.svg
+food_0090,Salmon cooked,protein,salmon cooked,100 g,206,22.1,0,12.4,0,0,120,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/salmon_cooked.svg
+food_0091,Tuna canned in water,protein,tuna canned in water,100 g,116,25.5,0,0.8,0,0,120,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/tuna_canned_in_water.svg
+food_0092,Prawns cooked,protein,prawns cooked,100 g,99,24,0.2,0.3,0,0,120,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/prawns_cooked.svg
+food_0093,Almonds,nuts and seeds,almonds,100 g,579,21.2,21.6,49.9,12.5,4.4,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/almonds.svg
+food_0094,Peanuts,nuts and seeds,peanuts,100 g,567,25.8,16.1,49.2,8.5,4.7,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/peanuts.svg
+food_0095,Walnuts,nuts and seeds,walnuts,100 g,654,15.2,13.7,65.2,6.7,2.6,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/walnuts.svg
+food_0096,Chia seeds,nuts and seeds,chia seeds,100 g,486,16.5,42.1,30.7,34.4,0,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/chia_seeds.svg
+food_0097,Peanut butter,spread,peanut butter,100 g,588,25,20,50,6,9,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/peanut_butter.svg
+food_0098,Olive oil,oil,olive oil,100 g,884,0,0,100,0,0,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/olive_oil.svg
+food_0099,Butter,fat,butter,100 g,717,0.9,0.1,81,0,0.1,10,"Generic estimate; recipe, brand, and preparation can significantly change values.",images/butter.svg
+food_0100,Chicken biryani,Indian rice dish,chicken biryani,100 g,180,10,20,6,1,2,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/chicken_biryani.svg
+food_0101,Veg biryani,Indian rice dish,veg biryani,100 g,150,3.5,25,4,2.5,3,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/veg_biryani.svg
+food_0102,Mutton biryani,Indian rice dish,mutton biryani,100 g,210,9,21,9,1,2,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/mutton_biryani.svg
+food_0103,Pulao,Indian rice dish,pulao,100 g,160,3,26,5,1.5,2,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/pulao.svg
+food_0104,Butter chicken,Indian curry,butter chicken,100 g,190,14,7,12,1,4,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/butter_chicken.svg
+food_0105,Chicken tikka,Indian grilled dish,chicken tikka,100 g,165,25,3,5,0,2,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/chicken_tikka.svg
+food_0106,Tandoori chicken,Indian grilled dish,tandoori chicken,100 g,170,25,2,6,0,1,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/tandoori_chicken.svg
+food_0107,Paneer butter masala,Indian curry,paneer butter masala,100 g,220,9,10,16,2,5,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/paneer_butter_masala.svg
+food_0108,Palak paneer,Indian curry,palak paneer,100 g,160,8,7,11,2.5,2,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/palak_paneer.svg
+food_0109,Chole,Indian curry,chole,100 g,150,7,20,5,6,4,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/chole.svg
+food_0110,Rajma masala,Indian curry,rajma masala,100 g,140,7,19,4,5,3,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/rajma_masala.svg
+food_0111,Dal tadka,Indian curry,dal tadka,100 g,130,6,15,5,4,2,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/dal_tadka.svg
+food_0112,Dal makhani,Indian curry,dal makhani,100 g,170,6,14,9,4,2,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/dal_makhani.svg
+food_0113,Aloo gobi,Indian curry,aloo gobi,100 g,110,3,14,5,3,3,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/aloo_gobi.svg
+food_0114,Bhindi masala,Indian curry,bhindi masala,100 g,100,2,10,6,3,3,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/bhindi_masala.svg
+food_0115,Baingan bharta,Indian curry,baingan bharta,100 g,90,2,10,5,4,4,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/baingan_bharta.svg
+food_0116,Samosa,Indian snack,samosa,100 g,300,5,32,17,3,3,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/samosa.svg
+food_0117,Pakora bhajiya,Indian snack,pakora bhajiya,100 g,280,6,30,15,4,2,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/pakora_bhajiya.svg
+food_0118,Vada pav,Indian street food,vada pav,100 g,290,7,40,11,3,4,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/vada_pav.svg
+food_0119,Pav bhaji,Indian street food,pav bhaji,100 g,160,4,20,7,3,4,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/pav_bhaji.svg
+food_0120,Misal pav,Indian street food,misal pav,100 g,180,7,24,6,5,3,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/misal_pav.svg
+food_0121,Dhokla,Indian snack,dhokla,100 g,160,7,24,4,3,3,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/dhokla.svg
+food_0122,Kachori,Indian snack,kachori,100 g,350,7,35,20,3,2,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/kachori.svg
+food_0123,Pani puri,Indian street food,pani puri,100 g,180,4,25,7,2,4,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/pani_puri.svg
+food_0124,Dahi puri,Indian street food,dahi puri,100 g,210,5,28,8,2,5,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/dahi_puri.svg
+food_0125,Aloo paratha,Indian bread,aloo paratha,100 g,260,6,38,9,4,2,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/aloo_paratha.svg
+food_0126,Gobi paratha,Indian bread,gobi paratha,100 g,240,6,36,8,4,2,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/gobi_paratha.svg
+food_0127,Poori,Indian bread,poori,100 g,300,6,40,14,2,1,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/poori.svg
+food_0128,Chole bhature,Indian meal,chole bhature,100 g,260,8,34,11,5,4,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/chole_bhature.svg
+food_0129,Pav,Indian bread,pav,100 g,280,9,52,4,2,6,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/pav.svg
+food_0130,Masala dosa,Indian breakfast,masala dosa,100 g,190,4,27,7,2,2,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/masala_dosa.svg
+food_0131,Medu vada,Indian breakfast,medu vada,100 g,280,7,28,16,4,1,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/medu_vada.svg
+food_0132,Uttapam,Indian breakfast,uttapam,100 g,160,4,25,5,2,2,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/uttapam.svg
+food_0133,Vegetable upma,Indian breakfast,vegetable upma,100 g,140,4,22,4,3,2,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/vegetable_upma.svg
+food_0134,Veg pulao,Indian rice dish,veg pulao,100 g,155,3,27,3.5,2,2,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/veg_pulao.svg
+food_0135,Khichdi,Indian comfort food,khichdi,100 g,110,4,18,2.5,3,1,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/khichdi.svg
+food_0136,Kadhi pakora,Indian curry,kadhi pakora,100 g,120,5,12,5,1,3,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/kadhi_pakora.svg
+food_0137,Fish curry,Indian curry,fish curry,100 g,140,13,5,8,1,2,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/fish_curry.svg
+food_0138,Fish fry,Indian seafood,fish fry,100 g,230,20,8,13,0,1,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/fish_fry.svg
+food_0139,Prawn masala,Indian seafood,prawn masala,100 g,150,17,5,7,1,2,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/prawn_masala.svg
+food_0140,Chicken curry,Indian curry,chicken curry,100 g,160,15,5,9,1,2,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/chicken_curry.svg
+food_0141,Egg curry,Indian curry,egg curry,100 g,150,9,5,10,1,2,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/egg_curry.svg
+food_0142,Mutton curry,Indian curry,mutton curry,100 g,200,15,4,14,1,2,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/mutton_curry.svg
+food_0143,Kebab,grilled dish,kebab,100 g,220,20,5,13,1,1,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/kebab.svg
+food_0144,Hummus,Middle Eastern,hummus,100 g,166,7.9,14.3,9.6,6,0.3,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/hummus.svg
+food_0145,Falafel,Middle Eastern,falafel,100 g,333,13.3,31.8,17.8,4.9,2.3,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/falafel.svg
+food_0146,Pizza cheese,international dish,pizza cheese,100 g,266,11,33,10,2.3,3.6,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/pizza_cheese.svg
+food_0147,Pizza pepperoni,international dish,pizza pepperoni,100 g,298,12,30,13,2,3,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/pizza_pepperoni.svg
+food_0148,Burger beef,international dish,burger beef,100 g,295,17,24,14,2,5,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/burger_beef.svg
+food_0149,Veg burger,international dish,veg burger,100 g,240,8,34,8,4,5,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/veg_burger.svg
+food_0150,French fries,international side,french fries,100 g,312,3.4,41,15,3.8,0.3,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/french_fries.svg
+food_0151,Pasta tomato sauce,international dish,pasta tomato sauce,100 g,130,4,22,3,2.5,5,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/pasta_tomato_sauce.svg
+food_0152,Mac and cheese,international dish,mac and cheese,100 g,164,6,19,7,1,3,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/mac_and_cheese.svg
+food_0153,Lasagna,international dish,lasagna,100 g,135,8,14,5,1.5,3,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/lasagna.svg
+food_0154,Sushi,Japanese dish,sushi,100 g,150,6,25,2,1,3,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/sushi.svg
+food_0155,Ramen,Japanese dish,ramen,100 g,140,6,18,5,1,2,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/ramen.svg
+food_0156,Fried rice,Asian dish,fried rice,100 g,180,4,28,6,1.5,2,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/fried_rice.svg
+food_0157,Noodles stir fry,Asian dish,noodles stir fry,100 g,160,5,25,5,2,4,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/noodles_stir_fry.svg
+food_0158,Pad thai,Thai dish,pad thai,100 g,180,6,25,6,2,7,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/pad_thai.svg
+food_0159,Tacos chicken,Mexican dish,tacos chicken,100 g,190,12,20,7,3,2,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/tacos_chicken.svg
+food_0160,Burrito,Mexican dish,burrito,100 g,180,8,24,6,4,2,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/burrito.svg
+food_0161,Caesar salad,salad,caesar salad,100 g,140,5,8,10,2,2,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/caesar_salad.svg
+food_0162,Greek salad,salad,greek salad,100 g,110,3,6,8,2,3,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/greek_salad.svg
+food_0163,Pancakes,breakfast,pancakes,100 g,227,6,28,10,1,8,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/pancakes.svg
+food_0164,Waffles,breakfast,waffles,100 g,291,7.9,33,14,1.7,4,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/waffles.svg
+food_0165,Omelette,breakfast,omelette,100 g,154,11,1.5,11,0,1,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/omelette.svg
+food_0166,Grilled cheese sandwich,sandwich,grilled cheese sandwich,100 g,350,13,30,20,2,4,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/grilled_cheese_sandwich.svg
+food_0167,Club sandwich,sandwich,club sandwich,100 g,220,12,22,9,2,3,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/club_sandwich.svg
+food_0168,Hot dog,international dish,hot dog,100 g,290,10,24,17,1,4,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/hot_dog.svg
+food_0169,Fried chicken,international dish,fried chicken,100 g,280,20,12,17,1,1,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/fried_chicken.svg
+food_0170,Steak cooked,protein dish,steak cooked,100 g,250,26,0,15,0,0,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/steak_cooked.svg
+food_0171,Roast vegetables,side dish,roast vegetables,100 g,90,2,12,4,3,4,300,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/roast_vegetables.svg
+food_0172,Miso soup,Japanese soup,miso soup,100 g,40,3,5,1,1,2,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/miso_soup.svg
+food_0173,Tomato soup,soup,tomato soup,100 g,45,1.5,8,1,1.5,5,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/tomato_soup.svg
+food_0174,Chicken soup,soup,chicken soup,100 g,60,6,4,2,0.5,1,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/chicken_soup.svg
+food_0175,Vegetable soup,soup,vegetable soup,100 g,35,1.5,6,0.5,1.5,2,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/vegetable_soup.svg
+food_0176,Chocolate cake,dessert,chocolate cake,100 g,371,5,53,16,2.5,35,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/chocolate_cake.svg
+food_0177,Brownie,dessert,brownie,100 g,466,6,58,24,3,38,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/brownie.svg
+food_0178,Gulab jamun,Indian dessert,gulab jamun,100 g,320,5,48,12,0.5,35,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/gulab_jamun.svg
+food_0179,Jalebi,Indian dessert,jalebi,100 g,400,3,70,13,0,45,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/jalebi.svg
+food_0180,Rasgulla,Indian dessert,rasgulla,100 g,186,4,38,2,0,30,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/rasgulla.svg
+food_0181,Kheer,Indian dessert,kheer,100 g,150,4,23,5,0.5,15,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/kheer.svg
+food_0182,Gajar halwa,Indian dessert,gajar halwa,100 g,250,4,30,13,2,22,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/gajar_halwa.svg
+food_0183,Ladoo besan,Indian dessert,ladoo besan,100 g,450,10,48,24,5,25,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/ladoo_besan.svg
+food_0184,Ice cream vanilla,dessert,ice cream vanilla,100 g,207,3.5,24,11,0.7,21,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/ice_cream_vanilla.svg
+food_0185,Donut,dessert,donut,100 g,452,5,51,25,2,25,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/donut.svg
+food_0186,Chocolate bar,snack,chocolate bar,100 g,535,7.6,59,30,7,52,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/chocolate_bar.svg
+food_0187,Popcorn air-popped,snack,popcorn air-popped,100 g,387,13,78,4.5,15,0.9,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/popcorn_air_popped.svg
+food_0188,Potato chips,snack,potato chips,100 g,536,7,53,35,4.8,0.3,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/potato_chips.svg
+food_0189,Granola bar,snack,granola bar,100 g,400,8,64,12,6,25,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/granola_bar.svg
+food_0190,Mango lassi,drink,mango lassi,100 g,95,3,15,2.5,0.3,14,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/mango_lassi.svg
+food_0191,Masala chai with milk and sugar,drink,masala chai with milk and sugar,100 g,55,1.5,8,1.5,0,7,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/masala_chai_with_milk_and_sugar.svg
+food_0192,Coffee with milk,drink,coffee with milk,100 g,35,1.5,4,1.5,0,3,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/coffee_with_milk.svg
+food_0193,Orange juice,drink,orange juice,100 g,45,0.7,10.4,0.2,0.2,8.4,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/orange_juice.svg
+food_0194,Cola soft drink,drink,cola soft drink,100 g,42,0,10.6,0,0,10.6,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/cola_soft_drink.svg
+food_0195,Lemon water unsweetened,drink,lemon water unsweetened,100 g,5,0.1,1.5,0,0.1,0.4,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/lemon_water_unsweetened.svg
+food_0196,Protein shake prepared,drink,protein shake prepared,100 g,80,8,7,2,0,5,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/protein_shake_prepared.svg
+food_0197,Coconut water,drink,coconut water,100 g,19,0.7,3.7,0.2,1.1,2.6,5,Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.,images/coconut_water.svg
+food_0198,Strawberry smoothie,drink,strawberry smoothie,100 g,70,2,14,1,2,10,5,Generic estimate; recipe and serving size change values.,images/strawberry_smoothie.svg
+food_0199,Milkshake chocolate,drink,milkshake chocolate,100 g,120,4,20,3,1,18,5,Generic estimate; recipe and serving size change values.,images/milkshake_chocolate.svg
+food_0200,Lemonade sweetened,drink,lemonade sweetened,100 g,40,0,10,0,0,9,5,Generic estimate; recipe and serving size change values.,images/lemonade_sweetened.svg
+food_0201,Green tea unsweetened,drink,green tea unsweetened,100 g,1,0,0.2,0,0,0,5,Generic estimate; recipe and serving size change values.,images/green_tea_unsweetened.svg
+food_0202,Espresso coffee,drink,espresso coffee,100 g,9,0.1,1.7,0.2,0,0,5,Generic estimate; recipe and serving size change values.,images/espresso_coffee.svg
+food_0203,Plain yogurt,dairy,plain yogurt,100 g,61,3.5,4.7,3.3,0,4.7,5,Generic estimate; recipe and serving size change values.,images/plain_yogurt.svg
+food_0204,Mozzarella,dairy,mozzarella,100 g,280,28,3.1,17,0,1,5,Generic estimate; recipe and serving size change values.,images/mozzarella.svg
+food_0205,Cottage cheese,dairy,cottage cheese,100 g,98,11,3.4,4.3,0,2.7,5,Generic estimate; recipe and serving size change values.,images/cottage_cheese.svg
+food_0206,Cashews,nuts and seeds,cashews,100 g,553,18.2,30.2,43.9,3.3,5.9,5,Generic estimate; recipe and serving size change values.,images/cashews.svg
+food_0207,Pistachios,nuts and seeds,pistachios,100 g,562,20.2,27.2,45.3,10.6,7.7,5,Generic estimate; recipe and serving size change values.,images/pistachios.svg
+food_0208,Sunflower seeds,nuts and seeds,sunflower seeds,100 g,584,20.8,20,51.5,8.6,2.6,5,Generic estimate; recipe and serving size change values.,images/sunflower_seeds.svg
+food_0209,Pumpkin seeds,nuts and seeds,pumpkin seeds,100 g,559,30.2,10.7,49.1,6,1.4,5,Generic estimate; recipe and serving size change values.,images/pumpkin_seeds.svg
+food_0210,Flaxseed,nuts and seeds,flaxseed,100 g,534,18.3,28.9,42.2,27.3,1.6,5,Generic estimate; recipe and serving size change values.,images/flaxseed.svg
+food_0211,Honey,sweetener,honey,100 g,304,0.3,82.4,0,0.2,82.1,5,Generic estimate; recipe and serving size change values.,images/honey.svg
+food_0212,White sugar,sweetener,white sugar,100 g,387,0,100,0,0,100,5,Generic estimate; recipe and serving size change values.,images/white_sugar.svg
+food_0213,Dark chocolate,dessert,dark chocolate,100 g,598,7.8,45.9,42.6,10.9,24,5,Generic estimate; recipe and serving size change values.,images/dark_chocolate.svg
+food_0214,Plain croissant,bakery,plain croissant,100 g,406,8.2,45.8,21,2.6,11.3,5,Generic estimate; recipe and serving size change values.,images/plain_croissant.svg
+food_0215,Muffin blueberry,bakery,muffin blueberry,100 g,377,5,53,16,2,30,5,Generic estimate; recipe and serving size change values.,images/muffin_blueberry.svg
+food_0216,Baked potato,side dish,baked potato,100 g,93,2.5,21,0.1,2.2,1,5,Generic estimate; recipe and serving size change values.,images/baked_potato.svg
+food_0217,Mashed potatoes,side dish,mashed potatoes,100 g,113,2,17,4,1.5,1.5,5,Generic estimate; recipe and serving size change values.,images/mashed_potatoes.svg
+food_0218,Roasted chicken,protein dish,roasted chicken,100 g,190,27,0,9,0,0,5,Generic estimate; recipe and serving size change values.,images/roasted_chicken.svg
+food_0219,Grilled fish,protein dish,grilled fish,100 g,150,23,0,6,0,0,5,Generic estimate; recipe and serving size change values.,images/grilled_fish.svg
+food_0220,Scrambled eggs,breakfast,scrambled eggs,100 g,148,10,2,11,0,1,5,Generic estimate; recipe and serving size change values.,images/scrambled_eggs.svg
+food_0221,Boiled egg,protein,boiled egg,100 g,155,12.6,1.1,10.6,0,1.1,5,Generic estimate; recipe and serving size change values.,images/boiled_egg.svg
+food_0222,Sprouts salad,salad,sprouts salad,100 g,80,5,12,1,4,4,5,Generic estimate; recipe and serving size change values.,images/sprouts_salad.svg
+food_0223,Fruit salad,salad,fruit salad,100 g,60,0.8,15,0.3,2,11,5,Generic estimate; recipe and serving size change values.,images/fruit_salad.svg
+food_0224,Overnight oats,breakfast,overnight oats,100 g,140,5,22,4,3,6,5,Generic estimate; recipe and serving size change values.,images/overnight_oats.svg
+food_0225,Peanut chikki,Indian snack,peanut chikki,100 g,480,15,55,24,5,35,5,Generic estimate; recipe and serving size change values.,images/peanut_chikki.svg
+food_0226,Thepla,Indian bread,thepla,100 g,280,7,40,10,5,3,5,Generic estimate; recipe and serving size change values.,images/thepla.svg
+food_0227,Pesarattu,Indian breakfast,pesarattu,100 g,150,8,22,3,4,2,5,Generic estimate; recipe and serving size change values.,images/pesarattu.svg
+food_0228,Appam,Indian breakfast,appam,100 g,150,3,28,3,1,2,5,Generic estimate; recipe and serving size change values.,images/appam.svg
+food_0229,Idiyappam,Indian breakfast,idiyappam,100 g,130,2,29,0.5,1,0.5,5,Generic estimate; recipe and serving size change values.,images/idiyappam.svg
+food_0230,Sheer khurma,Indian dessert,sheer khurma,100 g,190,5,25,8,1,18,5,Generic estimate; recipe and serving size change values.,images/sheer_khurma.svg
+food_0231,Modak,Indian dessert,modak,100 g,280,4,45,9,2,18,5,Generic estimate; recipe and serving size change values.,images/modak.svg
+food_0232,Shrikhand,Indian dessert,shrikhand,100 g,250,7,35,9,0,30,5,Generic estimate; recipe and serving size change values.,images/shrikhand.svg
+food_0233,Kulfi,Indian dessert,kulfi,100 g,220,5,25,11,0,22,5,Generic estimate; recipe and serving size change values.,images/kulfi.svg

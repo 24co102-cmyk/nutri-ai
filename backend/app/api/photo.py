@@ -1,20 +1,23 @@
 # backend/app/api/photo.py
 """
 NutriLens AI — Real Computer Vision Food Recognition
-Utilizes Google Gemini Vision to recognize foods from photos, compute macronutrients,
-estimate portions, and return authentic nutritional breakdowns.
+Utilizes Google Gemini Vision to recognize foods from photos,
+matches recognized foods against the 233-item NutriEmotion Food Reference Starter Catalog,
+retrieves verified nutrition benchmarks, supports multi-item plates, portion adjustments,
+and provides transparent disclaimers for unverified foods.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from pydantic import BaseModel, Field
-from typing import Optional, List, Any, Dict
+from typing import Optional, List, Any, Dict, Tuple
+from pathlib import Path
 import base64
 import json
 import re
-import io
 
 from ..dependencies import get_current_user
-from ..api.chat import get_gemini_client, GEMINI_MODELS
+from ..api.chat import get_gemini_client
+from ..services.food_catalog import match_food_in_catalog, calculate_nutrition_for_portion, get_catalog_item_by_id
 
 router = APIRouter()
 
@@ -26,7 +29,8 @@ class PhotoRequest(BaseModel):
 class DetectedFoodItem(BaseModel):
     name: str
     category: str = "Meal"
-    serving: str = "1 serving"
+    serving: str = "100g serving"
+    serving_grams: float = 100.0
     quantity: float = 1.0
     calories: float = 0.0
     protein_g: float = 0.0
@@ -41,13 +45,55 @@ class DetectedFoodItem(BaseModel):
     micronutrients: List[str] = []
     benefits: str = ""
     ai_tip: str = ""
+    # Reference catalog fields
+    matched_catalog: bool = False
+    catalog_id: Optional[str] = None
+    catalog_name: Optional[str] = None
+    reference_source: str = "AI Vision Estimate (Unverified)"
+    is_approximate: bool = True
+    notes: Optional[str] = None
+    image_file: Optional[str] = None
+    image_url: Optional[str] = None
+    nutrition_per_100g: Optional[Dict[str, float]] = None
+
+class PlateSummary(BaseModel):
+    total_calories: float = 0.0
+    total_protein_g: float = 0.0
+    total_carbs_g: float = 0.0
+    total_fat_g: float = 0.0
+    total_fiber_g: float = 0.0
+    total_sugar_g: float = 0.0
+    total_sodium_mg: float = 0.0
+    item_count: int = 0
+    matched_count: int = 0
+    unmatched_count: int = 0
 
 class PhotoResponse(BaseModel):
     success: bool = True
     is_food: bool = True
     detected_items: List[DetectedFoodItem] = []
+    plate_summary: Optional[PlateSummary] = None
     message: Optional[str] = None
-    disclaimer: str = "Nutrition values are estimates based on computer vision analysis. Confirm values before logging."
+    disclaimer: str = (
+        "Nutrition values are estimates based on computer vision recognition and the NutriEmotion "
+        "Reference Starter Catalog. Portion sizes and preparation methods can significantly alter actual values."
+    )
+
+class PortionAdjustmentItem(BaseModel):
+    name: str
+    catalog_id: Optional[str] = None
+    serving_grams: float = 100.0
+    quantity: float = 1.0
+    category: Optional[str] = "Meal"
+    baseline_per_100g: Optional[Dict[str, float]] = None
+    emoji: Optional[str] = "🍲"
+    health_score: Optional[str] = "B"
+    micronutrients: Optional[List[str]] = []
+    benefits: Optional[str] = ""
+    ai_tip: Optional[str] = ""
+
+class RecalculateRequest(BaseModel):
+    items: List[PortionAdjustmentItem]
 
 
 VISION_PROMPT = """You are an expert clinical nutritionist and computer vision food recognition model.
@@ -59,13 +105,14 @@ Instructions:
    {"is_food": false, "message": "No food detected in this photograph."}
 
 2. If the image DOES contain food:
-   Identify the primary dish or foods visible. Provide accurate nutritional estimates for a typical adult serving portion.
+   Identify ALL distinct food items or dishes visible on the plate or in the photo (e.g. if a plate has rice, chicken curry, and salad, output all 3 items).
    For each item, output:
-   - "name": Clean, specific dish or food title (e.g., "Chicken Biryani", "Steamed Broccoli", "Apple Slices", "Greek Salad", "Grilled Salmon").
-   - "category": Best matching category from: ["Vegetables", "Fruits", "Chicken Dishes", "Mutton Dishes", "Fish Dishes", "Beef Dishes", "Egg Dishes", "Grains", "Legumes", "Dairy", "International", "Snacks", "Beverages", "Dessert", "Other"].
-   - "serving": Realistic portion description (e.g., "150g serving", "1 medium bowl", "1 plate (250g)").
+   - "name": Clean, specific food/dish title (e.g., "Chicken Biryani", "Steamed Broccoli", "Apple", "Dal Tadka", "White Rice", "Grilled Salmon").
+   - "category": Matching category from: ["Vegetables", "Fruits", "Chicken Dishes", "Mutton Dishes", "Fish Dishes", "Beef Dishes", "Egg Dishes", "Grains", "Legumes", "Dairy", "International", "Snacks", "Beverages", "Dessert", "Other"].
+   - "serving": Realistic portion description (e.g., "150g serving", "1 medium bowl", "100g").
+   - "serving_grams": Numerical estimated grams (e.g., 100.0, 150.0, 200.0). Default to 100.0 if uncertain.
    - "quantity": Number of servings (default 1.0).
-   - "calories": Number of kcal (e.g., 240).
+   - "calories": Estimated kcal for this serving (e.g., 240).
    - "protein_g": Protein in grams (e.g., 18.5).
    - "carbs_g": Carbohydrates in grams (e.g., 25.0).
    - "fat_g": Fat in grams (e.g., 8.0).
@@ -87,6 +134,7 @@ Return ONLY a raw JSON object with NO Markdown wrappers, NO commentary:
       "name": "...",
       "category": "...",
       "serving": "...",
+      "serving_grams": 100.0,
       "quantity": 1.0,
       "calories": 0.0,
       "protein_g": 0.0,
@@ -106,7 +154,7 @@ Return ONLY a raw JSON object with NO Markdown wrappers, NO commentary:
 }"""
 
 
-def _extract_image_bytes_and_mime(request: PhotoRequest) -> tuple[bytes, str]:
+def _extract_image_bytes_and_mime(request: PhotoRequest) -> Tuple[bytes, str]:
     raw_str = request.image_base64 or request.image_url
     if not raw_str:
         raise HTTPException(
@@ -117,7 +165,6 @@ def _extract_image_bytes_and_mime(request: PhotoRequest) -> tuple[bytes, str]:
     mime_type = "image/jpeg"
     b64_content = raw_str
 
-    # Handle data:image/png;base64,... headers
     if "base64," in raw_str:
         header, b64_content = raw_str.split("base64,", 1)
         match = re.search(r"data:([^;]+);", header)
@@ -161,8 +208,8 @@ def _call_gemini_vision(image_bytes: bytes, mime_type: str) -> Optional[Dict[str
         print(f"[Vision Part Error]: {e}")
         return None
 
-    # Try verified vision-capable models
-    models_to_try = ["gemini-3.1-flash-lite", "gemini-3.5-flash", "gemini-3.8-flash"]
+    # Verified vision models; gemini-3.8-flash first
+    models_to_try = ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-3.1-flash-lite"]
     for model_name in models_to_try:
         try:
             response = client.models.generate_content(
@@ -183,6 +230,178 @@ def _call_gemini_vision(image_bytes: bytes, mime_type: str) -> Optional[Dict[str
     return None
 
 
+def _parse_grams_from_text(serving_text: str, default_grams: float = 100.0) -> float:
+    """Extract numeric gram value from serving string like '150g' or '1 bowl (200g)'."""
+    if not serving_text:
+        return default_grams
+    match = re.search(r"(\d+(?:\.\d+)?)\s*g\b", serving_text, re.IGNORECASE)
+    if match:
+        try:
+            val = float(match.group(1))
+            if 5.0 <= val <= 2000.0:
+                return val
+        except Exception:
+            pass
+    return default_grams
+
+
+def _process_detected_items(raw_items: List[Dict[str, Any]]) -> Tuple[List[DetectedFoodItem], PlateSummary]:
+    """
+    Enrich vision recognized food items with reference catalog benchmarks when available.
+    If an item is not in the catalog, clearly mark it as unverified AI estimate.
+    """
+    detected: List[DetectedFoodItem] = []
+    matched_count = 0
+    unmatched_count = 0
+
+    for it in raw_items:
+        raw_name = str(it.get("name") or "Food Item").strip()
+        if not raw_name:
+            continue
+
+        qty = max(0.1, float(it.get("quantity") or 1.0))
+        raw_serving_grams = it.get("serving_grams")
+        if raw_serving_grams is not None:
+            try:
+                serving_grams = float(raw_serving_grams)
+            except Exception:
+                serving_grams = 100.0
+        else:
+            serving_grams = _parse_grams_from_text(str(it.get("serving") or ""), 100.0)
+
+        # Attempt to match against starter reference catalog
+        cat_match = match_food_in_catalog(raw_name)
+
+        if cat_match:
+            matched_count += 1
+            cat_id = cat_match.get("id")
+            cat_name = cat_match.get("name")
+            cat_category = cat_match.get("category") or it.get("category") or "Meal"
+            image_file = cat_match.get("image_file", "")
+            filename = Path(image_file).name if image_file else ""
+            image_url = f"/food_reference_images/{filename}" if filename else None
+            notes = cat_match.get("notes") or "Generic reference estimate from starter catalog."
+            nutr_100 = cat_match.get("nutrition_per_100g", {})
+
+            # Scale nutrition accurately by grams and quantity
+            factor = (serving_grams / 100.0) * qty
+            cal = round(float(nutr_100.get("calories_kcal", 0.0)) * factor, 1)
+            prot = round(float(nutr_100.get("protein_g", 0.0)) * factor, 1)
+            carbs = round(float(nutr_100.get("carbohydrates_g", 0.0)) * factor, 1)
+            fat = round(float(nutr_100.get("fat_g", 0.0)) * factor, 1)
+            fiber = round(float(nutr_100.get("fiber_g", 0.0)) * factor, 1)
+            sugar = round(float(nutr_100.get("sugar_g", 0.0)) * factor, 1)
+            sodium = round(float(nutr_100.get("sodium_mg", 0.0)) * factor, 1)
+
+            item = DetectedFoodItem(
+                name=cat_name,
+                category=cat_category,
+                serving=f"{round(serving_grams * qty, 1)}g",
+                serving_grams=round(serving_grams, 1),
+                quantity=qty,
+                calories=cal,
+                protein_g=prot,
+                carbs_g=carbs,
+                fat_g=fat,
+                fiber_g=fiber,
+                sugar_g=sugar,
+                sodium_mg=sodium,
+                health_score=str(it.get("health_score") or "A"),
+                emoji=str(it.get("emoji") or "🥗"),
+                confidence=float(it.get("confidence") or 92.0),
+                micronutrients=it.get("micronutrients") or ["Vitamins", "Minerals"],
+                benefits=str(it.get("benefits") or f"{cat_name} provides essential macro and micronutrients."),
+                ai_tip=str(it.get("ai_tip") or "Balanced portion from reference catalog."),
+                matched_catalog=True,
+                catalog_id=cat_id,
+                catalog_name=cat_name,
+                reference_source="NutriEmotion Food Reference Starter Catalog",
+                is_approximate=cat_match.get("nutrition_is_approximate", True),
+                notes=notes,
+                image_file=image_file,
+                image_url=image_url,
+                nutrition_per_100g={
+                    "calories_kcal": float(nutr_100.get("calories_kcal", 0.0)),
+                    "protein_g": float(nutr_100.get("protein_g", 0.0)),
+                    "carbohydrates_g": float(nutr_100.get("carbohydrates_g", 0.0)),
+                    "fat_g": float(nutr_100.get("fat_g", 0.0)),
+                    "fiber_g": float(nutr_100.get("fiber_g", 0.0)),
+                    "sugar_g": float(nutr_100.get("sugar_g", 0.0)),
+                    "sodium_mg": float(nutr_100.get("sodium_mg", 0.0)),
+                },
+            )
+            detected.append(item)
+        else:
+            # Food item not in starter catalog — use AI vision estimates with explicit disclaimers
+            unmatched_count += 1
+            cal = round(float(it.get("calories") or 0.0) * qty, 1)
+            prot = round(float(it.get("protein_g") or 0.0) * qty, 1)
+            carbs = round(float(it.get("carbs_g") or 0.0) * qty, 1)
+            fat = round(float(it.get("fat_g") or 0.0) * qty, 1)
+            fiber = round(float(it.get("fiber_g") or 0.0) * qty, 1)
+            sugar = round(float(it.get("sugar_g") or 0.0) * qty, 1)
+            sodium = round(float(it.get("sodium_mg") or 0.0) * qty, 1)
+
+            # Compute approximate per-100g baseline for portion scaling
+            effective_total_g = max(10.0, serving_grams * qty)
+            ratio_100 = 100.0 / effective_total_g
+
+            item = DetectedFoodItem(
+                name=raw_name,
+                category=str(it.get("category") or "Meal"),
+                serving=f"{round(serving_grams * qty, 1)}g",
+                serving_grams=round(serving_grams, 1),
+                quantity=qty,
+                calories=cal,
+                protein_g=prot,
+                carbs_g=carbs,
+                fat_g=fat,
+                fiber_g=fiber,
+                sugar_g=sugar,
+                sodium_mg=sodium,
+                health_score=str(it.get("health_score") or "B"),
+                emoji=str(it.get("emoji") or "🍲"),
+                confidence=float(it.get("confidence") or 85.0),
+                micronutrients=it.get("micronutrients") or ["General nutrients"],
+                benefits=str(it.get("benefits") or "Nutrient estimation generated by computer vision."),
+                ai_tip=str(it.get("ai_tip") or "Unverified item: check portion size before logging."),
+                matched_catalog=False,
+                catalog_id=None,
+                catalog_name=None,
+                reference_source="AI Vision Estimate (Unverified - Not in Starter Catalog)",
+                is_approximate=True,
+                notes="Not found in reference catalog; values are AI estimates and not laboratory verified.",
+                image_file=None,
+                image_url=None,
+                nutrition_per_100g={
+                    "calories_kcal": round(cal * ratio_100, 1),
+                    "protein_g": round(prot * ratio_100, 1),
+                    "carbohydrates_g": round(carbs * ratio_100, 1),
+                    "fat_g": round(fat * ratio_100, 1),
+                    "fiber_g": round(fiber * ratio_100, 1),
+                    "sugar_g": round(sugar * ratio_100, 1),
+                    "sodium_mg": round(sodium * ratio_100, 1),
+                },
+            )
+            detected.append(item)
+
+    # Compute plate summary
+    summary = PlateSummary(
+        total_calories=round(sum(it.calories for it in detected), 1),
+        total_protein_g=round(sum(it.protein_g for it in detected), 1),
+        total_carbs_g=round(sum(it.carbs_g for it in detected), 1),
+        total_fat_g=round(sum(it.fat_g for it in detected), 1),
+        total_fiber_g=round(sum(it.fiber_g for it in detected), 1),
+        total_sugar_g=round(sum(it.sugar_g for it in detected), 1),
+        total_sodium_mg=round(sum(it.sodium_mg for it in detected), 1),
+        item_count=len(detected),
+        matched_count=matched_count,
+        unmatched_count=unmatched_count,
+    )
+
+    return detected, summary
+
+
 @router.post("/analyze", response_model=PhotoResponse)
 def analyze_photo(
     request: PhotoRequest,
@@ -196,7 +415,8 @@ def analyze_photo(
             success=False,
             is_food=False,
             detected_items=[],
-            message="AI computer vision service could not analyze this image. Please check your connection or choose foods manually from the database.",
+            plate_summary=None,
+            message="AI computer vision service could not analyze this image. Please check your connection or choose foods manually from the reference database.",
         )
 
     if not vision_result.get("is_food", True):
@@ -205,6 +425,7 @@ def analyze_photo(
             success=True,
             is_food=False,
             detected_items=[],
+            plate_summary=None,
             message=msg,
         )
 
@@ -214,49 +435,34 @@ def analyze_photo(
             success=True,
             is_food=False,
             detected_items=[],
+            plate_summary=None,
             message="No distinct food items could be identified in this photo.",
         )
 
-    detected: List[DetectedFoodItem] = []
-    for it in raw_items:
-        try:
-            item = DetectedFoodItem(
-                name=it.get("name") or "Recognized Food",
-                category=it.get("category") or "Meal",
-                serving=it.get("serving") or "1 serving",
-                quantity=float(it.get("quantity") or 1.0),
-                calories=float(it.get("calories") or 0.0),
-                protein_g=float(it.get("protein_g") or 0.0),
-                carbs_g=float(it.get("carbs_g") or 0.0),
-                fat_g=float(it.get("fat_g") or 0.0),
-                fiber_g=float(it.get("fiber_g") or 0.0),
-                sugar_g=float(it.get("sugar_g") or 0.0),
-                sodium_mg=float(it.get("sodium_mg") or 0.0),
-                health_score=str(it.get("health_score") or "B"),
-                emoji=str(it.get("emoji") or "🍲"),
-                confidence=float(it.get("confidence") or 90.0),
-                micronutrients=it.get("micronutrients") or [],
-                benefits=str(it.get("benefits") or ""),
-                ai_tip=str(it.get("ai_tip") or ""),
-            )
-            detected.append(item)
-        except Exception as parse_err:
-            print(f"[Item Parse Error]: {parse_err}")
-            continue
+    detected, plate_summary = _process_detected_items(raw_items)
 
     if not detected:
         return PhotoResponse(
             success=True,
             is_food=False,
             detected_items=[],
+            plate_summary=None,
             message="Unable to compute nutrition profile for items in this photo.",
         )
+
+    if plate_summary.matched_count == len(detected):
+        msg = f"Identified {len(detected)} item(s) — all matched with verified reference catalog benchmarks."
+    elif plate_summary.matched_count > 0:
+        msg = f"Identified {len(detected)} item(s) ({plate_summary.matched_count} verified from catalog, {plate_summary.unmatched_count} AI estimated)."
+    else:
+        msg = f"Identified {len(detected)} item(s) via AI vision estimation (not found in starter catalog)."
 
     return PhotoResponse(
         success=True,
         is_food=True,
         detected_items=detected,
-        message=f"Successfully identified {detected[0].name} with complete nutritional breakdown.",
+        plate_summary=plate_summary,
+        message=msg,
     )
 
 
@@ -278,6 +484,7 @@ async def upload_photo(
             success=False,
             is_food=False,
             detected_items=[],
+            plate_summary=None,
             message="AI computer vision service could not analyze this image. Please select food manually.",
         )
 
@@ -286,40 +493,154 @@ async def upload_photo(
             success=True,
             is_food=False,
             detected_items=[],
+            plate_summary=None,
             message=vision_result.get("message") or "No food recognized in uploaded image.",
         )
 
     raw_items = vision_result.get("items", [])
-    detected: List[DetectedFoodItem] = []
-    for it in raw_items:
-        try:
-            detected.append(
-                DetectedFoodItem(
-                    name=it.get("name") or "Recognized Food",
-                    category=it.get("category") or "Meal",
-                    serving=it.get("serving") or "1 serving",
-                    quantity=float(it.get("quantity") or 1.0),
-                    calories=float(it.get("calories") or 0.0),
-                    protein_g=float(it.get("protein_g") or 0.0),
-                    carbs_g=float(it.get("carbs_g") or 0.0),
-                    fat_g=float(it.get("fat_g") or 0.0),
-                    fiber_g=float(it.get("fiber_g") or 0.0),
-                    sugar_g=float(it.get("sugar_g") or 0.0),
-                    sodium_mg=float(it.get("sodium_mg") or 0.0),
-                    health_score=str(it.get("health_score") or "B"),
-                    emoji=str(it.get("emoji") or "🍲"),
-                    confidence=float(it.get("confidence") or 90.0),
-                    micronutrients=it.get("micronutrients") or [],
-                    benefits=str(it.get("benefits") or ""),
-                    ai_tip=str(it.get("ai_tip") or ""),
-                )
-            )
-        except Exception:
-            continue
+    if not raw_items:
+        return PhotoResponse(
+            success=True,
+            is_food=False,
+            detected_items=[],
+            plate_summary=None,
+            message="No food items detected in image.",
+        )
+
+    detected, plate_summary = _process_detected_items(raw_items)
+
+    if plate_summary.matched_count == len(detected):
+        msg = f"Identified {len(detected)} item(s) — all matched with verified reference catalog benchmarks."
+    elif plate_summary.matched_count > 0:
+        msg = f"Identified {len(detected)} item(s) ({plate_summary.matched_count} verified from catalog, {plate_summary.unmatched_count} AI estimated)."
+    else:
+        msg = f"Identified {len(detected)} item(s) via AI vision estimation (not found in starter catalog)."
 
     return PhotoResponse(
         success=True,
         is_food=len(detected) > 0,
         detected_items=detected,
-        message=f"Identified {len(detected)} item(s) from image." if detected else "No food items detected.",
+        plate_summary=plate_summary,
+        message=msg,
+    )
+
+
+@router.post("/recalculate", response_model=PhotoResponse)
+def recalculate_plate(
+    req: RecalculateRequest,
+    user=Depends(get_current_user),
+):
+    """
+    Recalculate nutrition and plate totals when user adjusts portion weight (grams) or quantity.
+    """
+    detected: List[DetectedFoodItem] = []
+    matched_count = 0
+    unmatched_count = 0
+
+    for it in req.items:
+        grams = max(1.0, float(it.serving_grams or 100.0))
+        qty = max(0.1, float(it.quantity or 1.0))
+        effective_grams = grams * qty
+
+        cat_item = None
+        if it.catalog_id:
+            cat_item = get_catalog_item_by_id(it.catalog_id)
+        if not cat_item:
+            cat_item = match_food_in_catalog(it.name)
+
+        if cat_item:
+            matched_count += 1
+            nutr = calculate_nutrition_for_portion(cat_item, grams=grams, quantity_multiplier=qty)
+            item = DetectedFoodItem(
+                name=cat_item.get("name"),
+                category=cat_item.get("category", "Meal"),
+                serving=f"{round(effective_grams, 1)}g",
+                serving_grams=round(grams, 1),
+                quantity=qty,
+                calories=nutr["calories"],
+                protein_g=nutr["protein_g"],
+                carbs_g=nutr["carbs_g"],
+                fat_g=nutr["fat_g"],
+                fiber_g=nutr["fiber_g"],
+                sugar_g=nutr["sugar_g"],
+                sodium_mg=nutr["sodium_mg"],
+                health_score=it.health_score or "A",
+                emoji=it.emoji or "🥗",
+                confidence=95.0,
+                micronutrients=it.micronutrients or ["Vitamins", "Minerals"],
+                benefits=it.benefits or f"{cat_item.get('name')} provides balanced reference nutrition.",
+                ai_tip=it.ai_tip or "Portion updated from catalog benchmark.",
+                matched_catalog=True,
+                catalog_id=cat_item.get("id"),
+                catalog_name=cat_item.get("name"),
+                reference_source="NutriEmotion Food Reference Starter Catalog",
+                is_approximate=cat_item.get("nutrition_is_approximate", True),
+                notes=cat_item.get("notes"),
+                image_file=cat_item.get("image_file"),
+                image_url=nutr.get("image_url"),
+                nutrition_per_100g=cat_item.get("nutrition_per_100g"),
+            )
+            detected.append(item)
+        else:
+            unmatched_count += 1
+            base = it.baseline_per_100g or {}
+            factor = effective_grams / 100.0
+            cal = round(float(base.get("calories_kcal", 0.0)) * factor, 1)
+            prot = round(float(base.get("protein_g", 0.0)) * factor, 1)
+            carbs = round(float(base.get("carbohydrates_g", 0.0)) * factor, 1)
+            fat = round(float(base.get("fat_g", 0.0)) * factor, 1)
+            fiber = round(float(base.get("fiber_g", 0.0)) * factor, 1)
+            sugar = round(float(base.get("sugar_g", 0.0)) * factor, 1)
+            sodium = round(float(base.get("sodium_mg", 0.0)) * factor, 1)
+
+            item = DetectedFoodItem(
+                name=it.name,
+                category=it.category or "Meal",
+                serving=f"{round(effective_grams, 1)}g",
+                serving_grams=round(grams, 1),
+                quantity=qty,
+                calories=cal,
+                protein_g=prot,
+                carbs_g=carbs,
+                fat_g=fat,
+                fiber_g=fiber,
+                sugar_g=sugar,
+                sodium_mg=sodium,
+                health_score=it.health_score or "B",
+                emoji=it.emoji or "🍲",
+                confidence=85.0,
+                micronutrients=it.micronutrients or ["General nutrients"],
+                benefits=it.benefits or "Nutrient estimation based on adjusted portion.",
+                ai_tip=it.ai_tip or "Unverified item: check portion size before logging.",
+                matched_catalog=False,
+                catalog_id=None,
+                catalog_name=None,
+                reference_source="AI Vision Estimate (Unverified - Not in Starter Catalog)",
+                is_approximate=True,
+                notes="Not in reference catalog; values are scaled estimates.",
+                image_file=None,
+                image_url=None,
+                nutrition_per_100g=base,
+            )
+            detected.append(item)
+
+    plate_summary = PlateSummary(
+        total_calories=round(sum(it.calories for it in detected), 1),
+        total_protein_g=round(sum(it.protein_g for it in detected), 1),
+        total_carbs_g=round(sum(it.carbs_g for it in detected), 1),
+        total_fat_g=round(sum(it.fat_g for it in detected), 1),
+        total_fiber_g=round(sum(it.fiber_g for it in detected), 1),
+        total_sugar_g=round(sum(it.sugar_g for it in detected), 1),
+        total_sodium_mg=round(sum(it.sodium_mg for it in detected), 1),
+        item_count=len(detected),
+        matched_count=matched_count,
+        unmatched_count=unmatched_count,
+    )
+
+    return PhotoResponse(
+        success=True,
+        is_food=True,
+        detected_items=detected,
+        plate_summary=plate_summary,
+        message=f"Recalculated nutrition for {len(detected)} item(s) on plate.",
     )

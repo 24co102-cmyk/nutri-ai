@@ -1,0 +1,4907 @@
+{
+  "title": "NutriEmotion AI Food Reference Starter Catalog",
+  "version": "1.0",
+  "item_count": 233,
+  "important_limitations": [
+    "This is a starter reference catalog, not an exhaustive list of all foods.",
+    "Nutrition values are approximate generic averages and may differ by recipe, brand, cooking method, and portion.",
+    "Images are labeled illustrative SVG cards, not photographs and not suitable as a vision model training dataset.",
+    "Use a real vision model to recognize unseen foods; use this catalog to map known names and provide fallback reference data.",
+    "Do not claim exact calories or allergen detection from an image."
+  ],
+  "items": [
+    {
+      "id": "food_0001",
+      "name": "Apple",
+      "category": "fruit",
+      "aliases": [
+        "apple"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 52,
+        "protein_g": 0.3,
+        "carbohydrates_g": 13.8,
+        "fat_g": 0.2,
+        "fiber_g": 2.4,
+        "sugar_g": 10.4,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/apple.svg"
+    },
+    {
+      "id": "food_0002",
+      "name": "Banana",
+      "category": "fruit",
+      "aliases": [
+        "banana"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 89,
+        "protein_g": 1.1,
+        "carbohydrates_g": 22.8,
+        "fat_g": 0.3,
+        "fiber_g": 2.6,
+        "sugar_g": 12.2,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/banana.svg"
+    },
+    {
+      "id": "food_0003",
+      "name": "Orange",
+      "category": "fruit",
+      "aliases": [
+        "orange"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 47,
+        "protein_g": 0.9,
+        "carbohydrates_g": 11.8,
+        "fat_g": 0.1,
+        "fiber_g": 2.4,
+        "sugar_g": 9.4,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/orange.svg"
+    },
+    {
+      "id": "food_0004",
+      "name": "Mango",
+      "category": "fruit",
+      "aliases": [
+        "mango"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 60,
+        "protein_g": 0.8,
+        "carbohydrates_g": 15,
+        "fat_g": 0.4,
+        "fiber_g": 1.6,
+        "sugar_g": 13.7,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/mango.svg"
+    },
+    {
+      "id": "food_0005",
+      "name": "Grapes",
+      "category": "fruit",
+      "aliases": [
+        "grapes"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 69,
+        "protein_g": 0.7,
+        "carbohydrates_g": 18.1,
+        "fat_g": 0.2,
+        "fiber_g": 0.9,
+        "sugar_g": 15.5,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/grapes.svg"
+    },
+    {
+      "id": "food_0006",
+      "name": "Watermelon",
+      "category": "fruit",
+      "aliases": [
+        "watermelon"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 30,
+        "protein_g": 0.6,
+        "carbohydrates_g": 7.6,
+        "fat_g": 0.2,
+        "fiber_g": 0.4,
+        "sugar_g": 6.2,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/watermelon.svg"
+    },
+    {
+      "id": "food_0007",
+      "name": "Papaya",
+      "category": "fruit",
+      "aliases": [
+        "papaya"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 43,
+        "protein_g": 0.5,
+        "carbohydrates_g": 10.8,
+        "fat_g": 0.3,
+        "fiber_g": 1.7,
+        "sugar_g": 7.8,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/papaya.svg"
+    },
+    {
+      "id": "food_0008",
+      "name": "Pineapple",
+      "category": "fruit",
+      "aliases": [
+        "pineapple"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 50,
+        "protein_g": 0.5,
+        "carbohydrates_g": 13.1,
+        "fat_g": 0.1,
+        "fiber_g": 1.4,
+        "sugar_g": 9.9,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/pineapple.svg"
+    },
+    {
+      "id": "food_0009",
+      "name": "Guava",
+      "category": "fruit",
+      "aliases": [
+        "guava"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 68,
+        "protein_g": 2.6,
+        "carbohydrates_g": 14.3,
+        "fat_g": 1,
+        "fiber_g": 5.4,
+        "sugar_g": 8.9,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/guava.svg"
+    },
+    {
+      "id": "food_0010",
+      "name": "Pomegranate",
+      "category": "fruit",
+      "aliases": [
+        "pomegranate"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 83,
+        "protein_g": 1.7,
+        "carbohydrates_g": 18.7,
+        "fat_g": 1.2,
+        "fiber_g": 4,
+        "sugar_g": 13.7,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/pomegranate.svg"
+    },
+    {
+      "id": "food_0011",
+      "name": "Strawberry",
+      "category": "fruit",
+      "aliases": [
+        "strawberry"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 32,
+        "protein_g": 0.7,
+        "carbohydrates_g": 7.7,
+        "fat_g": 0.3,
+        "fiber_g": 2,
+        "sugar_g": 4.9,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/strawberry.svg"
+    },
+    {
+      "id": "food_0012",
+      "name": "Blueberry",
+      "category": "fruit",
+      "aliases": [
+        "blueberry"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 57,
+        "protein_g": 0.7,
+        "carbohydrates_g": 14.5,
+        "fat_g": 0.3,
+        "fiber_g": 2.4,
+        "sugar_g": 10,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/blueberry.svg"
+    },
+    {
+      "id": "food_0013",
+      "name": "Pear",
+      "category": "fruit",
+      "aliases": [
+        "pear"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 57,
+        "protein_g": 0.4,
+        "carbohydrates_g": 15.2,
+        "fat_g": 0.1,
+        "fiber_g": 3.1,
+        "sugar_g": 9.8,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/pear.svg"
+    },
+    {
+      "id": "food_0014",
+      "name": "Peach",
+      "category": "fruit",
+      "aliases": [
+        "peach"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 39,
+        "protein_g": 0.9,
+        "carbohydrates_g": 9.5,
+        "fat_g": 0.3,
+        "fiber_g": 1.5,
+        "sugar_g": 8.4,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/peach.svg"
+    },
+    {
+      "id": "food_0015",
+      "name": "Plum",
+      "category": "fruit",
+      "aliases": [
+        "plum"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 46,
+        "protein_g": 0.7,
+        "carbohydrates_g": 11.4,
+        "fat_g": 0.3,
+        "fiber_g": 1.4,
+        "sugar_g": 9.9,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/plum.svg"
+    },
+    {
+      "id": "food_0016",
+      "name": "Kiwi",
+      "category": "fruit",
+      "aliases": [
+        "kiwi"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 61,
+        "protein_g": 1.1,
+        "carbohydrates_g": 14.7,
+        "fat_g": 0.5,
+        "fiber_g": 3,
+        "sugar_g": 9,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/kiwi.svg"
+    },
+    {
+      "id": "food_0017",
+      "name": "Avocado",
+      "category": "fruit",
+      "aliases": [
+        "avocado"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 160,
+        "protein_g": 2,
+        "carbohydrates_g": 8.5,
+        "fat_g": 14.7,
+        "fiber_g": 6.7,
+        "sugar_g": 0.7,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/avocado.svg"
+    },
+    {
+      "id": "food_0018",
+      "name": "Lemon",
+      "category": "fruit",
+      "aliases": [
+        "lemon"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 29,
+        "protein_g": 1.1,
+        "carbohydrates_g": 9.3,
+        "fat_g": 0.3,
+        "fiber_g": 2.8,
+        "sugar_g": 2.5,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/lemon.svg"
+    },
+    {
+      "id": "food_0019",
+      "name": "Sweet lime",
+      "category": "fruit",
+      "aliases": [
+        "sweet lime"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 43,
+        "protein_g": 0.8,
+        "carbohydrates_g": 9.3,
+        "fat_g": 0.3,
+        "fiber_g": 2.8,
+        "sugar_g": 8.4,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/sweet_lime.svg"
+    },
+    {
+      "id": "food_0020",
+      "name": "Chikoo sapodilla",
+      "category": "fruit",
+      "aliases": [
+        "chikoo sapodilla"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 83,
+        "protein_g": 0.4,
+        "carbohydrates_g": 19.9,
+        "fat_g": 1.1,
+        "fiber_g": 5.3,
+        "sugar_g": 14.7,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/chikoo_sapodilla.svg"
+    },
+    {
+      "id": "food_0021",
+      "name": "Jackfruit",
+      "category": "fruit",
+      "aliases": [
+        "jackfruit"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 95,
+        "protein_g": 1.7,
+        "carbohydrates_g": 23.3,
+        "fat_g": 0.6,
+        "fiber_g": 1.5,
+        "sugar_g": 19.1,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/jackfruit.svg"
+    },
+    {
+      "id": "food_0022",
+      "name": "Coconut flesh",
+      "category": "fruit",
+      "aliases": [
+        "coconut flesh"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 354,
+        "protein_g": 3.3,
+        "carbohydrates_g": 15.2,
+        "fat_g": 33.5,
+        "fiber_g": 9,
+        "sugar_g": 6.2,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/coconut_flesh.svg"
+    },
+    {
+      "id": "food_0023",
+      "name": "Dragon fruit",
+      "category": "fruit",
+      "aliases": [
+        "dragon fruit"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 57,
+        "protein_g": 1.2,
+        "carbohydrates_g": 12.9,
+        "fat_g": 0.1,
+        "fiber_g": 3,
+        "sugar_g": 8,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/dragon_fruit.svg"
+    },
+    {
+      "id": "food_0024",
+      "name": "Custard apple",
+      "category": "fruit",
+      "aliases": [
+        "custard apple"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 101,
+        "protein_g": 2.1,
+        "carbohydrates_g": 25.2,
+        "fat_g": 0.6,
+        "fiber_g": 4.4,
+        "sugar_g": 18,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/custard_apple.svg"
+    },
+    {
+      "id": "food_0025",
+      "name": "Dates",
+      "category": "fruit",
+      "aliases": [
+        "dates"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 282,
+        "protein_g": 2.5,
+        "carbohydrates_g": 75,
+        "fat_g": 0.4,
+        "fiber_g": 8,
+        "sugar_g": 63.4,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/dates.svg"
+    },
+    {
+      "id": "food_0026",
+      "name": "Raisins",
+      "category": "fruit",
+      "aliases": [
+        "raisins"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 299,
+        "protein_g": 3.1,
+        "carbohydrates_g": 79.2,
+        "fat_g": 0.5,
+        "fiber_g": 3.7,
+        "sugar_g": 59.2,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/raisins.svg"
+    },
+    {
+      "id": "food_0027",
+      "name": "Litchi",
+      "category": "fruit",
+      "aliases": [
+        "litchi"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 66,
+        "protein_g": 0.8,
+        "carbohydrates_g": 16.5,
+        "fat_g": 0.4,
+        "fiber_g": 1.3,
+        "sugar_g": 15.2,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/litchi.svg"
+    },
+    {
+      "id": "food_0028",
+      "name": "Amla Indian gooseberry",
+      "category": "fruit",
+      "aliases": [
+        "amla indian gooseberry"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 44,
+        "protein_g": 0.9,
+        "carbohydrates_g": 10.2,
+        "fat_g": 0.6,
+        "fiber_g": 4.3,
+        "sugar_g": 0.0,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/amla_indian_gooseberry.svg"
+    },
+    {
+      "id": "food_0029",
+      "name": "Muskmelon",
+      "category": "fruit",
+      "aliases": [
+        "muskmelon"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 34,
+        "protein_g": 0.8,
+        "carbohydrates_g": 8.2,
+        "fat_g": 0.2,
+        "fiber_g": 0.9,
+        "sugar_g": 7.9,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/muskmelon.svg"
+    },
+    {
+      "id": "food_0030",
+      "name": "Blackberries",
+      "category": "fruit",
+      "aliases": [
+        "blackberries"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 43,
+        "protein_g": 1.4,
+        "carbohydrates_g": 9.6,
+        "fat_g": 0.5,
+        "fiber_g": 5.3,
+        "sugar_g": 4.9,
+        "sodium_mg": 1
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw fruit estimate; variety and ripeness change values.",
+      "image_file": "images/blackberries.svg"
+    },
+    {
+      "id": "food_0031",
+      "name": "Potato",
+      "category": "vegetable",
+      "aliases": [
+        "potato"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 77,
+        "protein_g": 2,
+        "carbohydrates_g": 17.5,
+        "fat_g": 0.1,
+        "fiber_g": 2.2,
+        "sugar_g": 0.8,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/potato.svg"
+    },
+    {
+      "id": "food_0032",
+      "name": "Sweet potato",
+      "category": "vegetable",
+      "aliases": [
+        "sweet potato"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 86,
+        "protein_g": 1.6,
+        "carbohydrates_g": 20.1,
+        "fat_g": 0.1,
+        "fiber_g": 3,
+        "sugar_g": 4.2,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/sweet_potato.svg"
+    },
+    {
+      "id": "food_0033",
+      "name": "Tomato",
+      "category": "vegetable",
+      "aliases": [
+        "tomato"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 18,
+        "protein_g": 0.9,
+        "carbohydrates_g": 3.9,
+        "fat_g": 0.2,
+        "fiber_g": 1.2,
+        "sugar_g": 2.6,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/tomato.svg"
+    },
+    {
+      "id": "food_0034",
+      "name": "Onion",
+      "category": "vegetable",
+      "aliases": [
+        "onion"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 40,
+        "protein_g": 1.1,
+        "carbohydrates_g": 9.3,
+        "fat_g": 0.1,
+        "fiber_g": 1.7,
+        "sugar_g": 4.2,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/onion.svg"
+    },
+    {
+      "id": "food_0035",
+      "name": "Carrot",
+      "category": "vegetable",
+      "aliases": [
+        "carrot"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 41,
+        "protein_g": 0.9,
+        "carbohydrates_g": 9.6,
+        "fat_g": 0.2,
+        "fiber_g": 2.8,
+        "sugar_g": 4.7,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/carrot.svg"
+    },
+    {
+      "id": "food_0036",
+      "name": "Cucumber",
+      "category": "vegetable",
+      "aliases": [
+        "cucumber"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 15,
+        "protein_g": 0.7,
+        "carbohydrates_g": 3.6,
+        "fat_g": 0.1,
+        "fiber_g": 0.5,
+        "sugar_g": 1.7,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/cucumber.svg"
+    },
+    {
+      "id": "food_0037",
+      "name": "Spinach",
+      "category": "vegetable",
+      "aliases": [
+        "spinach"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 23,
+        "protein_g": 2.9,
+        "carbohydrates_g": 3.6,
+        "fat_g": 0.4,
+        "fiber_g": 2.2,
+        "sugar_g": 0.4,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/spinach.svg"
+    },
+    {
+      "id": "food_0038",
+      "name": "Cauliflower",
+      "category": "vegetable",
+      "aliases": [
+        "cauliflower"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 25,
+        "protein_g": 1.9,
+        "carbohydrates_g": 5,
+        "fat_g": 0.3,
+        "fiber_g": 2,
+        "sugar_g": 1.9,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/cauliflower.svg"
+    },
+    {
+      "id": "food_0039",
+      "name": "Broccoli",
+      "category": "vegetable",
+      "aliases": [
+        "broccoli"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 34,
+        "protein_g": 2.8,
+        "carbohydrates_g": 6.6,
+        "fat_g": 0.4,
+        "fiber_g": 2.6,
+        "sugar_g": 1.7,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/broccoli.svg"
+    },
+    {
+      "id": "food_0040",
+      "name": "Cabbage",
+      "category": "vegetable",
+      "aliases": [
+        "cabbage"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 25,
+        "protein_g": 1.3,
+        "carbohydrates_g": 5.8,
+        "fat_g": 0.1,
+        "fiber_g": 2.5,
+        "sugar_g": 3.2,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/cabbage.svg"
+    },
+    {
+      "id": "food_0041",
+      "name": "Capsicum bell pepper",
+      "category": "vegetable",
+      "aliases": [
+        "capsicum bell pepper"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 31,
+        "protein_g": 1,
+        "carbohydrates_g": 6,
+        "fat_g": 0.3,
+        "fiber_g": 2.1,
+        "sugar_g": 4.2,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/capsicum_bell_pepper.svg"
+    },
+    {
+      "id": "food_0042",
+      "name": "Eggplant brinjal",
+      "category": "vegetable",
+      "aliases": [
+        "eggplant brinjal"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 25,
+        "protein_g": 1,
+        "carbohydrates_g": 5.9,
+        "fat_g": 0.2,
+        "fiber_g": 3,
+        "sugar_g": 3.5,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/eggplant_brinjal.svg"
+    },
+    {
+      "id": "food_0043",
+      "name": "Okra bhindi",
+      "category": "vegetable",
+      "aliases": [
+        "okra bhindi"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 33,
+        "protein_g": 1.9,
+        "carbohydrates_g": 7.5,
+        "fat_g": 0.2,
+        "fiber_g": 3.2,
+        "sugar_g": 1.5,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/okra_bhindi.svg"
+    },
+    {
+      "id": "food_0044",
+      "name": "Bottle gourd lauki",
+      "category": "vegetable",
+      "aliases": [
+        "bottle gourd lauki"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 14,
+        "protein_g": 0.6,
+        "carbohydrates_g": 3.4,
+        "fat_g": 0.0,
+        "fiber_g": 1.0,
+        "sugar_g": 1.7,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/bottle_gourd_lauki.svg"
+    },
+    {
+      "id": "food_0045",
+      "name": "Bitter gourd karela",
+      "category": "vegetable",
+      "aliases": [
+        "bitter gourd karela"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 17,
+        "protein_g": 1,
+        "carbohydrates_g": 3.7,
+        "fat_g": 0.2,
+        "fiber_g": 2.8,
+        "sugar_g": 1.9,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/bitter_gourd_karela.svg"
+    },
+    {
+      "id": "food_0046",
+      "name": "Pumpkin",
+      "category": "vegetable",
+      "aliases": [
+        "pumpkin"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 26,
+        "protein_g": 1,
+        "carbohydrates_g": 6.5,
+        "fat_g": 0.1,
+        "fiber_g": 0.5,
+        "sugar_g": 2.8,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/pumpkin.svg"
+    },
+    {
+      "id": "food_0047",
+      "name": "Green peas",
+      "category": "vegetable",
+      "aliases": [
+        "green peas"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 81,
+        "protein_g": 5.4,
+        "carbohydrates_g": 14.5,
+        "fat_g": 0.4,
+        "fiber_g": 5.1,
+        "sugar_g": 5.7,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/green_peas.svg"
+    },
+    {
+      "id": "food_0048",
+      "name": "Corn sweet",
+      "category": "vegetable",
+      "aliases": [
+        "corn sweet"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 86,
+        "protein_g": 3.3,
+        "carbohydrates_g": 19,
+        "fat_g": 1.4,
+        "fiber_g": 2.7,
+        "sugar_g": 6.3,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/corn_sweet.svg"
+    },
+    {
+      "id": "food_0049",
+      "name": "Green beans",
+      "category": "vegetable",
+      "aliases": [
+        "green beans"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 31,
+        "protein_g": 1.8,
+        "carbohydrates_g": 7,
+        "fat_g": 0.2,
+        "fiber_g": 3.4,
+        "sugar_g": 3.3,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/green_beans.svg"
+    },
+    {
+      "id": "food_0050",
+      "name": "Beetroot",
+      "category": "vegetable",
+      "aliases": [
+        "beetroot"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 43,
+        "protein_g": 1.6,
+        "carbohydrates_g": 9.6,
+        "fat_g": 0.2,
+        "fiber_g": 2.8,
+        "sugar_g": 6.8,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/beetroot.svg"
+    },
+    {
+      "id": "food_0051",
+      "name": "Radish",
+      "category": "vegetable",
+      "aliases": [
+        "radish"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 16,
+        "protein_g": 0.7,
+        "carbohydrates_g": 3.4,
+        "fat_g": 0.1,
+        "fiber_g": 1.6,
+        "sugar_g": 1.9,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/radish.svg"
+    },
+    {
+      "id": "food_0052",
+      "name": "Turnip",
+      "category": "vegetable",
+      "aliases": [
+        "turnip"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 28,
+        "protein_g": 0.9,
+        "carbohydrates_g": 6.4,
+        "fat_g": 0.1,
+        "fiber_g": 1.8,
+        "sugar_g": 3.8,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/turnip.svg"
+    },
+    {
+      "id": "food_0053",
+      "name": "Mushroom",
+      "category": "vegetable",
+      "aliases": [
+        "mushroom"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 22,
+        "protein_g": 3.1,
+        "carbohydrates_g": 3.3,
+        "fat_g": 0.3,
+        "fiber_g": 1,
+        "sugar_g": 2,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/mushroom.svg"
+    },
+    {
+      "id": "food_0054",
+      "name": "Garlic",
+      "category": "vegetable",
+      "aliases": [
+        "garlic"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 149,
+        "protein_g": 6.4,
+        "carbohydrates_g": 33.1,
+        "fat_g": 0.5,
+        "fiber_g": 2.1,
+        "sugar_g": 1,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/garlic.svg"
+    },
+    {
+      "id": "food_0055",
+      "name": "Ginger",
+      "category": "vegetable",
+      "aliases": [
+        "ginger"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 80,
+        "protein_g": 1.8,
+        "carbohydrates_g": 17.8,
+        "fat_g": 0.8,
+        "fiber_g": 2,
+        "sugar_g": 1.7,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/ginger.svg"
+    },
+    {
+      "id": "food_0056",
+      "name": "Green chilli",
+      "category": "vegetable",
+      "aliases": [
+        "green chilli"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 40,
+        "protein_g": 2,
+        "carbohydrates_g": 9,
+        "fat_g": 0.2,
+        "fiber_g": 1.5,
+        "sugar_g": 5.3,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/green_chilli.svg"
+    },
+    {
+      "id": "food_0057",
+      "name": "Lettuce",
+      "category": "vegetable",
+      "aliases": [
+        "lettuce"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 15,
+        "protein_g": 1.4,
+        "carbohydrates_g": 2.9,
+        "fat_g": 0.2,
+        "fiber_g": 1.3,
+        "sugar_g": 0.8,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/lettuce.svg"
+    },
+    {
+      "id": "food_0058",
+      "name": "Celery",
+      "category": "vegetable",
+      "aliases": [
+        "celery"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 14,
+        "protein_g": 0.7,
+        "carbohydrates_g": 3,
+        "fat_g": 0.2,
+        "fiber_g": 1.6,
+        "sugar_g": 1.3,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/celery.svg"
+    },
+    {
+      "id": "food_0059",
+      "name": "Drumstick moringa pod",
+      "category": "vegetable",
+      "aliases": [
+        "drumstick moringa pod"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 37,
+        "protein_g": 2.1,
+        "carbohydrates_g": 8.5,
+        "fat_g": 0.2,
+        "fiber_g": 3.2,
+        "sugar_g": 2.0,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/drumstick_moringa_pod.svg"
+    },
+    {
+      "id": "food_0060",
+      "name": "Raw banana plantain",
+      "category": "vegetable",
+      "aliases": [
+        "raw banana plantain"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 122,
+        "protein_g": 1.3,
+        "carbohydrates_g": 31.9,
+        "fat_g": 0.4,
+        "fiber_g": 2.3,
+        "sugar_g": 15,
+        "sodium_mg": 30
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic raw vegetable estimate; cooked values differ.",
+      "image_file": "images/raw_banana_plantain.svg"
+    },
+    {
+      "id": "food_0061",
+      "name": "White rice cooked",
+      "category": "grain",
+      "aliases": [
+        "white rice cooked"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 130,
+        "protein_g": 2.7,
+        "carbohydrates_g": 28.2,
+        "fat_g": 0.3,
+        "fiber_g": 0.4,
+        "sugar_g": 0.1,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/white_rice_cooked.svg"
+    },
+    {
+      "id": "food_0062",
+      "name": "Brown rice cooked",
+      "category": "grain",
+      "aliases": [
+        "brown rice cooked"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 123,
+        "protein_g": 2.7,
+        "carbohydrates_g": 25.6,
+        "fat_g": 1,
+        "fiber_g": 1.6,
+        "sugar_g": 0.4,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/brown_rice_cooked.svg"
+    },
+    {
+      "id": "food_0063",
+      "name": "Oats dry",
+      "category": "grain",
+      "aliases": [
+        "oats dry"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 389,
+        "protein_g": 16.9,
+        "carbohydrates_g": 66.3,
+        "fat_g": 6.9,
+        "fiber_g": 10.6,
+        "sugar_g": 0.9,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/oats_dry.svg"
+    },
+    {
+      "id": "food_0064",
+      "name": "Whole wheat atta",
+      "category": "grain",
+      "aliases": [
+        "whole wheat atta"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 340,
+        "protein_g": 13.2,
+        "carbohydrates_g": 72,
+        "fat_g": 2.5,
+        "fiber_g": 10.7,
+        "sugar_g": 0.4,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/whole_wheat_atta.svg"
+    },
+    {
+      "id": "food_0065",
+      "name": "Roti chapati",
+      "category": "Indian bread",
+      "aliases": [
+        "roti chapati"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 297,
+        "protein_g": 9,
+        "carbohydrates_g": 50,
+        "fat_g": 7,
+        "fiber_g": 7,
+        "sugar_g": 2,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/roti_chapati.svg"
+    },
+    {
+      "id": "food_0066",
+      "name": "Plain naan",
+      "category": "Indian bread",
+      "aliases": [
+        "plain naan"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 290,
+        "protein_g": 9,
+        "carbohydrates_g": 48,
+        "fat_g": 6,
+        "fiber_g": 2,
+        "sugar_g": 3,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/plain_naan.svg"
+    },
+    {
+      "id": "food_0067",
+      "name": "White bread",
+      "category": "bread",
+      "aliases": [
+        "white bread"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 266,
+        "protein_g": 8.9,
+        "carbohydrates_g": 49,
+        "fat_g": 3.2,
+        "fiber_g": 2.7,
+        "sugar_g": 5,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/white_bread.svg"
+    },
+    {
+      "id": "food_0068",
+      "name": "Pasta cooked",
+      "category": "grain",
+      "aliases": [
+        "pasta cooked"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 157,
+        "protein_g": 5.8,
+        "carbohydrates_g": 30.9,
+        "fat_g": 0.9,
+        "fiber_g": 1.8,
+        "sugar_g": 0.6,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/pasta_cooked.svg"
+    },
+    {
+      "id": "food_0069",
+      "name": "Quinoa cooked",
+      "category": "grain",
+      "aliases": [
+        "quinoa cooked"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 120,
+        "protein_g": 4.4,
+        "carbohydrates_g": 21.3,
+        "fat_g": 1.9,
+        "fiber_g": 2.8,
+        "sugar_g": 0.9,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/quinoa_cooked.svg"
+    },
+    {
+      "id": "food_0070",
+      "name": "Poha cooked",
+      "category": "Indian breakfast",
+      "aliases": [
+        "poha cooked"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 130,
+        "protein_g": 2.5,
+        "carbohydrates_g": 26,
+        "fat_g": 2,
+        "fiber_g": 1.5,
+        "sugar_g": 1,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/poha_cooked.svg"
+    },
+    {
+      "id": "food_0071",
+      "name": "Idli",
+      "category": "Indian breakfast",
+      "aliases": [
+        "idli"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 146,
+        "protein_g": 4.5,
+        "carbohydrates_g": 29,
+        "fat_g": 0.7,
+        "fiber_g": 1.5,
+        "sugar_g": 1,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/idli.svg"
+    },
+    {
+      "id": "food_0072",
+      "name": "Dosa plain",
+      "category": "Indian breakfast",
+      "aliases": [
+        "dosa plain"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 168,
+        "protein_g": 4,
+        "carbohydrates_g": 29,
+        "fat_g": 3.7,
+        "fiber_g": 1.5,
+        "sugar_g": 1,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/dosa_plain.svg"
+    },
+    {
+      "id": "food_0073",
+      "name": "Besan chilla",
+      "category": "Indian breakfast",
+      "aliases": [
+        "besan chilla"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 180,
+        "protein_g": 8,
+        "carbohydrates_g": 22,
+        "fat_g": 6,
+        "fiber_g": 4,
+        "sugar_g": 2,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/besan_chilla.svg"
+    },
+    {
+      "id": "food_0074",
+      "name": "Upma",
+      "category": "Indian breakfast",
+      "aliases": [
+        "upma"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 150,
+        "protein_g": 4,
+        "carbohydrates_g": 23,
+        "fat_g": 4.5,
+        "fiber_g": 2.5,
+        "sugar_g": 2,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/upma.svg"
+    },
+    {
+      "id": "food_0075",
+      "name": "Dal cooked",
+      "category": "legume dish",
+      "aliases": [
+        "dal cooked"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 116,
+        "protein_g": 9,
+        "carbohydrates_g": 20,
+        "fat_g": 0.4,
+        "fiber_g": 7.9,
+        "sugar_g": 1.8,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/dal_cooked.svg"
+    },
+    {
+      "id": "food_0076",
+      "name": "Chana cooked",
+      "category": "legume",
+      "aliases": [
+        "chana cooked"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 164,
+        "protein_g": 8.9,
+        "carbohydrates_g": 27.4,
+        "fat_g": 2.6,
+        "fiber_g": 7.6,
+        "sugar_g": 4.8,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/chana_cooked.svg"
+    },
+    {
+      "id": "food_0077",
+      "name": "Rajma cooked",
+      "category": "legume",
+      "aliases": [
+        "rajma cooked"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 127,
+        "protein_g": 8.7,
+        "carbohydrates_g": 22.8,
+        "fat_g": 0.5,
+        "fiber_g": 6.4,
+        "sugar_g": 0.3,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/rajma_cooked.svg"
+    },
+    {
+      "id": "food_0078",
+      "name": "Lentils cooked",
+      "category": "legume",
+      "aliases": [
+        "lentils cooked"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 116,
+        "protein_g": 9,
+        "carbohydrates_g": 20.1,
+        "fat_g": 0.4,
+        "fiber_g": 7.9,
+        "sugar_g": 1.8,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/lentils_cooked.svg"
+    },
+    {
+      "id": "food_0079",
+      "name": "Chickpeas cooked",
+      "category": "legume",
+      "aliases": [
+        "chickpeas cooked"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 164,
+        "protein_g": 8.9,
+        "carbohydrates_g": 27.4,
+        "fat_g": 2.6,
+        "fiber_g": 7.6,
+        "sugar_g": 4.8,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/chickpeas_cooked.svg"
+    },
+    {
+      "id": "food_0080",
+      "name": "Soybeans cooked",
+      "category": "legume",
+      "aliases": [
+        "soybeans cooked"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 172,
+        "protein_g": 18.2,
+        "carbohydrates_g": 8.4,
+        "fat_g": 9,
+        "fiber_g": 6,
+        "sugar_g": 3,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/soybeans_cooked.svg"
+    },
+    {
+      "id": "food_0081",
+      "name": "Tofu",
+      "category": "protein",
+      "aliases": [
+        "tofu"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 76,
+        "protein_g": 8,
+        "carbohydrates_g": 1.9,
+        "fat_g": 4.8,
+        "fiber_g": 0.3,
+        "sugar_g": 0.6,
+        "sodium_mg": 120
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/tofu.svg"
+    },
+    {
+      "id": "food_0082",
+      "name": "Paneer",
+      "category": "dairy protein",
+      "aliases": [
+        "paneer"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 265,
+        "protein_g": 18.3,
+        "carbohydrates_g": 1.2,
+        "fat_g": 20.8,
+        "fiber_g": 0,
+        "sugar_g": 1.2,
+        "sodium_mg": 120
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/paneer.svg"
+    },
+    {
+      "id": "food_0083",
+      "name": "Milk whole",
+      "category": "dairy",
+      "aliases": [
+        "milk whole"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 61,
+        "protein_g": 3.2,
+        "carbohydrates_g": 4.8,
+        "fat_g": 3.3,
+        "fiber_g": 0,
+        "sugar_g": 5.1,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/milk_whole.svg"
+    },
+    {
+      "id": "food_0084",
+      "name": "Curd plain",
+      "category": "dairy",
+      "aliases": [
+        "curd plain"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 61,
+        "protein_g": 3.5,
+        "carbohydrates_g": 4.7,
+        "fat_g": 3.3,
+        "fiber_g": 0,
+        "sugar_g": 4.7,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/curd_plain.svg"
+    },
+    {
+      "id": "food_0085",
+      "name": "Greek yogurt plain",
+      "category": "dairy",
+      "aliases": [
+        "greek yogurt plain"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 97,
+        "protein_g": 9,
+        "carbohydrates_g": 3.9,
+        "fat_g": 5,
+        "fiber_g": 0,
+        "sugar_g": 3.2,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/greek_yogurt_plain.svg"
+    },
+    {
+      "id": "food_0086",
+      "name": "Cheddar cheese",
+      "category": "dairy",
+      "aliases": [
+        "cheddar cheese"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 403,
+        "protein_g": 25,
+        "carbohydrates_g": 1.3,
+        "fat_g": 33,
+        "fiber_g": 0,
+        "sugar_g": 0.5,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/cheddar_cheese.svg"
+    },
+    {
+      "id": "food_0087",
+      "name": "Egg whole cooked",
+      "category": "protein",
+      "aliases": [
+        "egg whole cooked"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 155,
+        "protein_g": 12.6,
+        "carbohydrates_g": 1.1,
+        "fat_g": 10.6,
+        "fiber_g": 0,
+        "sugar_g": 1.1,
+        "sodium_mg": 120
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/egg_whole_cooked.svg"
+    },
+    {
+      "id": "food_0088",
+      "name": "Chicken breast cooked",
+      "category": "protein",
+      "aliases": [
+        "chicken breast cooked"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 165,
+        "protein_g": 31,
+        "carbohydrates_g": 0,
+        "fat_g": 3.6,
+        "fiber_g": 0,
+        "sugar_g": 0,
+        "sodium_mg": 120
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/chicken_breast_cooked.svg"
+    },
+    {
+      "id": "food_0089",
+      "name": "Chicken thigh cooked",
+      "category": "protein",
+      "aliases": [
+        "chicken thigh cooked"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 209,
+        "protein_g": 26,
+        "carbohydrates_g": 0,
+        "fat_g": 10.9,
+        "fiber_g": 0,
+        "sugar_g": 0,
+        "sodium_mg": 120
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/chicken_thigh_cooked.svg"
+    },
+    {
+      "id": "food_0090",
+      "name": "Salmon cooked",
+      "category": "protein",
+      "aliases": [
+        "salmon cooked"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 206,
+        "protein_g": 22.1,
+        "carbohydrates_g": 0,
+        "fat_g": 12.4,
+        "fiber_g": 0,
+        "sugar_g": 0,
+        "sodium_mg": 120
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/salmon_cooked.svg"
+    },
+    {
+      "id": "food_0091",
+      "name": "Tuna canned in water",
+      "category": "protein",
+      "aliases": [
+        "tuna canned in water"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 116,
+        "protein_g": 25.5,
+        "carbohydrates_g": 0,
+        "fat_g": 0.8,
+        "fiber_g": 0,
+        "sugar_g": 0,
+        "sodium_mg": 120
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/tuna_canned_in_water.svg"
+    },
+    {
+      "id": "food_0092",
+      "name": "Prawns cooked",
+      "category": "protein",
+      "aliases": [
+        "prawns cooked"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 99,
+        "protein_g": 24,
+        "carbohydrates_g": 0.2,
+        "fat_g": 0.3,
+        "fiber_g": 0,
+        "sugar_g": 0,
+        "sodium_mg": 120
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/prawns_cooked.svg"
+    },
+    {
+      "id": "food_0093",
+      "name": "Almonds",
+      "category": "nuts and seeds",
+      "aliases": [
+        "almonds"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 579,
+        "protein_g": 21.2,
+        "carbohydrates_g": 21.6,
+        "fat_g": 49.9,
+        "fiber_g": 12.5,
+        "sugar_g": 4.4,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/almonds.svg"
+    },
+    {
+      "id": "food_0094",
+      "name": "Peanuts",
+      "category": "nuts and seeds",
+      "aliases": [
+        "peanuts"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 567,
+        "protein_g": 25.8,
+        "carbohydrates_g": 16.1,
+        "fat_g": 49.2,
+        "fiber_g": 8.5,
+        "sugar_g": 4.7,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/peanuts.svg"
+    },
+    {
+      "id": "food_0095",
+      "name": "Walnuts",
+      "category": "nuts and seeds",
+      "aliases": [
+        "walnuts"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 654,
+        "protein_g": 15.2,
+        "carbohydrates_g": 13.7,
+        "fat_g": 65.2,
+        "fiber_g": 6.7,
+        "sugar_g": 2.6,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/walnuts.svg"
+    },
+    {
+      "id": "food_0096",
+      "name": "Chia seeds",
+      "category": "nuts and seeds",
+      "aliases": [
+        "chia seeds"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 486,
+        "protein_g": 16.5,
+        "carbohydrates_g": 42.1,
+        "fat_g": 30.7,
+        "fiber_g": 34.4,
+        "sugar_g": 0,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/chia_seeds.svg"
+    },
+    {
+      "id": "food_0097",
+      "name": "Peanut butter",
+      "category": "spread",
+      "aliases": [
+        "peanut butter"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 588,
+        "protein_g": 25,
+        "carbohydrates_g": 20,
+        "fat_g": 50,
+        "fiber_g": 6,
+        "sugar_g": 9,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/peanut_butter.svg"
+    },
+    {
+      "id": "food_0098",
+      "name": "Olive oil",
+      "category": "oil",
+      "aliases": [
+        "olive oil"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 884,
+        "protein_g": 0,
+        "carbohydrates_g": 0,
+        "fat_g": 100,
+        "fiber_g": 0,
+        "sugar_g": 0,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/olive_oil.svg"
+    },
+    {
+      "id": "food_0099",
+      "name": "Butter",
+      "category": "fat",
+      "aliases": [
+        "butter"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 717,
+        "protein_g": 0.9,
+        "carbohydrates_g": 0.1,
+        "fat_g": 81,
+        "fiber_g": 0,
+        "sugar_g": 0.1,
+        "sodium_mg": 10
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe, brand, and preparation can significantly change values.",
+      "image_file": "images/butter.svg"
+    },
+    {
+      "id": "food_0100",
+      "name": "Chicken biryani",
+      "category": "Indian rice dish",
+      "aliases": [
+        "chicken biryani"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 180,
+        "protein_g": 10,
+        "carbohydrates_g": 20,
+        "fat_g": 6,
+        "fiber_g": 1,
+        "sugar_g": 2,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/chicken_biryani.svg"
+    },
+    {
+      "id": "food_0101",
+      "name": "Veg biryani",
+      "category": "Indian rice dish",
+      "aliases": [
+        "veg biryani"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 150,
+        "protein_g": 3.5,
+        "carbohydrates_g": 25,
+        "fat_g": 4,
+        "fiber_g": 2.5,
+        "sugar_g": 3,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/veg_biryani.svg"
+    },
+    {
+      "id": "food_0102",
+      "name": "Mutton biryani",
+      "category": "Indian rice dish",
+      "aliases": [
+        "mutton biryani"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 210,
+        "protein_g": 9,
+        "carbohydrates_g": 21,
+        "fat_g": 9,
+        "fiber_g": 1,
+        "sugar_g": 2,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/mutton_biryani.svg"
+    },
+    {
+      "id": "food_0103",
+      "name": "Pulao",
+      "category": "Indian rice dish",
+      "aliases": [
+        "pulao"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 160,
+        "protein_g": 3,
+        "carbohydrates_g": 26,
+        "fat_g": 5,
+        "fiber_g": 1.5,
+        "sugar_g": 2,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/pulao.svg"
+    },
+    {
+      "id": "food_0104",
+      "name": "Butter chicken",
+      "category": "Indian curry",
+      "aliases": [
+        "butter chicken"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 190,
+        "protein_g": 14,
+        "carbohydrates_g": 7,
+        "fat_g": 12,
+        "fiber_g": 1,
+        "sugar_g": 4,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/butter_chicken.svg"
+    },
+    {
+      "id": "food_0105",
+      "name": "Chicken tikka",
+      "category": "Indian grilled dish",
+      "aliases": [
+        "chicken tikka"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 165,
+        "protein_g": 25,
+        "carbohydrates_g": 3,
+        "fat_g": 5,
+        "fiber_g": 0,
+        "sugar_g": 2,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/chicken_tikka.svg"
+    },
+    {
+      "id": "food_0106",
+      "name": "Tandoori chicken",
+      "category": "Indian grilled dish",
+      "aliases": [
+        "tandoori chicken"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 170,
+        "protein_g": 25,
+        "carbohydrates_g": 2,
+        "fat_g": 6,
+        "fiber_g": 0,
+        "sugar_g": 1,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/tandoori_chicken.svg"
+    },
+    {
+      "id": "food_0107",
+      "name": "Paneer butter masala",
+      "category": "Indian curry",
+      "aliases": [
+        "paneer butter masala"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 220,
+        "protein_g": 9,
+        "carbohydrates_g": 10,
+        "fat_g": 16,
+        "fiber_g": 2,
+        "sugar_g": 5,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/paneer_butter_masala.svg"
+    },
+    {
+      "id": "food_0108",
+      "name": "Palak paneer",
+      "category": "Indian curry",
+      "aliases": [
+        "palak paneer"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 160,
+        "protein_g": 8,
+        "carbohydrates_g": 7,
+        "fat_g": 11,
+        "fiber_g": 2.5,
+        "sugar_g": 2,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/palak_paneer.svg"
+    },
+    {
+      "id": "food_0109",
+      "name": "Chole",
+      "category": "Indian curry",
+      "aliases": [
+        "chole"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 150,
+        "protein_g": 7,
+        "carbohydrates_g": 20,
+        "fat_g": 5,
+        "fiber_g": 6,
+        "sugar_g": 4,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/chole.svg"
+    },
+    {
+      "id": "food_0110",
+      "name": "Rajma masala",
+      "category": "Indian curry",
+      "aliases": [
+        "rajma masala"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 140,
+        "protein_g": 7,
+        "carbohydrates_g": 19,
+        "fat_g": 4,
+        "fiber_g": 5,
+        "sugar_g": 3,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/rajma_masala.svg"
+    },
+    {
+      "id": "food_0111",
+      "name": "Dal tadka",
+      "category": "Indian curry",
+      "aliases": [
+        "dal tadka"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 130,
+        "protein_g": 6,
+        "carbohydrates_g": 15,
+        "fat_g": 5,
+        "fiber_g": 4,
+        "sugar_g": 2,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/dal_tadka.svg"
+    },
+    {
+      "id": "food_0112",
+      "name": "Dal makhani",
+      "category": "Indian curry",
+      "aliases": [
+        "dal makhani"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 170,
+        "protein_g": 6,
+        "carbohydrates_g": 14,
+        "fat_g": 9,
+        "fiber_g": 4,
+        "sugar_g": 2,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/dal_makhani.svg"
+    },
+    {
+      "id": "food_0113",
+      "name": "Aloo gobi",
+      "category": "Indian curry",
+      "aliases": [
+        "aloo gobi"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 110,
+        "protein_g": 3,
+        "carbohydrates_g": 14,
+        "fat_g": 5,
+        "fiber_g": 3,
+        "sugar_g": 3,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/aloo_gobi.svg"
+    },
+    {
+      "id": "food_0114",
+      "name": "Bhindi masala",
+      "category": "Indian curry",
+      "aliases": [
+        "bhindi masala"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 100,
+        "protein_g": 2,
+        "carbohydrates_g": 10,
+        "fat_g": 6,
+        "fiber_g": 3,
+        "sugar_g": 3,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/bhindi_masala.svg"
+    },
+    {
+      "id": "food_0115",
+      "name": "Baingan bharta",
+      "category": "Indian curry",
+      "aliases": [
+        "baingan bharta"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 90,
+        "protein_g": 2,
+        "carbohydrates_g": 10,
+        "fat_g": 5,
+        "fiber_g": 4,
+        "sugar_g": 4,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/baingan_bharta.svg"
+    },
+    {
+      "id": "food_0116",
+      "name": "Samosa",
+      "category": "Indian snack",
+      "aliases": [
+        "samosa"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 300,
+        "protein_g": 5,
+        "carbohydrates_g": 32,
+        "fat_g": 17,
+        "fiber_g": 3,
+        "sugar_g": 3,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/samosa.svg"
+    },
+    {
+      "id": "food_0117",
+      "name": "Pakora bhajiya",
+      "category": "Indian snack",
+      "aliases": [
+        "pakora bhajiya"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 280,
+        "protein_g": 6,
+        "carbohydrates_g": 30,
+        "fat_g": 15,
+        "fiber_g": 4,
+        "sugar_g": 2,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/pakora_bhajiya.svg"
+    },
+    {
+      "id": "food_0118",
+      "name": "Vada pav",
+      "category": "Indian street food",
+      "aliases": [
+        "vada pav"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 290,
+        "protein_g": 7,
+        "carbohydrates_g": 40,
+        "fat_g": 11,
+        "fiber_g": 3,
+        "sugar_g": 4,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/vada_pav.svg"
+    },
+    {
+      "id": "food_0119",
+      "name": "Pav bhaji",
+      "category": "Indian street food",
+      "aliases": [
+        "pav bhaji"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 160,
+        "protein_g": 4,
+        "carbohydrates_g": 20,
+        "fat_g": 7,
+        "fiber_g": 3,
+        "sugar_g": 4,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/pav_bhaji.svg"
+    },
+    {
+      "id": "food_0120",
+      "name": "Misal pav",
+      "category": "Indian street food",
+      "aliases": [
+        "misal pav"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 180,
+        "protein_g": 7,
+        "carbohydrates_g": 24,
+        "fat_g": 6,
+        "fiber_g": 5,
+        "sugar_g": 3,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/misal_pav.svg"
+    },
+    {
+      "id": "food_0121",
+      "name": "Dhokla",
+      "category": "Indian snack",
+      "aliases": [
+        "dhokla"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 160,
+        "protein_g": 7,
+        "carbohydrates_g": 24,
+        "fat_g": 4,
+        "fiber_g": 3,
+        "sugar_g": 3,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/dhokla.svg"
+    },
+    {
+      "id": "food_0122",
+      "name": "Kachori",
+      "category": "Indian snack",
+      "aliases": [
+        "kachori"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 350,
+        "protein_g": 7,
+        "carbohydrates_g": 35,
+        "fat_g": 20,
+        "fiber_g": 3,
+        "sugar_g": 2,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/kachori.svg"
+    },
+    {
+      "id": "food_0123",
+      "name": "Pani puri",
+      "category": "Indian street food",
+      "aliases": [
+        "pani puri"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 180,
+        "protein_g": 4,
+        "carbohydrates_g": 25,
+        "fat_g": 7,
+        "fiber_g": 2,
+        "sugar_g": 4,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/pani_puri.svg"
+    },
+    {
+      "id": "food_0124",
+      "name": "Dahi puri",
+      "category": "Indian street food",
+      "aliases": [
+        "dahi puri"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 210,
+        "protein_g": 5,
+        "carbohydrates_g": 28,
+        "fat_g": 8,
+        "fiber_g": 2,
+        "sugar_g": 5,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/dahi_puri.svg"
+    },
+    {
+      "id": "food_0125",
+      "name": "Aloo paratha",
+      "category": "Indian bread",
+      "aliases": [
+        "aloo paratha"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 260,
+        "protein_g": 6,
+        "carbohydrates_g": 38,
+        "fat_g": 9,
+        "fiber_g": 4,
+        "sugar_g": 2,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/aloo_paratha.svg"
+    },
+    {
+      "id": "food_0126",
+      "name": "Gobi paratha",
+      "category": "Indian bread",
+      "aliases": [
+        "gobi paratha"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 240,
+        "protein_g": 6,
+        "carbohydrates_g": 36,
+        "fat_g": 8,
+        "fiber_g": 4,
+        "sugar_g": 2,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/gobi_paratha.svg"
+    },
+    {
+      "id": "food_0127",
+      "name": "Poori",
+      "category": "Indian bread",
+      "aliases": [
+        "poori"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 300,
+        "protein_g": 6,
+        "carbohydrates_g": 40,
+        "fat_g": 14,
+        "fiber_g": 2,
+        "sugar_g": 1,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/poori.svg"
+    },
+    {
+      "id": "food_0128",
+      "name": "Chole bhature",
+      "category": "Indian meal",
+      "aliases": [
+        "chole bhature"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 260,
+        "protein_g": 8,
+        "carbohydrates_g": 34,
+        "fat_g": 11,
+        "fiber_g": 5,
+        "sugar_g": 4,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/chole_bhature.svg"
+    },
+    {
+      "id": "food_0129",
+      "name": "Pav",
+      "category": "Indian bread",
+      "aliases": [
+        "pav"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 280,
+        "protein_g": 9,
+        "carbohydrates_g": 52,
+        "fat_g": 4,
+        "fiber_g": 2,
+        "sugar_g": 6,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/pav.svg"
+    },
+    {
+      "id": "food_0130",
+      "name": "Masala dosa",
+      "category": "Indian breakfast",
+      "aliases": [
+        "masala dosa"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 190,
+        "protein_g": 4,
+        "carbohydrates_g": 27,
+        "fat_g": 7,
+        "fiber_g": 2,
+        "sugar_g": 2,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/masala_dosa.svg"
+    },
+    {
+      "id": "food_0131",
+      "name": "Medu vada",
+      "category": "Indian breakfast",
+      "aliases": [
+        "medu vada"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 280,
+        "protein_g": 7,
+        "carbohydrates_g": 28,
+        "fat_g": 16,
+        "fiber_g": 4,
+        "sugar_g": 1,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/medu_vada.svg"
+    },
+    {
+      "id": "food_0132",
+      "name": "Uttapam",
+      "category": "Indian breakfast",
+      "aliases": [
+        "uttapam"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 160,
+        "protein_g": 4,
+        "carbohydrates_g": 25,
+        "fat_g": 5,
+        "fiber_g": 2,
+        "sugar_g": 2,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/uttapam.svg"
+    },
+    {
+      "id": "food_0133",
+      "name": "Vegetable upma",
+      "category": "Indian breakfast",
+      "aliases": [
+        "vegetable upma"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 140,
+        "protein_g": 4,
+        "carbohydrates_g": 22,
+        "fat_g": 4,
+        "fiber_g": 3,
+        "sugar_g": 2,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/vegetable_upma.svg"
+    },
+    {
+      "id": "food_0134",
+      "name": "Veg pulao",
+      "category": "Indian rice dish",
+      "aliases": [
+        "veg pulao"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 155,
+        "protein_g": 3,
+        "carbohydrates_g": 27,
+        "fat_g": 3.5,
+        "fiber_g": 2,
+        "sugar_g": 2,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/veg_pulao.svg"
+    },
+    {
+      "id": "food_0135",
+      "name": "Khichdi",
+      "category": "Indian comfort food",
+      "aliases": [
+        "khichdi"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 110,
+        "protein_g": 4,
+        "carbohydrates_g": 18,
+        "fat_g": 2.5,
+        "fiber_g": 3,
+        "sugar_g": 1,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/khichdi.svg"
+    },
+    {
+      "id": "food_0136",
+      "name": "Kadhi pakora",
+      "category": "Indian curry",
+      "aliases": [
+        "kadhi pakora"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 120,
+        "protein_g": 5,
+        "carbohydrates_g": 12,
+        "fat_g": 5,
+        "fiber_g": 1,
+        "sugar_g": 3,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/kadhi_pakora.svg"
+    },
+    {
+      "id": "food_0137",
+      "name": "Fish curry",
+      "category": "Indian curry",
+      "aliases": [
+        "fish curry"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 140,
+        "protein_g": 13,
+        "carbohydrates_g": 5,
+        "fat_g": 8,
+        "fiber_g": 1,
+        "sugar_g": 2,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/fish_curry.svg"
+    },
+    {
+      "id": "food_0138",
+      "name": "Fish fry",
+      "category": "Indian seafood",
+      "aliases": [
+        "fish fry"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 230,
+        "protein_g": 20,
+        "carbohydrates_g": 8,
+        "fat_g": 13,
+        "fiber_g": 0,
+        "sugar_g": 1,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/fish_fry.svg"
+    },
+    {
+      "id": "food_0139",
+      "name": "Prawn masala",
+      "category": "Indian seafood",
+      "aliases": [
+        "prawn masala"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 150,
+        "protein_g": 17,
+        "carbohydrates_g": 5,
+        "fat_g": 7,
+        "fiber_g": 1,
+        "sugar_g": 2,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/prawn_masala.svg"
+    },
+    {
+      "id": "food_0140",
+      "name": "Chicken curry",
+      "category": "Indian curry",
+      "aliases": [
+        "chicken curry"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 160,
+        "protein_g": 15,
+        "carbohydrates_g": 5,
+        "fat_g": 9,
+        "fiber_g": 1,
+        "sugar_g": 2,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/chicken_curry.svg"
+    },
+    {
+      "id": "food_0141",
+      "name": "Egg curry",
+      "category": "Indian curry",
+      "aliases": [
+        "egg curry"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 150,
+        "protein_g": 9,
+        "carbohydrates_g": 5,
+        "fat_g": 10,
+        "fiber_g": 1,
+        "sugar_g": 2,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/egg_curry.svg"
+    },
+    {
+      "id": "food_0142",
+      "name": "Mutton curry",
+      "category": "Indian curry",
+      "aliases": [
+        "mutton curry"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 200,
+        "protein_g": 15,
+        "carbohydrates_g": 4,
+        "fat_g": 14,
+        "fiber_g": 1,
+        "sugar_g": 2,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/mutton_curry.svg"
+    },
+    {
+      "id": "food_0143",
+      "name": "Kebab",
+      "category": "grilled dish",
+      "aliases": [
+        "kebab"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 220,
+        "protein_g": 20,
+        "carbohydrates_g": 5,
+        "fat_g": 13,
+        "fiber_g": 1,
+        "sugar_g": 1,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/kebab.svg"
+    },
+    {
+      "id": "food_0144",
+      "name": "Hummus",
+      "category": "Middle Eastern",
+      "aliases": [
+        "hummus"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 166,
+        "protein_g": 7.9,
+        "carbohydrates_g": 14.3,
+        "fat_g": 9.6,
+        "fiber_g": 6,
+        "sugar_g": 0.3,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/hummus.svg"
+    },
+    {
+      "id": "food_0145",
+      "name": "Falafel",
+      "category": "Middle Eastern",
+      "aliases": [
+        "falafel"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 333,
+        "protein_g": 13.3,
+        "carbohydrates_g": 31.8,
+        "fat_g": 17.8,
+        "fiber_g": 4.9,
+        "sugar_g": 2.3,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/falafel.svg"
+    },
+    {
+      "id": "food_0146",
+      "name": "Pizza cheese",
+      "category": "international dish",
+      "aliases": [
+        "pizza cheese"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 266,
+        "protein_g": 11,
+        "carbohydrates_g": 33,
+        "fat_g": 10,
+        "fiber_g": 2.3,
+        "sugar_g": 3.6,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/pizza_cheese.svg"
+    },
+    {
+      "id": "food_0147",
+      "name": "Pizza pepperoni",
+      "category": "international dish",
+      "aliases": [
+        "pizza pepperoni"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 298,
+        "protein_g": 12,
+        "carbohydrates_g": 30,
+        "fat_g": 13,
+        "fiber_g": 2,
+        "sugar_g": 3,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/pizza_pepperoni.svg"
+    },
+    {
+      "id": "food_0148",
+      "name": "Burger beef",
+      "category": "international dish",
+      "aliases": [
+        "burger beef"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 295,
+        "protein_g": 17,
+        "carbohydrates_g": 24,
+        "fat_g": 14,
+        "fiber_g": 2,
+        "sugar_g": 5,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/burger_beef.svg"
+    },
+    {
+      "id": "food_0149",
+      "name": "Veg burger",
+      "category": "international dish",
+      "aliases": [
+        "veg burger"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 240,
+        "protein_g": 8,
+        "carbohydrates_g": 34,
+        "fat_g": 8,
+        "fiber_g": 4,
+        "sugar_g": 5,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/veg_burger.svg"
+    },
+    {
+      "id": "food_0150",
+      "name": "French fries",
+      "category": "international side",
+      "aliases": [
+        "french fries"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 312,
+        "protein_g": 3.4,
+        "carbohydrates_g": 41,
+        "fat_g": 15,
+        "fiber_g": 3.8,
+        "sugar_g": 0.3,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/french_fries.svg"
+    },
+    {
+      "id": "food_0151",
+      "name": "Pasta tomato sauce",
+      "category": "international dish",
+      "aliases": [
+        "pasta tomato sauce"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 130,
+        "protein_g": 4,
+        "carbohydrates_g": 22,
+        "fat_g": 3,
+        "fiber_g": 2.5,
+        "sugar_g": 5,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/pasta_tomato_sauce.svg"
+    },
+    {
+      "id": "food_0152",
+      "name": "Mac and cheese",
+      "category": "international dish",
+      "aliases": [
+        "mac and cheese"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 164,
+        "protein_g": 6,
+        "carbohydrates_g": 19,
+        "fat_g": 7,
+        "fiber_g": 1,
+        "sugar_g": 3,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/mac_and_cheese.svg"
+    },
+    {
+      "id": "food_0153",
+      "name": "Lasagna",
+      "category": "international dish",
+      "aliases": [
+        "lasagna"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 135,
+        "protein_g": 8,
+        "carbohydrates_g": 14,
+        "fat_g": 5,
+        "fiber_g": 1.5,
+        "sugar_g": 3,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/lasagna.svg"
+    },
+    {
+      "id": "food_0154",
+      "name": "Sushi",
+      "category": "Japanese dish",
+      "aliases": [
+        "sushi"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 150,
+        "protein_g": 6,
+        "carbohydrates_g": 25,
+        "fat_g": 2,
+        "fiber_g": 1,
+        "sugar_g": 3,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/sushi.svg"
+    },
+    {
+      "id": "food_0155",
+      "name": "Ramen",
+      "category": "Japanese dish",
+      "aliases": [
+        "ramen"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 140,
+        "protein_g": 6,
+        "carbohydrates_g": 18,
+        "fat_g": 5,
+        "fiber_g": 1,
+        "sugar_g": 2,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/ramen.svg"
+    },
+    {
+      "id": "food_0156",
+      "name": "Fried rice",
+      "category": "Asian dish",
+      "aliases": [
+        "fried rice"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 180,
+        "protein_g": 4,
+        "carbohydrates_g": 28,
+        "fat_g": 6,
+        "fiber_g": 1.5,
+        "sugar_g": 2,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/fried_rice.svg"
+    },
+    {
+      "id": "food_0157",
+      "name": "Noodles stir fry",
+      "category": "Asian dish",
+      "aliases": [
+        "noodles stir fry"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 160,
+        "protein_g": 5,
+        "carbohydrates_g": 25,
+        "fat_g": 5,
+        "fiber_g": 2,
+        "sugar_g": 4,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/noodles_stir_fry.svg"
+    },
+    {
+      "id": "food_0158",
+      "name": "Pad thai",
+      "category": "Thai dish",
+      "aliases": [
+        "pad thai"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 180,
+        "protein_g": 6,
+        "carbohydrates_g": 25,
+        "fat_g": 6,
+        "fiber_g": 2,
+        "sugar_g": 7,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/pad_thai.svg"
+    },
+    {
+      "id": "food_0159",
+      "name": "Tacos chicken",
+      "category": "Mexican dish",
+      "aliases": [
+        "tacos chicken"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 190,
+        "protein_g": 12,
+        "carbohydrates_g": 20,
+        "fat_g": 7,
+        "fiber_g": 3,
+        "sugar_g": 2,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/tacos_chicken.svg"
+    },
+    {
+      "id": "food_0160",
+      "name": "Burrito",
+      "category": "Mexican dish",
+      "aliases": [
+        "burrito"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 180,
+        "protein_g": 8,
+        "carbohydrates_g": 24,
+        "fat_g": 6,
+        "fiber_g": 4,
+        "sugar_g": 2,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/burrito.svg"
+    },
+    {
+      "id": "food_0161",
+      "name": "Caesar salad",
+      "category": "salad",
+      "aliases": [
+        "caesar salad"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 140,
+        "protein_g": 5,
+        "carbohydrates_g": 8,
+        "fat_g": 10,
+        "fiber_g": 2,
+        "sugar_g": 2,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/caesar_salad.svg"
+    },
+    {
+      "id": "food_0162",
+      "name": "Greek salad",
+      "category": "salad",
+      "aliases": [
+        "greek salad"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 110,
+        "protein_g": 3,
+        "carbohydrates_g": 6,
+        "fat_g": 8,
+        "fiber_g": 2,
+        "sugar_g": 3,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/greek_salad.svg"
+    },
+    {
+      "id": "food_0163",
+      "name": "Pancakes",
+      "category": "breakfast",
+      "aliases": [
+        "pancakes"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 227,
+        "protein_g": 6,
+        "carbohydrates_g": 28,
+        "fat_g": 10,
+        "fiber_g": 1,
+        "sugar_g": 8,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/pancakes.svg"
+    },
+    {
+      "id": "food_0164",
+      "name": "Waffles",
+      "category": "breakfast",
+      "aliases": [
+        "waffles"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 291,
+        "protein_g": 7.9,
+        "carbohydrates_g": 33,
+        "fat_g": 14,
+        "fiber_g": 1.7,
+        "sugar_g": 4,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/waffles.svg"
+    },
+    {
+      "id": "food_0165",
+      "name": "Omelette",
+      "category": "breakfast",
+      "aliases": [
+        "omelette"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 154,
+        "protein_g": 11,
+        "carbohydrates_g": 1.5,
+        "fat_g": 11,
+        "fiber_g": 0,
+        "sugar_g": 1,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/omelette.svg"
+    },
+    {
+      "id": "food_0166",
+      "name": "Grilled cheese sandwich",
+      "category": "sandwich",
+      "aliases": [
+        "grilled cheese sandwich"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 350,
+        "protein_g": 13,
+        "carbohydrates_g": 30,
+        "fat_g": 20,
+        "fiber_g": 2,
+        "sugar_g": 4,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/grilled_cheese_sandwich.svg"
+    },
+    {
+      "id": "food_0167",
+      "name": "Club sandwich",
+      "category": "sandwich",
+      "aliases": [
+        "club sandwich"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 220,
+        "protein_g": 12,
+        "carbohydrates_g": 22,
+        "fat_g": 9,
+        "fiber_g": 2,
+        "sugar_g": 3,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/club_sandwich.svg"
+    },
+    {
+      "id": "food_0168",
+      "name": "Hot dog",
+      "category": "international dish",
+      "aliases": [
+        "hot dog"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 290,
+        "protein_g": 10,
+        "carbohydrates_g": 24,
+        "fat_g": 17,
+        "fiber_g": 1,
+        "sugar_g": 4,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/hot_dog.svg"
+    },
+    {
+      "id": "food_0169",
+      "name": "Fried chicken",
+      "category": "international dish",
+      "aliases": [
+        "fried chicken"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 280,
+        "protein_g": 20,
+        "carbohydrates_g": 12,
+        "fat_g": 17,
+        "fiber_g": 1,
+        "sugar_g": 1,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/fried_chicken.svg"
+    },
+    {
+      "id": "food_0170",
+      "name": "Steak cooked",
+      "category": "protein dish",
+      "aliases": [
+        "steak cooked"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 250,
+        "protein_g": 26,
+        "carbohydrates_g": 0,
+        "fat_g": 15,
+        "fiber_g": 0,
+        "sugar_g": 0,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/steak_cooked.svg"
+    },
+    {
+      "id": "food_0171",
+      "name": "Roast vegetables",
+      "category": "side dish",
+      "aliases": [
+        "roast vegetables"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 90,
+        "protein_g": 2,
+        "carbohydrates_g": 12,
+        "fat_g": 4,
+        "fiber_g": 3,
+        "sugar_g": 4,
+        "sodium_mg": 300
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/roast_vegetables.svg"
+    },
+    {
+      "id": "food_0172",
+      "name": "Miso soup",
+      "category": "Japanese soup",
+      "aliases": [
+        "miso soup"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 40,
+        "protein_g": 3,
+        "carbohydrates_g": 5,
+        "fat_g": 1,
+        "fiber_g": 1,
+        "sugar_g": 2,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/miso_soup.svg"
+    },
+    {
+      "id": "food_0173",
+      "name": "Tomato soup",
+      "category": "soup",
+      "aliases": [
+        "tomato soup"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 45,
+        "protein_g": 1.5,
+        "carbohydrates_g": 8,
+        "fat_g": 1,
+        "fiber_g": 1.5,
+        "sugar_g": 5,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/tomato_soup.svg"
+    },
+    {
+      "id": "food_0174",
+      "name": "Chicken soup",
+      "category": "soup",
+      "aliases": [
+        "chicken soup"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 60,
+        "protein_g": 6,
+        "carbohydrates_g": 4,
+        "fat_g": 2,
+        "fiber_g": 0.5,
+        "sugar_g": 1,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/chicken_soup.svg"
+    },
+    {
+      "id": "food_0175",
+      "name": "Vegetable soup",
+      "category": "soup",
+      "aliases": [
+        "vegetable soup"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 35,
+        "protein_g": 1.5,
+        "carbohydrates_g": 6,
+        "fat_g": 0.5,
+        "fiber_g": 1.5,
+        "sugar_g": 2,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/vegetable_soup.svg"
+    },
+    {
+      "id": "food_0176",
+      "name": "Chocolate cake",
+      "category": "dessert",
+      "aliases": [
+        "chocolate cake"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 371,
+        "protein_g": 5,
+        "carbohydrates_g": 53,
+        "fat_g": 16,
+        "fiber_g": 2.5,
+        "sugar_g": 35,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/chocolate_cake.svg"
+    },
+    {
+      "id": "food_0177",
+      "name": "Brownie",
+      "category": "dessert",
+      "aliases": [
+        "brownie"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 466,
+        "protein_g": 6,
+        "carbohydrates_g": 58,
+        "fat_g": 24,
+        "fiber_g": 3,
+        "sugar_g": 38,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/brownie.svg"
+    },
+    {
+      "id": "food_0178",
+      "name": "Gulab jamun",
+      "category": "Indian dessert",
+      "aliases": [
+        "gulab jamun"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 320,
+        "protein_g": 5,
+        "carbohydrates_g": 48,
+        "fat_g": 12,
+        "fiber_g": 0.5,
+        "sugar_g": 35,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/gulab_jamun.svg"
+    },
+    {
+      "id": "food_0179",
+      "name": "Jalebi",
+      "category": "Indian dessert",
+      "aliases": [
+        "jalebi"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 400,
+        "protein_g": 3,
+        "carbohydrates_g": 70,
+        "fat_g": 13,
+        "fiber_g": 0,
+        "sugar_g": 45,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/jalebi.svg"
+    },
+    {
+      "id": "food_0180",
+      "name": "Rasgulla",
+      "category": "Indian dessert",
+      "aliases": [
+        "rasgulla"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 186,
+        "protein_g": 4,
+        "carbohydrates_g": 38,
+        "fat_g": 2,
+        "fiber_g": 0,
+        "sugar_g": 30,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/rasgulla.svg"
+    },
+    {
+      "id": "food_0181",
+      "name": "Kheer",
+      "category": "Indian dessert",
+      "aliases": [
+        "kheer"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 150,
+        "protein_g": 4,
+        "carbohydrates_g": 23,
+        "fat_g": 5,
+        "fiber_g": 0.5,
+        "sugar_g": 15,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/kheer.svg"
+    },
+    {
+      "id": "food_0182",
+      "name": "Gajar halwa",
+      "category": "Indian dessert",
+      "aliases": [
+        "gajar halwa"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 250,
+        "protein_g": 4,
+        "carbohydrates_g": 30,
+        "fat_g": 13,
+        "fiber_g": 2,
+        "sugar_g": 22,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/gajar_halwa.svg"
+    },
+    {
+      "id": "food_0183",
+      "name": "Ladoo besan",
+      "category": "Indian dessert",
+      "aliases": [
+        "ladoo besan"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 450,
+        "protein_g": 10,
+        "carbohydrates_g": 48,
+        "fat_g": 24,
+        "fiber_g": 5,
+        "sugar_g": 25,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/ladoo_besan.svg"
+    },
+    {
+      "id": "food_0184",
+      "name": "Ice cream vanilla",
+      "category": "dessert",
+      "aliases": [
+        "ice cream vanilla"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 207,
+        "protein_g": 3.5,
+        "carbohydrates_g": 24,
+        "fat_g": 11,
+        "fiber_g": 0.7,
+        "sugar_g": 21,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/ice_cream_vanilla.svg"
+    },
+    {
+      "id": "food_0185",
+      "name": "Donut",
+      "category": "dessert",
+      "aliases": [
+        "donut"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 452,
+        "protein_g": 5,
+        "carbohydrates_g": 51,
+        "fat_g": 25,
+        "fiber_g": 2,
+        "sugar_g": 25,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/donut.svg"
+    },
+    {
+      "id": "food_0186",
+      "name": "Chocolate bar",
+      "category": "snack",
+      "aliases": [
+        "chocolate bar"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 535,
+        "protein_g": 7.6,
+        "carbohydrates_g": 59,
+        "fat_g": 30,
+        "fiber_g": 7,
+        "sugar_g": 52,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/chocolate_bar.svg"
+    },
+    {
+      "id": "food_0187",
+      "name": "Popcorn air-popped",
+      "category": "snack",
+      "aliases": [
+        "popcorn air-popped"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 387,
+        "protein_g": 13,
+        "carbohydrates_g": 78,
+        "fat_g": 4.5,
+        "fiber_g": 15,
+        "sugar_g": 0.9,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/popcorn_air_popped.svg"
+    },
+    {
+      "id": "food_0188",
+      "name": "Potato chips",
+      "category": "snack",
+      "aliases": [
+        "potato chips"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 536,
+        "protein_g": 7,
+        "carbohydrates_g": 53,
+        "fat_g": 35,
+        "fiber_g": 4.8,
+        "sugar_g": 0.3,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/potato_chips.svg"
+    },
+    {
+      "id": "food_0189",
+      "name": "Granola bar",
+      "category": "snack",
+      "aliases": [
+        "granola bar"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 400,
+        "protein_g": 8,
+        "carbohydrates_g": 64,
+        "fat_g": 12,
+        "fiber_g": 6,
+        "sugar_g": 25,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/granola_bar.svg"
+    },
+    {
+      "id": "food_0190",
+      "name": "Mango lassi",
+      "category": "drink",
+      "aliases": [
+        "mango lassi"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 95,
+        "protein_g": 3,
+        "carbohydrates_g": 15,
+        "fat_g": 2.5,
+        "fiber_g": 0.3,
+        "sugar_g": 14,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/mango_lassi.svg"
+    },
+    {
+      "id": "food_0191",
+      "name": "Masala chai with milk and sugar",
+      "category": "drink",
+      "aliases": [
+        "masala chai with milk and sugar"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 55,
+        "protein_g": 1.5,
+        "carbohydrates_g": 8,
+        "fat_g": 1.5,
+        "fiber_g": 0,
+        "sugar_g": 7,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/masala_chai_with_milk_and_sugar.svg"
+    },
+    {
+      "id": "food_0192",
+      "name": "Coffee with milk",
+      "category": "drink",
+      "aliases": [
+        "coffee with milk"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 35,
+        "protein_g": 1.5,
+        "carbohydrates_g": 4,
+        "fat_g": 1.5,
+        "fiber_g": 0,
+        "sugar_g": 3,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/coffee_with_milk.svg"
+    },
+    {
+      "id": "food_0193",
+      "name": "Orange juice",
+      "category": "drink",
+      "aliases": [
+        "orange juice"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 45,
+        "protein_g": 0.7,
+        "carbohydrates_g": 10.4,
+        "fat_g": 0.2,
+        "fiber_g": 0.2,
+        "sugar_g": 8.4,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/orange_juice.svg"
+    },
+    {
+      "id": "food_0194",
+      "name": "Cola soft drink",
+      "category": "drink",
+      "aliases": [
+        "cola soft drink"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 42,
+        "protein_g": 0,
+        "carbohydrates_g": 10.6,
+        "fat_g": 0,
+        "fiber_g": 0,
+        "sugar_g": 10.6,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/cola_soft_drink.svg"
+    },
+    {
+      "id": "food_0195",
+      "name": "Lemon water unsweetened",
+      "category": "drink",
+      "aliases": [
+        "lemon water unsweetened"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 5,
+        "protein_g": 0.1,
+        "carbohydrates_g": 1.5,
+        "fat_g": 0,
+        "fiber_g": 0.1,
+        "sugar_g": 0.4,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/lemon_water_unsweetened.svg"
+    },
+    {
+      "id": "food_0196",
+      "name": "Protein shake prepared",
+      "category": "drink",
+      "aliases": [
+        "protein shake prepared"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 80,
+        "protein_g": 8,
+        "carbohydrates_g": 7,
+        "fat_g": 2,
+        "fiber_g": 0,
+        "sugar_g": 5,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/protein_shake_prepared.svg"
+    },
+    {
+      "id": "food_0197",
+      "name": "Coconut water",
+      "category": "drink",
+      "aliases": [
+        "coconut water"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 19,
+        "protein_g": 0.7,
+        "carbohydrates_g": 3.7,
+        "fat_g": 0.2,
+        "fiber_g": 1.1,
+        "sugar_g": 2.6,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Recipe-dependent illustrative average; not a verified brand-specific or laboratory value.",
+      "image_file": "images/coconut_water.svg"
+    },
+    {
+      "id": "food_0198",
+      "name": "Strawberry smoothie",
+      "category": "drink",
+      "aliases": [
+        "strawberry smoothie"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 70,
+        "protein_g": 2,
+        "carbohydrates_g": 14,
+        "fat_g": 1,
+        "fiber_g": 2,
+        "sugar_g": 10,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/strawberry_smoothie.svg"
+    },
+    {
+      "id": "food_0199",
+      "name": "Milkshake chocolate",
+      "category": "drink",
+      "aliases": [
+        "milkshake chocolate"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 120,
+        "protein_g": 4,
+        "carbohydrates_g": 20,
+        "fat_g": 3,
+        "fiber_g": 1,
+        "sugar_g": 18,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/milkshake_chocolate.svg"
+    },
+    {
+      "id": "food_0200",
+      "name": "Lemonade sweetened",
+      "category": "drink",
+      "aliases": [
+        "lemonade sweetened"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 40,
+        "protein_g": 0,
+        "carbohydrates_g": 10,
+        "fat_g": 0,
+        "fiber_g": 0,
+        "sugar_g": 9,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/lemonade_sweetened.svg"
+    },
+    {
+      "id": "food_0201",
+      "name": "Green tea unsweetened",
+      "category": "drink",
+      "aliases": [
+        "green tea unsweetened"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 1,
+        "protein_g": 0,
+        "carbohydrates_g": 0.2,
+        "fat_g": 0,
+        "fiber_g": 0,
+        "sugar_g": 0,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/green_tea_unsweetened.svg"
+    },
+    {
+      "id": "food_0202",
+      "name": "Espresso coffee",
+      "category": "drink",
+      "aliases": [
+        "espresso coffee"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 9,
+        "protein_g": 0.1,
+        "carbohydrates_g": 1.7,
+        "fat_g": 0.2,
+        "fiber_g": 0,
+        "sugar_g": 0,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/espresso_coffee.svg"
+    },
+    {
+      "id": "food_0203",
+      "name": "Plain yogurt",
+      "category": "dairy",
+      "aliases": [
+        "plain yogurt"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 61,
+        "protein_g": 3.5,
+        "carbohydrates_g": 4.7,
+        "fat_g": 3.3,
+        "fiber_g": 0,
+        "sugar_g": 4.7,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/plain_yogurt.svg"
+    },
+    {
+      "id": "food_0204",
+      "name": "Mozzarella",
+      "category": "dairy",
+      "aliases": [
+        "mozzarella"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 280,
+        "protein_g": 28,
+        "carbohydrates_g": 3.1,
+        "fat_g": 17,
+        "fiber_g": 0,
+        "sugar_g": 1,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/mozzarella.svg"
+    },
+    {
+      "id": "food_0205",
+      "name": "Cottage cheese",
+      "category": "dairy",
+      "aliases": [
+        "cottage cheese"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 98,
+        "protein_g": 11,
+        "carbohydrates_g": 3.4,
+        "fat_g": 4.3,
+        "fiber_g": 0,
+        "sugar_g": 2.7,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/cottage_cheese.svg"
+    },
+    {
+      "id": "food_0206",
+      "name": "Cashews",
+      "category": "nuts and seeds",
+      "aliases": [
+        "cashews"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 553,
+        "protein_g": 18.2,
+        "carbohydrates_g": 30.2,
+        "fat_g": 43.9,
+        "fiber_g": 3.3,
+        "sugar_g": 5.9,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/cashews.svg"
+    },
+    {
+      "id": "food_0207",
+      "name": "Pistachios",
+      "category": "nuts and seeds",
+      "aliases": [
+        "pistachios"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 562,
+        "protein_g": 20.2,
+        "carbohydrates_g": 27.2,
+        "fat_g": 45.3,
+        "fiber_g": 10.6,
+        "sugar_g": 7.7,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/pistachios.svg"
+    },
+    {
+      "id": "food_0208",
+      "name": "Sunflower seeds",
+      "category": "nuts and seeds",
+      "aliases": [
+        "sunflower seeds"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 584,
+        "protein_g": 20.8,
+        "carbohydrates_g": 20,
+        "fat_g": 51.5,
+        "fiber_g": 8.6,
+        "sugar_g": 2.6,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/sunflower_seeds.svg"
+    },
+    {
+      "id": "food_0209",
+      "name": "Pumpkin seeds",
+      "category": "nuts and seeds",
+      "aliases": [
+        "pumpkin seeds"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 559,
+        "protein_g": 30.2,
+        "carbohydrates_g": 10.7,
+        "fat_g": 49.1,
+        "fiber_g": 6,
+        "sugar_g": 1.4,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/pumpkin_seeds.svg"
+    },
+    {
+      "id": "food_0210",
+      "name": "Flaxseed",
+      "category": "nuts and seeds",
+      "aliases": [
+        "flaxseed"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 534,
+        "protein_g": 18.3,
+        "carbohydrates_g": 28.9,
+        "fat_g": 42.2,
+        "fiber_g": 27.3,
+        "sugar_g": 1.6,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/flaxseed.svg"
+    },
+    {
+      "id": "food_0211",
+      "name": "Honey",
+      "category": "sweetener",
+      "aliases": [
+        "honey"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 304,
+        "protein_g": 0.3,
+        "carbohydrates_g": 82.4,
+        "fat_g": 0,
+        "fiber_g": 0.2,
+        "sugar_g": 82.1,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/honey.svg"
+    },
+    {
+      "id": "food_0212",
+      "name": "White sugar",
+      "category": "sweetener",
+      "aliases": [
+        "white sugar"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 387,
+        "protein_g": 0,
+        "carbohydrates_g": 100,
+        "fat_g": 0,
+        "fiber_g": 0,
+        "sugar_g": 100,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/white_sugar.svg"
+    },
+    {
+      "id": "food_0213",
+      "name": "Dark chocolate",
+      "category": "dessert",
+      "aliases": [
+        "dark chocolate"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 598,
+        "protein_g": 7.8,
+        "carbohydrates_g": 45.9,
+        "fat_g": 42.6,
+        "fiber_g": 10.9,
+        "sugar_g": 24,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/dark_chocolate.svg"
+    },
+    {
+      "id": "food_0214",
+      "name": "Plain croissant",
+      "category": "bakery",
+      "aliases": [
+        "plain croissant"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 406,
+        "protein_g": 8.2,
+        "carbohydrates_g": 45.8,
+        "fat_g": 21,
+        "fiber_g": 2.6,
+        "sugar_g": 11.3,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/plain_croissant.svg"
+    },
+    {
+      "id": "food_0215",
+      "name": "Muffin blueberry",
+      "category": "bakery",
+      "aliases": [
+        "muffin blueberry"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 377,
+        "protein_g": 5,
+        "carbohydrates_g": 53,
+        "fat_g": 16,
+        "fiber_g": 2,
+        "sugar_g": 30,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/muffin_blueberry.svg"
+    },
+    {
+      "id": "food_0216",
+      "name": "Baked potato",
+      "category": "side dish",
+      "aliases": [
+        "baked potato"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 93,
+        "protein_g": 2.5,
+        "carbohydrates_g": 21,
+        "fat_g": 0.1,
+        "fiber_g": 2.2,
+        "sugar_g": 1,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/baked_potato.svg"
+    },
+    {
+      "id": "food_0217",
+      "name": "Mashed potatoes",
+      "category": "side dish",
+      "aliases": [
+        "mashed potatoes"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 113,
+        "protein_g": 2,
+        "carbohydrates_g": 17,
+        "fat_g": 4,
+        "fiber_g": 1.5,
+        "sugar_g": 1.5,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/mashed_potatoes.svg"
+    },
+    {
+      "id": "food_0218",
+      "name": "Roasted chicken",
+      "category": "protein dish",
+      "aliases": [
+        "roasted chicken"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 190,
+        "protein_g": 27,
+        "carbohydrates_g": 0,
+        "fat_g": 9,
+        "fiber_g": 0,
+        "sugar_g": 0,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/roasted_chicken.svg"
+    },
+    {
+      "id": "food_0219",
+      "name": "Grilled fish",
+      "category": "protein dish",
+      "aliases": [
+        "grilled fish"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 150,
+        "protein_g": 23,
+        "carbohydrates_g": 0,
+        "fat_g": 6,
+        "fiber_g": 0,
+        "sugar_g": 0,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/grilled_fish.svg"
+    },
+    {
+      "id": "food_0220",
+      "name": "Scrambled eggs",
+      "category": "breakfast",
+      "aliases": [
+        "scrambled eggs"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 148,
+        "protein_g": 10,
+        "carbohydrates_g": 2,
+        "fat_g": 11,
+        "fiber_g": 0,
+        "sugar_g": 1,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/scrambled_eggs.svg"
+    },
+    {
+      "id": "food_0221",
+      "name": "Boiled egg",
+      "category": "protein",
+      "aliases": [
+        "boiled egg"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 155,
+        "protein_g": 12.6,
+        "carbohydrates_g": 1.1,
+        "fat_g": 10.6,
+        "fiber_g": 0,
+        "sugar_g": 1.1,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/boiled_egg.svg"
+    },
+    {
+      "id": "food_0222",
+      "name": "Sprouts salad",
+      "category": "salad",
+      "aliases": [
+        "sprouts salad"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 80,
+        "protein_g": 5,
+        "carbohydrates_g": 12,
+        "fat_g": 1,
+        "fiber_g": 4,
+        "sugar_g": 4,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/sprouts_salad.svg"
+    },
+    {
+      "id": "food_0223",
+      "name": "Fruit salad",
+      "category": "salad",
+      "aliases": [
+        "fruit salad"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 60,
+        "protein_g": 0.8,
+        "carbohydrates_g": 15,
+        "fat_g": 0.3,
+        "fiber_g": 2,
+        "sugar_g": 11,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/fruit_salad.svg"
+    },
+    {
+      "id": "food_0224",
+      "name": "Overnight oats",
+      "category": "breakfast",
+      "aliases": [
+        "overnight oats"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 140,
+        "protein_g": 5,
+        "carbohydrates_g": 22,
+        "fat_g": 4,
+        "fiber_g": 3,
+        "sugar_g": 6,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/overnight_oats.svg"
+    },
+    {
+      "id": "food_0225",
+      "name": "Peanut chikki",
+      "category": "Indian snack",
+      "aliases": [
+        "peanut chikki"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 480,
+        "protein_g": 15,
+        "carbohydrates_g": 55,
+        "fat_g": 24,
+        "fiber_g": 5,
+        "sugar_g": 35,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/peanut_chikki.svg"
+    },
+    {
+      "id": "food_0226",
+      "name": "Thepla",
+      "category": "Indian bread",
+      "aliases": [
+        "thepla"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 280,
+        "protein_g": 7,
+        "carbohydrates_g": 40,
+        "fat_g": 10,
+        "fiber_g": 5,
+        "sugar_g": 3,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/thepla.svg"
+    },
+    {
+      "id": "food_0227",
+      "name": "Pesarattu",
+      "category": "Indian breakfast",
+      "aliases": [
+        "pesarattu"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 150,
+        "protein_g": 8,
+        "carbohydrates_g": 22,
+        "fat_g": 3,
+        "fiber_g": 4,
+        "sugar_g": 2,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/pesarattu.svg"
+    },
+    {
+      "id": "food_0228",
+      "name": "Appam",
+      "category": "Indian breakfast",
+      "aliases": [
+        "appam"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 150,
+        "protein_g": 3,
+        "carbohydrates_g": 28,
+        "fat_g": 3,
+        "fiber_g": 1,
+        "sugar_g": 2,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/appam.svg"
+    },
+    {
+      "id": "food_0229",
+      "name": "Idiyappam",
+      "category": "Indian breakfast",
+      "aliases": [
+        "idiyappam"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 130,
+        "protein_g": 2,
+        "carbohydrates_g": 29,
+        "fat_g": 0.5,
+        "fiber_g": 1,
+        "sugar_g": 0.5,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/idiyappam.svg"
+    },
+    {
+      "id": "food_0230",
+      "name": "Sheer khurma",
+      "category": "Indian dessert",
+      "aliases": [
+        "sheer khurma"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 190,
+        "protein_g": 5,
+        "carbohydrates_g": 25,
+        "fat_g": 8,
+        "fiber_g": 1,
+        "sugar_g": 18,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/sheer_khurma.svg"
+    },
+    {
+      "id": "food_0231",
+      "name": "Modak",
+      "category": "Indian dessert",
+      "aliases": [
+        "modak"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 280,
+        "protein_g": 4,
+        "carbohydrates_g": 45,
+        "fat_g": 9,
+        "fiber_g": 2,
+        "sugar_g": 18,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/modak.svg"
+    },
+    {
+      "id": "food_0232",
+      "name": "Shrikhand",
+      "category": "Indian dessert",
+      "aliases": [
+        "shrikhand"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 250,
+        "protein_g": 7,
+        "carbohydrates_g": 35,
+        "fat_g": 9,
+        "fiber_g": 0,
+        "sugar_g": 30,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/shrikhand.svg"
+    },
+    {
+      "id": "food_0233",
+      "name": "Kulfi",
+      "category": "Indian dessert",
+      "aliases": [
+        "kulfi"
+      ],
+      "typical_serving": "100 g",
+      "nutrition_per_100g": {
+        "calories_kcal": 220,
+        "protein_g": 5,
+        "carbohydrates_g": 25,
+        "fat_g": 11,
+        "fiber_g": 0,
+        "sugar_g": 22,
+        "sodium_mg": 5
+      },
+      "nutrition_is_approximate": true,
+      "notes": "Generic estimate; recipe and serving size change values.",
+      "image_file": "images/kulfi.svg"
+    }
+  ]
+}

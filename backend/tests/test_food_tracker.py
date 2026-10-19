@@ -268,3 +268,194 @@ def test_photo_analyze_non_food_handling(test_user_token):
     if not data["is_food"]:
         assert len(data["detected_items"]) == 0
         assert data["message"] is not None
+
+def test_starter_food_catalog_import():
+    from app.services.food_catalog import import_catalog_into_db, get_all_catalog_items
+    db = TestingSessionLocal()
+    initial_count = db.query(models.Food).count()
+    assert initial_count >= 2
+
+    # Import catalog
+    created, updated = import_catalog_into_db(db)
+    items = get_all_catalog_items()
+    assert len(items) == 233
+    assert created + updated >= 233
+
+    # Ensure existing records weren't deleted
+    final_count = db.query(models.Food).count()
+    assert final_count >= 233
+
+    # Check a specific catalog food
+    banana = db.query(models.Food).filter(models.Food.name == "Banana").first()
+    assert banana is not None
+    assert banana.catalog_id == "food_0002"
+    assert banana.category == "fruit"
+    assert banana.fiber is not None
+    assert "banana.svg" in (banana.image_file or "")
+
+    db.close()
+
+def test_catalog_lookup_and_normalization():
+    from app.services.food_catalog import match_food_in_catalog, calculate_nutrition_for_portion
+
+    # Exact match
+    apple = match_food_in_catalog("Apple")
+    assert apple is not None
+    assert apple["id"] == "food_0001"
+
+    # Plural / Stemmed
+    apples = match_food_in_catalog("Apples")
+    assert apples is not None
+    assert apples["id"] == "food_0001"
+
+    # Preparation prefix
+    steamed_broccoli = match_food_in_catalog("Steamed Broccoli")
+    assert steamed_broccoli is not None
+    assert steamed_broccoli["name"] == "Broccoli"
+
+    # Dish prefix
+    bowl_biryani = match_food_in_catalog("Bowl of Chicken Biryani")
+    assert bowl_biryani is not None
+    assert bowl_biryani["id"] == "food_0100"
+
+    # Non-existent item (never hallucinate)
+    unknown = match_food_in_catalog("NonExistentAlienFoodDish123")
+    assert unknown is None
+
+    # Portion scaling test (150 grams of Banana)
+    banana_portion = calculate_nutrition_for_portion(apples, grams=150.0, quantity_multiplier=1.0)
+    assert banana_portion["serving_grams"] == 150.0
+    # 52 kcal per 100g -> 150g = 78.0 kcal
+    assert banana_portion["calories"] == 78.0
+    assert banana_portion["image_url"] == "/food_reference_images/apple.svg"
+
+def test_photo_analyze_catalog_matching_and_plate_totals():
+    from app.api.photo import _process_detected_items
+
+    raw_items = [
+        {"name": "Apple", "serving_grams": 100, "quantity": 1.0, "confidence": 96.0},
+        {"name": "Chicken biryani", "serving_grams": 200, "quantity": 1.0, "confidence": 92.0},
+        {"name": "Unregistered Mystery Food", "serving_grams": 100, "quantity": 1.0, "calories": 250, "protein_g": 10, "carbs_g": 30, "fat_g": 8, "confidence": 80.0},
+    ]
+
+    detected, summary = _process_detected_items(raw_items)
+    assert len(detected) == 3
+    assert summary.item_count == 3
+    assert summary.matched_count == 2
+    assert summary.unmatched_count == 1
+
+    # Check Apple (Verified)
+    item_apple = detected[0]
+    assert item_apple.name == "Apple"
+    assert item_apple.matched_catalog is True
+    assert item_apple.catalog_id == "food_0001"
+    assert item_apple.image_url == "/food_reference_images/apple.svg"
+    assert "NutriEmotion Food Reference" in item_apple.reference_source
+
+    # Check Biryani (200g scaled)
+    item_biryani = detected[1]
+    assert item_biryani.name == "Chicken biryani"
+    assert item_biryani.matched_catalog is True
+    # 180 kcal per 100g -> 200g = 360 kcal
+    assert item_biryani.calories == 360.0
+
+    # Check Unregistered (Unverified)
+    item_unreg = detected[2]
+    assert item_unreg.matched_catalog is False
+    assert item_unreg.catalog_id is None
+    assert "AI Vision Estimate (Unverified" in item_unreg.reference_source
+    assert item_unreg.image_url is None
+
+    # Check Plate Totals
+    expected_total_cal = round(item_apple.calories + item_biryani.calories + item_unreg.calories, 1)
+    assert summary.total_calories == expected_total_cal
+
+def test_photo_recalculate_endpoint(test_user_token):
+    token, _ = test_user_token
+    headers = {"Authorization": f"Bearer {token}"}
+
+    payload = {
+        "items": [
+            {
+                "name": "Apple",
+                "catalog_id": "food_0001",
+                "serving_grams": 200.0,
+                "quantity": 1.0,
+            },
+            {
+                "name": "Custom Unverified Dish",
+                "serving_grams": 150.0,
+                "quantity": 1.0,
+                "baseline_per_100g": {
+                    "calories_kcal": 200.0,
+                    "protein_g": 10.0,
+                    "carbohydrates_g": 20.0,
+                    "fat_g": 5.0,
+                    "fiber_g": 2.0,
+                    "sugar_g": 4.0,
+                    "sodium_mg": 100.0,
+                },
+            },
+        ]
+    }
+
+    res = client.post("/api/photo/recalculate", json=payload, headers=headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    items = data["detected_items"]
+    assert len(items) == 2
+    # 200g Apple = 52 * 2 = 104 kcal
+    assert items[0]["calories"] == 104.0
+    assert items[0]["matched_catalog"] is True
+    # 150g Custom = 200 * 1.5 = 300 kcal
+    assert items[1]["calories"] == 300.0
+    assert items[1]["matched_catalog"] is False
+    # Plate total = 104 + 300 = 404 kcal
+    assert data["plate_summary"]["total_calories"] == 404.0
+
+def test_scanned_meal_saved_to_food_diary_and_daily_totals(test_user_token):
+    token, user_id = test_user_token
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Simulate logging multi-item plate identified by scanner
+    plate_payload = {
+        "meal_type": "Lunch",
+        "date": "2026-10-19T13:00:00",
+        "mood": "Energetic",
+        "items": [
+            {
+                "food_name": "Chicken biryani",
+                "quantity": 1.0,
+                "calories": 360.0,
+                "protein": 20.0,
+                "carbs": 40.0,
+                "fat": 12.0,
+            },
+            {
+                "food_name": "Curd plain",
+                "quantity": 1.0,
+                "calories": 61.0,
+                "protein": 3.5,
+                "carbs": 4.7,
+                "fat": 3.3,
+            },
+        ],
+    }
+
+    res_post = client.post("/api/meals/", json=plate_payload, headers=headers)
+    assert res_post.status_code == 200
+    created_meal = res_post.json()
+    assert created_meal["meal_type"] == "Lunch"
+    assert created_meal["total_calories"] == 421.0
+    assert created_meal["total_protein"] == 23.5
+    assert len(created_meal["items"]) == 2
+
+    # Query Food Diary list
+    res_list = client.get("/api/meals/", headers=headers)
+    assert res_list.status_code == 200
+    meals = res_list.json()
+    assert len(meals) >= 1
+    logged_meal = next(m for m in meals if m["id"] == created_meal["id"])
+    assert logged_meal["total_calories"] == 421.0
+
