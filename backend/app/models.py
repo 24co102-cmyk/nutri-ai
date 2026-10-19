@@ -1,9 +1,12 @@
 from __future__ import annotations
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Integer, String, Float, Boolean, ForeignKey, DateTime, Table, Column
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from .database import Base
+
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 # Association table for many‑to‑many between DietPlan and Meal
 dietplan_meal_assoc = Table(
@@ -20,7 +23,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 
     profile: Mapped[Optional[Profile]] = relationship("Profile", uselist=False, back_populates="user")
     meals: Mapped[List[Meal]] = relationship("Meal", back_populates="user")
@@ -78,7 +81,7 @@ class Meal(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
     meal_type: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # Breakfast, Lunch, Dinner, Snack
-    date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    date: Mapped[datetime] = mapped_column(DateTime, default=utc_now, index=True)
     total_calories: Mapped[float] = mapped_column(Float, default=0.0)
     total_protein: Mapped[float] = mapped_column(Float, default=0.0)
     total_carbs: Mapped[float] = mapped_column(Float, default=0.0)
@@ -94,6 +97,7 @@ class MealItem(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     meal_id: Mapped[int] = mapped_column(Integer, ForeignKey("meals.id"), index=True)
     food_id: Mapped[int] = mapped_column(Integer, ForeignKey("foods.id"), index=True)
+    food_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     quantity: Mapped[Optional[float]] = mapped_column(Float, nullable=True)  # number of servings
     # Denormalised nutrition for this line
     calories: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
@@ -108,7 +112,7 @@ class DietPlan(Base):
     __tablename__ = "diet_plans"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, index=True)
     description: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # optional free‑text summary
 
     user: Mapped[Optional[User]] = relationship("User", back_populates="diet_plans")
@@ -120,7 +124,7 @@ class ChatMessage(Base):
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
     role: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # "user" or "assistant"
     content: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    timestamp: Mapped[datetime] = mapped_column(DateTime, default=utc_now, index=True)
 
     user: Mapped[Optional[User]] = relationship("User", back_populates="chat_messages")
 
@@ -142,8 +146,8 @@ class ManagedProduct(Base):
     ingredients: Mapped[str] = mapped_column(String, default="[]")
     allergens: Mapped[str] = mapped_column(String, default="[]")
     description: Mapped[str] = mapped_column(String, default="")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
 
 class MoodEntry(Base):
     __tablename__ = "mood_entries"
@@ -159,9 +163,9 @@ class MoodEntry(Base):
     cravings: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # "Sweets", "Salty", "Carbs", "None"
     water_intake: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # glasses of water
     sleep_hours: Mapped[Optional[float]] = mapped_column(Float, nullable=True)  # hours of sleep
-    date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    date: Mapped[datetime] = mapped_column(DateTime, default=utc_now, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
 
     user: Mapped[Optional[User]] = relationship("User", back_populates="moods")
     meal: Mapped[Optional[Meal]] = relationship("Meal", back_populates="mood_entries")

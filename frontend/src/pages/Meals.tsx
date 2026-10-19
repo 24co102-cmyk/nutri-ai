@@ -12,6 +12,8 @@ import {
   TrendingUp,
   Award,
   Sparkles,
+  Edit3,
+  X,
 } from 'lucide-react';
 import { EmptyState } from '../components/ui/EmptyState';
 import { CardSkeleton, Skeleton } from '../components/ui/SkeletonLoader';
@@ -25,6 +27,7 @@ interface Meal {
   total_protein?: number;
   total_carbs?: number;
   total_fat?: number;
+  mood?: string;
 }
 
 const Meals: React.FC = () => {
@@ -32,37 +35,38 @@ const Meals: React.FC = () => {
     try {
       const cached = localStorage.getItem('nutrilens:cached-meals');
       if (cached) return JSON.parse(cached);
-    } catch (e) {}
+    } catch {}
     return [];
   });
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('All');
   const [timeFilter, setTimeFilter] = useState<'All' | 'Today' | 'Yesterday' | '7D' | '30D'>('All');
+  const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
+  const [savingEdit, setSavingEdit] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchMeals = async () => {
+  const fetchMeals = async () => {
+    try {
+      const res = await api.get('/meals/');
+      const loaded = res.data || [];
+      setMeals(loaded);
       try {
-        const res = await api.get('/meals/');
-        if (isMounted) {
-          const loaded = res.data || [];
-          setMeals(loaded);
-          try {
-            localStorage.setItem('nutrilens:cached-meals', JSON.stringify(loaded));
-          } catch (e) {}
-        }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
+        localStorage.setItem('nutrilens:cached-meals', JSON.stringify(loaded));
+      } catch {}
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchMeals();
+    const handleUpdate = () => fetchMeals();
+    window.addEventListener('nutrilens:meals-updated', handleUpdate);
     return () => {
-      isMounted = false;
+      window.removeEventListener('nutrilens:meals-updated', handleUpdate);
     };
   }, []);
 
@@ -70,10 +74,49 @@ const Meals: React.FC = () => {
     if (!window.confirm('Delete this meal entry from history?')) return;
     try {
       await api.delete(`/meals/${id}`);
-      setMeals((prev) => prev.filter((m) => m.id !== id));
+      setMeals((prev) => {
+        const next = prev.filter((m) => m.id !== id);
+        try {
+          localStorage.setItem('nutrilens:cached-meals', JSON.stringify(next));
+        } catch {}
+        return next;
+      });
+      window.dispatchEvent(new Event('nutrilens:meals-updated'));
     } catch (e) {
       console.error(e);
       alert('Failed to delete meal entry');
+    }
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMeal) return;
+    setSavingEdit(true);
+    try {
+      const res = await api.put(`/meals/${editingMeal.id}`, {
+        meal_type: editingMeal.meal_type,
+        date: editingMeal.date,
+        mood: editingMeal.mood || undefined,
+        total_calories: editingMeal.total_calories,
+        total_protein: editingMeal.total_protein,
+        total_carbs: editingMeal.total_carbs,
+        total_fat: editingMeal.total_fat,
+      });
+      const updated = res.data;
+      setMeals((prev) => {
+        const next = prev.map((m) => (m.id === updated.id ? updated : m));
+        try {
+          localStorage.setItem('nutrilens:cached-meals', JSON.stringify(next));
+        } catch {}
+        return next;
+      });
+      window.dispatchEvent(new Event('nutrilens:meals-updated'));
+      setEditingMeal(null);
+    } catch (err) {
+      console.error('Failed to update meal:', err);
+      alert('Failed to update meal entry. Please check your connection.');
+    } finally {
+      setSavingEdit(false);
     }
   };
 
@@ -336,6 +379,11 @@ const Meals: React.FC = () => {
                       <span className="text-[11px] text-neutral-400 font-medium bg-neutral-100 px-2 py-0.5 rounded-md">
                         {formattedDate}
                       </span>
+                      {meal.mood && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
+                          Mood: {meal.mood}
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-neutral-500 font-medium">Logged to daily nutrition registry</p>
                   </div>
@@ -361,17 +409,143 @@ const Meals: React.FC = () => {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => handleDelete(meal.id)}
-                    title="Delete log entry"
-                    className="p-2 rounded-xl text-neutral-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setEditingMeal({ ...meal })}
+                      title="Edit meal entry"
+                      className="p-2 rounded-xl text-neutral-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(meal.id)}
+                      title="Delete log entry"
+                      className="p-2 rounded-xl text-neutral-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* ━━━ Edit Meal Modal ━━━ */}
+      {editingMeal && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <form
+            onSubmit={handleSaveEdit}
+            className="bg-white max-w-md w-full p-6 rounded-3xl border border-neutral-200 space-y-4 shadow-xl"
+          >
+            <div className="flex items-center justify-between pb-2 border-b border-neutral-100">
+              <h4 className="text-base font-bold text-neutral-900">Edit Meal Entry</h4>
+              <button
+                type="button"
+                onClick={() => setEditingMeal(null)}
+                className="text-neutral-400 hover:text-neutral-600 p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-bold text-neutral-700 block mb-1">Meal Category</label>
+                <select
+                  value={editingMeal.meal_type || 'Lunch'}
+                  onChange={(e) => setEditingMeal({ ...editingMeal, meal_type: e.target.value })}
+                  className="w-full p-2.5 text-xs rounded-xl bg-[#faf9f8] border border-neutral-200 font-semibold"
+                >
+                  {['Breakfast', 'Morning Snack', 'Lunch', 'Evening Snack', 'Dinner'].map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-neutral-700 block mb-1">Associated Mood (Optional)</label>
+                <select
+                  value={editingMeal.mood || ''}
+                  onChange={(e) => setEditingMeal({ ...editingMeal, mood: e.target.value })}
+                  className="w-full p-2.5 text-xs rounded-xl bg-[#faf9f8] border border-neutral-200 font-semibold"
+                >
+                  <option value="">-- No Mood Linked --</option>
+                  {['Happy', 'Calm', 'Energetic', 'Neutral', 'Sad', 'Stressed', 'Anxious', 'Tired', 'Frustrated'].map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-neutral-700 block mb-1">Calories (kcal)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={editingMeal.total_calories ?? 0}
+                    onChange={(e) => setEditingMeal({ ...editingMeal, total_calories: parseFloat(e.target.value) || 0 })}
+                    className="w-full p-2.5 text-xs rounded-xl bg-[#faf9f8] border border-neutral-200 font-semibold"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-neutral-700 block mb-1">Protein (g)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={editingMeal.total_protein ?? 0}
+                    onChange={(e) => setEditingMeal({ ...editingMeal, total_protein: parseFloat(e.target.value) || 0 })}
+                    className="w-full p-2.5 text-xs rounded-xl bg-[#faf9f8] border border-neutral-200 font-semibold"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-neutral-700 block mb-1">Carbs (g)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={editingMeal.total_carbs ?? 0}
+                    onChange={(e) => setEditingMeal({ ...editingMeal, total_carbs: parseFloat(e.target.value) || 0 })}
+                    className="w-full p-2.5 text-xs rounded-xl bg-[#faf9f8] border border-neutral-200 font-semibold"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-neutral-700 block mb-1">Fat (g)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={editingMeal.total_fat ?? 0}
+                    onChange={(e) => setEditingMeal({ ...editingMeal, total_fat: parseFloat(e.target.value) || 0 })}
+                    className="w-full p-2.5 text-xs rounded-xl bg-[#faf9f8] border border-neutral-200 font-semibold"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 pt-3 border-t border-neutral-100">
+              <button
+                type="button"
+                onClick={() => setEditingMeal(null)}
+                className="flex-1 py-2 text-xs font-bold rounded-xl border border-neutral-200 text-neutral-700 hover:bg-neutral-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={savingEdit}
+                className="flex-1 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
+              >
+                {savingEdit ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>

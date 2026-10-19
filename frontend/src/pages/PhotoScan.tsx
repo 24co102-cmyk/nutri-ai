@@ -1,8 +1,9 @@
 // src/pages/PhotoScan.tsx
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import api from '../api/axios';
 import {
   Camera, Upload, Sparkles, CheckCircle2, RefreshCw,
-  FlipHorizontal, PlusCircle, Search, X, Info, Star
+  FlipHorizontal, PlusCircle, Search, X, Info, Star, AlertCircle
 } from 'lucide-react';
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -135,23 +136,6 @@ const FOOD_DATABASE: FoodInfo[] = [
 ];
 
 // ────────────────────────────────────────────────────────────────────────────
-// SMART FOOD MATCHER
-// ────────────────────────────────────────────────────────────────────────────
-function matchFood(filename: string): FoodInfo {
-  const lower = filename.toLowerCase().replace(/[^a-z0-9 ]/g, ' ');
-  let best: FoodInfo | null = null;
-  let bestScore = 0;
-  for (const food of FOOD_DATABASE) {
-    const words = food.name.toLowerCase().split(/[\s/()]/);
-    const score = words.reduce((s, w) => s + (lower.includes(w) ? w.length : 0), 0);
-    if (score > bestScore) { bestScore = score; best = food; }
-  }
-  // Pick random food if no match
-  if (!best) return FOOD_DATABASE[Math.floor(Math.random() * FOOD_DATABASE.length)];
-  return best;
-}
-
-// ────────────────────────────────────────────────────────────────────────────
 // SCORE COLOR HELPER
 // ────────────────────────────────────────────────────────────────────────────
 const scoreColor: Record<string, string> = {
@@ -176,6 +160,9 @@ const PhotoScan: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [logSuccess, setLogSuccess] = useState(false);
+  const [loggingMeal, setLoggingMeal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [mealType, setMealType] = useState<'Breakfast' | 'Lunch' | 'Dinner' | 'Snack'>('Lunch');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [_, setCameraActive] = useState(false);
@@ -258,14 +245,91 @@ const PhotoScan: React.FC = () => {
     }
   };
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (!file && !preview) return;
     setLoading(true);
-    setTimeout(() => {
-      const food = matchFood(file?.name || 'food');
-      setResult(food);
+    setErrorMessage(null);
+
+    try {
+      let res;
+      if (file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        res = await api.post('/photo/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      } else if (preview && preview.startsWith('data:')) {
+        res = await api.post('/photo/analyze', { image_base64: preview });
+      } else {
+        res = await api.post('/photo/analyze', { image_url: preview });
+      }
+
+      if (res.data?.success && res.data?.is_food && res.data.detected_items?.length > 0) {
+        const detected = res.data.detected_items[0];
+        setResult({
+          name: detected.name,
+          emoji: detected.emoji || '🍲',
+          category: detected.category || 'Meal',
+          calories: detected.calories,
+          protein_g: detected.protein_g,
+          carbs_g: detected.carbs_g,
+          fat_g: detected.fat_g,
+          fiber_g: detected.fiber_g || 0,
+          sugar_g: detected.sugar_g || 0,
+          sodium_mg: detected.sodium_mg || 0,
+          serving: detected.serving || '1 serving',
+          health_score: detected.health_score || 'B',
+          micronutrients: detected.micronutrients || [],
+          benefits: detected.benefits || 'Provides essential dietary nourishment and balanced energy.',
+          ai_tip: detected.ai_tip || 'Pairs well with fresh leafy greens and adequate water intake.',
+        });
+      } else {
+        setResult(null);
+        setErrorMessage(
+          res.data?.message || 'No food could be recognized in this image. Please pick from the food database or enter values manually.'
+        );
+      }
+    } catch (err: any) {
+      console.error('Vision analysis error:', err);
+      setResult(null);
+      setErrorMessage(
+        err.response?.data?.detail || err.message || 'AI vision service unavailable. Please select from the database.'
+      );
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
+  };
+
+  const handleLogToMeals = async () => {
+    if (!result || loggingMeal) return;
+    setLoggingMeal(true);
+    try {
+      await api.post('/meals/', {
+        meal_type: mealType,
+        date: new Date().toISOString(),
+        items: [
+          {
+            food_name: result.name,
+            quantity: 1.0,
+            calories: result.calories,
+            protein: result.protein_g,
+            carbs: result.carbs_g,
+            fat: result.fat_g,
+          },
+        ],
+      });
+      setLogSuccess(true);
+      try {
+        localStorage.removeItem('nutrilens:cached-meals');
+        window.dispatchEvent(new Event('nutrilens:meals-updated'));
+      } catch (e) {}
+      setTimeout(() => setLogSuccess(false), 3000);
+    } catch (err: any) {
+      console.error('Failed to log meal:', err);
+      alert('Could not log meal to database. Please check your network connection.');
+    } finally {
+      setLoggingMeal(false);
+    }
   };
 
   const handleSelectFood = (food: FoodInfo) => {
@@ -543,6 +607,27 @@ const PhotoScan: React.FC = () => {
 
         {/* ━━━ RIGHT: Nutrition Result Panel (6 cols) ━━━ */}
         <div className="xl:col-span-6">
+          {errorMessage && !loading && !result && (
+            <div className="premium-card p-6 mb-4 border border-rose-200 bg-rose-50/50 space-y-3">
+              <div className="flex items-center gap-2 text-rose-700 font-bold text-xs">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>Recognition Note</span>
+              </div>
+              <p className="text-xs text-rose-600 leading-relaxed font-medium">
+                {errorMessage}
+              </p>
+              <button
+                onClick={() => {
+                  setErrorMessage(null);
+                  setActiveTab('browse');
+                }}
+                className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all"
+              >
+                Browse Food Database →
+              </button>
+            </div>
+          )}
+
           {!result && !loading && (
             <div className="premium-card p-8 flex flex-col items-center justify-center min-h-[420px] text-center">
               <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-700 flex items-center justify-center mb-4">
@@ -556,7 +641,10 @@ const PhotoScan: React.FC = () => {
                 {[['🥦', 'Broccoli'], ['🍗', 'Chicken'], ['🍎', 'Apple']].map(([e, n]) => (
                   <button
                     key={n}
-                    onClick={() => handleSelectFood(FOOD_DATABASE.find((f) => f.name === n) || FOOD_DATABASE[0])}
+                    onClick={() => {
+                      setErrorMessage(null);
+                      handleSelectFood(FOOD_DATABASE.find((f) => f.name === n) || FOOD_DATABASE[0]);
+                    }}
                     className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-[#faf9f8] hover:bg-emerald-50 border border-neutral-200/80 hover:border-emerald-300 transition-all"
                   >
                     <span className="text-xl">{e}</span>
@@ -688,30 +776,55 @@ const PhotoScan: React.FC = () => {
                   <p className="text-xs text-emerald-700 leading-relaxed font-medium">{result.ai_tip}</p>
                 </div>
 
-                {/* Log Meal Button */}
-                <button
-                  onClick={() => {
-                    setLogSuccess(true);
-                    setTimeout(() => setLogSuccess(false), 2500);
-                  }}
-                  className={`w-full py-3.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs ${
-                    logSuccess
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                  }`}
-                >
-                  {logSuccess ? (
-                    <>
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>Meal Successfully Logged!</span>
-                    </>
-                  ) : (
-                    <>
-                      <PlusCircle className="w-4 h-4" />
-                      <span>Add to Meal</span>
-                    </>
-                  )}
-                </button>
+                {/* Meal Type Selector & Log Meal Button */}
+                <div className="space-y-2 pt-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-neutral-600">Log As Meal:</span>
+                    <div className="flex gap-1">
+                      {(['Breakfast', 'Lunch', 'Dinner', 'Snack'] as const).map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => setMealType(m)}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border ${
+                            mealType === m
+                              ? 'bg-neutral-900 text-white border-neutral-900'
+                              : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300'
+                          }`}
+                        >
+                          {m}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleLogToMeals}
+                    disabled={loggingMeal}
+                    className={`w-full py-3.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs disabled:opacity-50 ${
+                      logSuccess
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer'
+                    }`}
+                  >
+                    {logSuccess ? (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Logged to {mealType} & Saved in Database!</span>
+                      </>
+                    ) : loggingMeal ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>Logging Meal...</span>
+                      </>
+                    ) : (
+                      <>
+                        <PlusCircle className="w-4 h-4" />
+                        <span>Log to {mealType} (+{result.calories} kcal)</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           )}

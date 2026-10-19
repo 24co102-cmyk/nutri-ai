@@ -154,6 +154,10 @@ const AddMeal: React.FC = () => {
         ],
       };
       await api.post('/meals/', payload);
+      try {
+        localStorage.removeItem('nutrilens:cached-meals');
+        window.dispatchEvent(new Event('nutrilens:meals-updated'));
+      } catch (e) {}
       setSuccessNotice(true);
       setTimeout(() => navigate('/dashboard'), 1200);
     } catch (e) {

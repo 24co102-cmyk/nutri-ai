@@ -21,6 +21,9 @@ import {
   Search,
   ShieldCheck,
   Zap,
+  ChevronLeft,
+  ChevronRight,
+  List,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -117,6 +120,9 @@ export const MoodTracking: React.FC = () => {
   const [filterMood, setFilterMood] = useState<string>('all');
   const [filterDateRange, setFilterDateRange] = useState<'all' | '7days' | '30days'>('all');
   const [searchFilter, setSearchFilter] = useState<string>('');
+  const [historyView, setHistoryView] = useState<'cards' | 'calendar'>('cards');
+  const [calendarDate, setCalendarDate] = useState<Date>(new Date());
+  const [selectedCalendarDay, setSelectedCalendarDay] = useState<string | null>(null);
 
   // Edit modal state
   const [editingEntry, setEditingEntry] = useState<MoodEntry | null>(null);
@@ -362,6 +368,26 @@ export const MoodTracking: React.FC = () => {
       (e.tags && e.tags.some(t => t.toLowerCase().includes(q)))
     );
   }, [entries, searchFilter]);
+
+  // Group entries by date for calendar
+  const entriesByDate = useMemo(() => {
+    const map: Record<string, MoodEntry[]> = {};
+    for (const e of entries) {
+      if (e.date) {
+        const d = e.date.split('T')[0];
+        if (!map[d]) map[d] = [];
+        map[d].push(e);
+      }
+    }
+    return map;
+  }, [entries]);
+
+  // Calendar calculations
+  const calYear = calendarDate.getFullYear();
+  const calMonth = calendarDate.getMonth();
+  const calFirstDay = new Date(calYear, calMonth, 1).getDay();
+  const calDaysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const calMonthName = calendarDate.toLocaleString('default', { month: 'long', year: 'numeric' });
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16 font-sans">
@@ -877,42 +903,227 @@ export const MoodTracking: React.FC = () => {
               </select>
             </div>
 
-            {/* Keyword Search */}
-            <div className="relative min-w-[240px]">
-              <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search notes or tags..."
-                value={searchFilter}
-                onChange={(e) => setSearchFilter(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-[#faf9f8] dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 focus:outline-none font-medium"
-              />
+            {/* Keyword Search & View Toggle */}
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <div className="relative min-w-[220px] w-full sm:w-auto">
+                <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search notes or tags..."
+                  value={searchFilter}
+                  onChange={(e) => setSearchFilter(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-[#faf9f8] dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 focus:outline-none font-medium"
+                />
+              </div>
+
+              {/* View Mode Toggle: Cards vs Calendar */}
+              <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl border border-neutral-200/80 dark:border-neutral-700 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setHistoryView('cards')}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                    historyView === 'cards'
+                      ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs'
+                      : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  <List className="w-3.5 h-3.5" />
+                  <span>Cards</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHistoryView('calendar')}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                    historyView === 'calendar'
+                      ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs'
+                      : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>Calendar</span>
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* History Records List */}
-          {loadingEntries ? (
-            <div className="p-12 text-center text-xs font-bold text-neutral-400 flex items-center justify-center gap-2">
-              <RefreshCw className="w-4 h-4 animate-spin text-emerald-600" />
-              <span>Loading mood check-ins from database...</span>
+          {/* View Mode: CALENDAR */}
+          {historyView === 'calendar' && (
+            <div className="space-y-4">
+              <div className="bg-white dark:bg-neutral-900 p-6 rounded-3xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs space-y-4">
+                {/* Month Navigation */}
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-extrabold text-neutral-900 dark:text-white flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-emerald-600" />
+                    <span>{calMonthName}</span>
+                  </h3>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setCalendarDate(new Date(calYear, calMonth - 1, 1))}
+                      className="p-1.5 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCalendarDate(new Date())}
+                      className="px-2.5 py-1 text-xs font-bold rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200"
+                    >
+                      Today
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCalendarDate(new Date(calYear, calMonth + 1, 1))}
+                      className="p-1.5 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Days of Week Header */}
+                <div className="grid grid-cols-7 gap-1 text-center font-bold text-[11px] text-neutral-400 py-1 border-b border-neutral-100 dark:border-neutral-800">
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+                    <div key={d} className="py-1">{d}</div>
+                  ))}
+                </div>
+
+                {/* Calendar Days Grid */}
+                <div className="grid grid-cols-7 gap-1 sm:gap-2">
+                  {/* Empty cells for offset */}
+                  {Array.from({ length: calFirstDay }).map((_, i) => (
+                    <div key={`empty-${i}`} className="min-h-[64px] sm:min-h-[80px] rounded-xl p-1 bg-transparent" />
+                  ))}
+
+                  {/* Month Days */}
+                  {Array.from({ length: calDaysInMonth }).map((_, i) => {
+                    const dayNum = i + 1;
+                    const dateKey = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+                    const dayEntries = entriesByDate[dateKey] || [];
+                    const isSelected = selectedCalendarDay === dateKey;
+                    const isToday = new Date().toISOString().split('T')[0] === dateKey;
+
+                    return (
+                      <button
+                        key={dateKey}
+                        type="button"
+                        onClick={() => setSelectedCalendarDay(isSelected ? null : dateKey)}
+                        className={`min-h-[64px] sm:min-h-[80px] p-2 rounded-2xl border text-left transition-all flex flex-col justify-between ${
+                          isSelected
+                            ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30 ring-2 ring-emerald-500/20'
+                            : dayEntries.length > 0
+                            ? 'border-neutral-200/80 dark:border-neutral-700 bg-[#faf9f8] dark:bg-neutral-800/40 hover:border-emerald-300'
+                            : 'border-transparent hover:bg-neutral-50 dark:hover:bg-neutral-800/30'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className={`text-xs font-bold ${isToday ? 'px-1.5 py-0.5 rounded-full bg-emerald-600 text-white' : 'text-neutral-700 dark:text-neutral-300'}`}>
+                            {dayNum}
+                          </span>
+                          {dayEntries.length > 1 && (
+                            <span className="text-[9px] font-bold text-neutral-400">
+                              {dayEntries.length}x
+                            </span>
+                          )}
+                        </div>
+
+                        {dayEntries.length > 0 && (
+                          <div className="flex items-center gap-1 mt-1">
+                            {dayEntries.slice(0, 2).map((de, idx) => {
+                              const meta = MOOD_OPTIONS.find(m => m.label.toLowerCase() === de.mood.toLowerCase()) || MOOD_OPTIONS[0];
+                              return (
+                                <span key={idx} className="text-base sm:text-lg" title={`${de.mood} (${de.intensity}/5)`}>
+                                  {meta.emoji}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Selected Day Entries Details */}
+              {selectedCalendarDay && (
+                <div className="bg-white dark:bg-neutral-900 p-6 rounded-3xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs space-y-4">
+                  <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+                    <h4 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-emerald-600" />
+                      <span>Check-ins for {new Date(`${selectedCalendarDay}T00:00:00`).toLocaleDateString(undefined, { dateStyle: 'full' })}</span>
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCalendarDay(null)}
+                      className="text-neutral-400 hover:text-neutral-600 p-1"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {(entriesByDate[selectedCalendarDay] || []).length === 0 ? (
+                    <p className="text-xs text-neutral-400 py-3">No mood check-ins recorded for this date.</p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {(entriesByDate[selectedCalendarDay] || []).map((item) => {
+                        const meta = MOOD_OPTIONS.find(m => m.label.toLowerCase() === item.mood.toLowerCase()) || MOOD_OPTIONS[0];
+                        return (
+                          <div key={item.id} className="p-4 rounded-2xl bg-[#faf9f8] dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700/60 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xl">{meta.emoji}</span>
+                                <span className="text-xs font-bold text-neutral-900 dark:text-white">{item.mood}</span>
+                                {item.intensity && (
+                                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
+                                    {item.intensity}/5
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-neutral-400">
+                                {item.date ? new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                              </span>
+                            </div>
+                            {item.journal_note && (
+                              <p className="text-xs text-neutral-600 dark:text-neutral-400 italic">
+                                &ldquo;{item.journal_note}&rdquo;
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-          ) : displayedEntries.length === 0 ? (
-            <div className="bg-white dark:bg-neutral-900 p-12 rounded-3xl border border-neutral-200/80 dark:border-neutral-800 text-center space-y-3">
-              <Smile className="w-10 h-10 text-neutral-300 dark:text-neutral-600 mx-auto" />
-              <h3 className="text-base font-bold text-neutral-900 dark:text-white">No mood entries found</h3>
-              <p className="text-xs text-neutral-500 max-w-sm mx-auto">
-                {searchFilter || filterMood !== 'all'
-                  ? 'No check-ins match your current filter criteria. Try resetting filters.'
-                  : 'You have not recorded any mood check-ins yet. Log your feelings to start visualizing patterns.'}
-              </p>
-              <button
-                onClick={() => { setActiveTab('checkin'); setFilterMood('all'); setSearchFilter(''); }}
-                className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold"
-              >
-                Record Today's Mood
-              </button>
-            </div>
-          ) : (
+          )}
+
+          {/* View Mode: CARDS */}
+          {historyView === 'cards' && (
+            <div>
+              {loadingEntries ? (
+                <div className="p-12 text-center text-xs font-bold text-neutral-400 flex items-center justify-center gap-2">
+                  <RefreshCw className="w-4 h-4 animate-spin text-emerald-600" />
+                  <span>Loading mood check-ins from database...</span>
+                </div>
+              ) : displayedEntries.length === 0 ? (
+                <div className="bg-white dark:bg-neutral-900 p-12 rounded-3xl border border-neutral-200/80 dark:border-neutral-800 text-center space-y-3">
+                  <Smile className="w-10 h-10 text-neutral-300 dark:text-neutral-600 mx-auto" />
+                  <h3 className="text-base font-bold text-neutral-900 dark:text-white">No mood entries found</h3>
+                  <p className="text-xs text-neutral-500 max-w-sm mx-auto">
+                    {searchFilter || filterMood !== 'all'
+                      ? 'No check-ins match your current filter criteria. Try resetting filters.'
+                      : 'You have not recorded any mood check-ins yet. Log your feelings to start visualizing patterns.'}
+                  </p>
+                  <button
+                    onClick={() => { setActiveTab('checkin'); setFilterMood('all'); setSearchFilter(''); }}
+                    className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold"
+                  >
+                    Record Today's Mood
+                  </button>
+                </div>
+              ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {displayedEntries.map((item) => {
                 const meta = MOOD_OPTIONS.find(m => m.label.toLowerCase() === item.mood.toLowerCase()) || MOOD_OPTIONS[0];
@@ -997,6 +1208,8 @@ export const MoodTracking: React.FC = () => {
                 );
               })}
             </div>
+          )}
+          </div>
           )}
 
           {/* Delete Confirmation Modal */}

@@ -17,6 +17,7 @@ import {
   Sunset,
   Award,
   ArrowUpRight,
+  HeartHandshake,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -118,8 +119,11 @@ const Dashboard: React.FC = () => {
       }
     };
     fetchData();
+    const handleUpdate = () => fetchData();
+    window.addEventListener('nutrilens:meals-updated', handleUpdate);
     return () => {
       isMounted = false;
+      window.removeEventListener('nutrilens:meals-updated', handleUpdate);
     };
   }, []);
 
@@ -433,7 +437,20 @@ const Dashboard: React.FC = () => {
         <h3 className="text-[11px] font-extrabold text-neutral-400 uppercase tracking-widest pl-1">
           Quick Launch Tools
         </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <Link
+            to="/mood-tracking"
+            className="group p-5 rounded-3xl bg-white border border-neutral-100 hover:border-emerald-200 shadow-[0_4px_20px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(16,185,129,0.08)] transition-all duration-300 hover:-translate-y-1 flex flex-col gap-4"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
+              <HeartHandshake className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="text-sm font-black text-neutral-900">Mood Tracker</h4>
+              <p className="text-xs text-neutral-400 font-medium mt-0.5">Emotions & journal</p>
+            </div>
+          </Link>
+
           <Link
             to="/add-meal"
             className="group p-5 rounded-3xl bg-white border border-neutral-100 hover:border-emerald-200 shadow-[0_4px_20px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(16,185,129,0.08)] transition-all duration-300 hover:-translate-y-1 flex flex-col gap-4"

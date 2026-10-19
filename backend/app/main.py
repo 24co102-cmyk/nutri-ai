@@ -29,6 +29,11 @@ def seed_initial_data():
                     conn.commit()
                 except Exception:
                     pass
+                try:
+                    conn.execute(sqlalchemy.text("ALTER TABLE meal_items ADD COLUMN food_name VARCHAR DEFAULT NULL"))
+                    conn.commit()
+                except Exception:
+                    pass
     except Exception as e:
         print(f"[Migration Warning]: {e}")
 

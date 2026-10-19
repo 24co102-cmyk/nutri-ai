@@ -216,17 +216,26 @@ const BarcodeScan: React.FC = () => {
         date: new Date().toISOString(),
         items: [
           {
-            food_id: 1,
-            quantity: currentGrams,
+            food_name: product.product_name,
+            quantity: 1.0,
+            calories: currentCalories,
+            protein: currentProtein,
+            carbs: currentCarbs,
+            fat: currentFat,
           },
         ],
       };
 
-      await api.post('/meals/', payload).catch(() => {});
+      await api.post('/meals/', payload);
 
       setTodayCalories((prev) => prev + currentCalories);
       setTodayProtein((prev) => prev + currentProtein);
       setLogSuccess(`Logged ${product.product_name} (${currentGrams}g) to ${mealType}! (+${currentCalories} kcal)`);
+
+      try {
+        localStorage.removeItem('nutrilens:cached-meals');
+        window.dispatchEvent(new Event('nutrilens:meals-updated'));
+      } catch (e) {}
 
       setTimeout(() => setLogSuccess(null), 4000);
     } catch (err) {

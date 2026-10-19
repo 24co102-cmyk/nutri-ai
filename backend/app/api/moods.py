@@ -9,9 +9,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 from typing import List, Optional, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
 import re
+
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 from .. import models, schemas
 from ..database import get_db
@@ -115,7 +118,7 @@ def create_mood_entry(
             )
 
     # Parse date if provided
-    entry_date = datetime.utcnow()
+    entry_date = utc_now()
     if entry_in.date:
         if isinstance(entry_in.date, datetime):
             entry_date = entry_in.date
@@ -142,8 +145,8 @@ def create_mood_entry(
         water_intake=entry_in.water_intake,
         sleep_hours=entry_in.sleep_hours,
         date=entry_date,
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow(),
+        created_at=utc_now(),
+        updated_at=utc_now(),
     )
 
     db.add(new_entry)
@@ -221,7 +224,7 @@ def get_mood_analytics(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    since = datetime.utcnow() - timedelta(days=days)
+    since = utc_now() - timedelta(days=days)
 
     entries = (
         db.query(models.MoodEntry)
@@ -313,7 +316,7 @@ def get_mood_analytics(
         top_tags=top_tags,
         date_range={
             "from": since.strftime("%Y-%m-%d"),
-            "to": datetime.utcnow().strftime("%Y-%m-%d")
+            "to": utc_now().strftime("%Y-%m-%d")
         }
     )
 
@@ -325,7 +328,7 @@ def get_food_mood_connection(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    since = datetime.utcnow() - timedelta(days=days)
+    since = utc_now() - timedelta(days=days)
 
     moods = (
         db.query(models.MoodEntry)
@@ -508,7 +511,7 @@ def generate_ai_insights(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    since = datetime.utcnow() - timedelta(days=req.days or 14)
+    since = utc_now() - timedelta(days=req.days or 14)
 
     moods = (
         db.query(models.MoodEntry)
@@ -815,7 +818,7 @@ def update_mood_entry(
             except ValueError:
                 pass
 
-    entry.updated_at = datetime.utcnow()
+    entry.updated_at = utc_now()
     db.commit()
     db.refresh(entry)
     return _format_entry_out(entry)

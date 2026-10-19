@@ -52,27 +52,63 @@ class ProfileOut(ProfileBase):
     bmi: Optional[float] = None
 
 # Food
-class FoodOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
+class FoodBase(BaseModel):
     name: str
     serving_size: Optional[str] = None
     calories: Optional[float] = None
     protein: Optional[float] = None
     carbs: Optional[float] = None
     fat: Optional[float] = None
+    sugar: Optional[str] = "Not available"
+    sodium: Optional[str] = "Not available"
+    ingredients: Optional[str] = "Not available"
+    allergens: Optional[str] = "Not available"
+    nutrition_grade: Optional[str] = "Not available"
+
+class FoodCreate(FoodBase):
+    pass
+
+class FoodOut(FoodBase):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
 
 # Meal
 class MealItemCreate(BaseModel):
-    food_id: int
+    food_id: Optional[int] = None
+    food_name: Optional[str] = None
     quantity: float = 1.0
+    calories: Optional[float] = None
+    protein: Optional[float] = None
+    carbs: Optional[float] = None
+    fat: Optional[float] = None
+
+class MealItemOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: Optional[int] = None
+    food_id: int
+    food_name: Optional[str] = None
+    quantity: Optional[float] = 1.0
+    calories: Optional[float] = 0.0
+    protein: Optional[float] = 0.0
+    carbs: Optional[float] = 0.0
+    fat: Optional[float] = 0.0
 
 class MealCreate(BaseModel):
     meal_type: str
     items: List[MealItemCreate]
     date: Optional[Union[datetime, str, Any]] = None
     mood: Optional[str] = None
+
+class MealUpdate(BaseModel):
+    meal_type: Optional[str] = None
+    date: Optional[Union[datetime, str, Any]] = None
+    mood: Optional[str] = None
+    total_calories: Optional[float] = None
+    total_protein: Optional[float] = None
+    total_carbs: Optional[float] = None
+    total_fat: Optional[float] = None
+    items: Optional[List[MealItemCreate]] = None
 
 class MealOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -85,7 +121,7 @@ class MealOut(BaseModel):
     total_protein: Optional[float] = 0
     total_carbs: Optional[float] = 0
     total_fat: Optional[float] = 0
-    items: List[MealItemCreate] = []
+    items: List[MealItemOut] = []
 
 # DietPlan (simplified)
 class DietPlanOut(BaseModel):
