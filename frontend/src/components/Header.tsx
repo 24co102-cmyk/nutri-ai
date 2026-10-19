@@ -26,6 +26,8 @@ const routeTitles: Record<string, { title: string; subtitle: string }> = {
   '/nutrilens': { title: 'NutriLens Intelligence', subtitle: 'Food quality analysis, allergen screening & health scoring' },
   '/chat': { title: 'AI Health Assistant', subtitle: 'Interactive clinical-grade nutrition Q&A and dietary coach' },
   '/settings': { title: 'Settings Center', subtitle: 'App preferences, alerts, nutrition parameters & privacy' },
+  '/mood-tracking': { title: 'Emotion & Mood Tracking', subtitle: 'Daily emotional check-ins, journal, analytics & food connection' },
+  '/emotion-tracking': { title: 'Emotion & Mood Tracking', subtitle: 'Daily emotional check-ins, journal, analytics & food connection' },
 };
 
 export const Header: React.FC<HeaderProps> = ({ setMobileOpen }) => {

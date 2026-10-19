@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
-from typing import Optional, List, Union, Any
+from typing import Optional, List, Union, Any, Dict
 from datetime import datetime
 
 # Auth
@@ -72,6 +72,7 @@ class MealCreate(BaseModel):
     meal_type: str
     items: List[MealItemCreate]
     date: Optional[Union[datetime, str, Any]] = None
+    mood: Optional[str] = None
 
 class MealOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -79,6 +80,7 @@ class MealOut(BaseModel):
     id: int
     meal_type: str
     date: Optional[Union[datetime, str, Any]] = None
+    mood: Optional[str] = None
     total_calories: Optional[float] = 0
     total_protein: Optional[float] = 0
     total_carbs: Optional[float] = 0
@@ -144,4 +146,107 @@ class ManagedProductOut(BaseModel):
     ingredients: List[str] = []
     allergens: List[str] = []
     description: str = ""
+
+
+# ── Emotion & Mood Tracking Schemas ──────────────────────────────────────────
+
+VALID_MOODS = [
+    "Happy", "Calm", "Energetic", "Neutral", "Sad", 
+    "Stressed", "Anxious", "Tired", "Frustrated"
+]
+
+class LinkedMealSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    meal_type: Optional[str] = None
+    total_calories: Optional[float] = 0.0
+    date: Optional[Union[datetime, str, Any]] = None
+
+class MoodEntryCreate(BaseModel):
+    mood: str = Field(..., description="Primary mood label")
+    intensity: Optional[int] = Field(default=None, ge=1, le=5, description="Intensity rating 1-5")
+    duration: Optional[str] = Field(default=None, description="How long the mood has been present")
+    tags: Optional[List[str]] = Field(default=[], description="Context tags e.g. study, work, sleep")
+    journal_note: Optional[str] = Field(default=None, max_length=3000, description="Optional private journal note")
+    meal_id: Optional[int] = Field(default=None, description="Optional associated meal ID")
+    hunger_level: Optional[str] = Field(default=None, description="Hunger level e.g. Low, Moderate, High")
+    cravings: Optional[str] = Field(default=None, description="Cravings e.g. Sweets, Salty, None")
+    water_intake: Optional[int] = Field(default=None, ge=0, le=50, description="Glasses of water")
+    sleep_hours: Optional[float] = Field(default=None, ge=0, le=24, description="Hours of sleep")
+    date: Optional[Union[datetime, str, Any]] = Field(default=None, description="Entry timestamp")
+
+class MoodEntryUpdate(BaseModel):
+    mood: Optional[str] = None
+    intensity: Optional[int] = Field(default=None, ge=1, le=5)
+    duration: Optional[str] = None
+    tags: Optional[List[str]] = None
+    journal_note: Optional[str] = Field(default=None, max_length=3000)
+    meal_id: Optional[int] = None
+    hunger_level: Optional[str] = None
+    cravings: Optional[str] = None
+    water_intake: Optional[int] = Field(default=None, ge=0, le=50)
+    sleep_hours: Optional[float] = Field(default=None, ge=0, le=24)
+    date: Optional[Union[datetime, str, Any]] = None
+
+class MoodEntryOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    user_id: int
+    mood: str
+    intensity: Optional[int] = None
+    duration: Optional[str] = None
+    tags: List[str] = []
+    journal_note: Optional[str] = None
+    meal_id: Optional[int] = None
+    meal: Optional[LinkedMealSummary] = None
+    hunger_level: Optional[str] = None
+    cravings: Optional[str] = None
+    water_intake: Optional[int] = None
+    sleep_hours: Optional[float] = None
+    date: Optional[Union[datetime, str, Any]] = None
+    created_at: Optional[Union[datetime, str, Any]] = None
+    updated_at: Optional[Union[datetime, str, Any]] = None
+
+class MoodAnalyticsOut(BaseModel):
+    total_checkins: int
+    average_intensity: Optional[float] = None
+    mood_distribution: Dict[str, int]
+    most_frequent_mood: Optional[str] = None
+    intensity_trends: List[Dict[str, Any]]
+    top_tags: List[Dict[str, Any]]
+    date_range: Dict[str, Optional[str]]
+
+class FoodMoodCorrelationOut(BaseModel):
+    total_moods_analyzed: int
+    total_meals_analyzed: int
+    linked_meals_count: int
+    mood_calorie_averages: Dict[str, Dict[str, Any]]
+    hunger_distribution: Dict[str, int]
+    cravings_distribution: Dict[str, int]
+    insights: List[str]
+
+class AIInsightsRequest(BaseModel):
+    days: Optional[int] = Field(default=14, ge=1, le=90)
+    focus: Optional[str] = None
+
+class AIInsightsResponse(BaseModel):
+    summary: str
+    patterns: List[str]
+    wellness_suggestions: List[str]
+    disclaimer: str
+    data_points_analyzed: int
+    source: str  # "gemini" | "rule_based"
+
+class AnalyzeTextRequest(BaseModel):
+    text: str = Field(..., min_length=2, max_length=3000)
+
+class AnalyzeTextResponse(BaseModel):
+    suggested_mood: str
+    confidence_label: str
+    emotional_themes: List[str]
+    sentiment_score: Optional[float] = None
+    explanation: str
+    disclaimer: str
+
 

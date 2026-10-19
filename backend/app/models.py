@@ -26,6 +26,7 @@ class User(Base):
     meals: Mapped[List[Meal]] = relationship("Meal", back_populates="user")
     diet_plans: Mapped[List[DietPlan]] = relationship("DietPlan", back_populates="user")
     chat_messages: Mapped[List[ChatMessage]] = relationship("ChatMessage", back_populates="user")
+    moods: Mapped[List[MoodEntry]] = relationship("MoodEntry", back_populates="user", cascade="all, delete-orphan")
 
 class Profile(Base):
     __tablename__ = "profiles"
@@ -82,9 +83,11 @@ class Meal(Base):
     total_protein: Mapped[float] = mapped_column(Float, default=0.0)
     total_carbs: Mapped[float] = mapped_column(Float, default=0.0)
     total_fat: Mapped[float] = mapped_column(Float, default=0.0)
+    mood: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     user: Mapped[Optional[User]] = relationship("User", back_populates="meals")
     items: Mapped[List[MealItem]] = relationship("MealItem", back_populates="meal", cascade="all, delete-orphan")
+    mood_entries: Mapped[List[MoodEntry]] = relationship("MoodEntry", back_populates="meal")
 
 class MealItem(Base):
     __tablename__ = "meal_items"
@@ -141,3 +144,25 @@ class ManagedProduct(Base):
     description: Mapped[str] = mapped_column(String, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class MoodEntry(Base):
+    __tablename__ = "mood_entries"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True, nullable=False)
+    mood: Mapped[str] = mapped_column(String, nullable=False, index=True)  # Happy, Calm, Energetic, Neutral, Sad, Stressed, Anxious, Tired, Frustrated
+    intensity: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # 1 to 5
+    duration: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # e.g. "< 1 hour", "1-3 hours", "Half day", "All day", "Several days"
+    tags: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # comma-separated e.g. "study,work,sleep"
+    journal_note: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    meal_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("meals.id", ondelete="SET NULL"), nullable=True, index=True)
+    hunger_level: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # "None", "Low", "Moderate", "High", "Ravenous"
+    cravings: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # "Sweets", "Salty", "Carbs", "None"
+    water_intake: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # glasses of water
+    sleep_hours: Mapped[Optional[float]] = mapped_column(Float, nullable=True)  # hours of sleep
+    date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user: Mapped[Optional[User]] = relationship("User", back_populates="moods")
+    meal: Mapped[Optional[Meal]] = relationship("Meal", back_populates="mood_entries")
+

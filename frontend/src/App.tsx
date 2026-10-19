@@ -5,6 +5,8 @@ import Layout from './components/Layout';
 import { PageLoadingFallback } from './components/ui/SkeletonLoader';
 import BackendStatusIndicator from './components/BackendStatusIndicator';
 
+import api from './api/axios';
+
 // Code-split heavy page bundles for instant initial load
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -15,15 +17,29 @@ const PhotoScan = lazy(() => import('./pages/PhotoScan'));
 const BarcodeScan = lazy(() => import('./pages/BarcodeScan'));
 const Chat = lazy(() => import('./pages/Chat'));
 const Settings = lazy(() => import('./pages/Settings'));
+const MoodTracking = lazy(() => import('./pages/MoodTracking'));
 
 const App: React.FC = () => {
   React.useEffect(() => {
-    // Ensure demo session is always active on both desktop & mobile
-    if (!localStorage.getItem('token')) {
-      localStorage.setItem('token', 'demo_access_token_nutrilens');
+    // Ensure active JWT session is initialized
+    const existingToken = localStorage.getItem('token');
+    if (!existingToken || existingToken === 'demo_access_token_nutrilens') {
+      api.post('/auth/login', {
+        email: 'demo@nutrilens.app',
+        password: 'password123'
+      }).then((res) => {
+        if (res.data?.access_token) {
+          localStorage.setItem('token', res.data.access_token);
+          if (!localStorage.getItem('username')) {
+            localStorage.setItem('username', 'Demo User');
+          }
+        }
+      }).catch((e) => {
+        console.warn('Authentication warmup:', e);
+      });
     }
     if (!localStorage.getItem('username')) {
-      localStorage.setItem('username', 'AHAD SHAIKH');
+      localStorage.setItem('username', 'Demo User');
     }
     // Initialize Dark Mode according to stored preference
     const savedTheme = localStorage.getItem('theme');
@@ -63,6 +79,8 @@ const App: React.FC = () => {
             <Route path="/products" element={<Navigate to="/scan/barcode" replace />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/mood-tracking" element={<MoodTracking />} />
+            <Route path="/emotion-tracking" element={<Navigate to="/mood-tracking" replace />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Suspense>

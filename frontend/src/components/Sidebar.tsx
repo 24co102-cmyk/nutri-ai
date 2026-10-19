@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  HeartHandshake,
 } from 'lucide-react';
 import { useTranslation } from '../utils/i18n';
 import { useUser } from '../utils/theme';
@@ -51,6 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       name: t('cat_smart_tools'),
       items: [
+        { path: '/mood-tracking', label: 'Emotion & Mood Tracking', icon: HeartHandshake, badge: 'NEW' },
         { path: '/scan/photo', label: t('nav_photo'), icon: Camera },
         { path: '/scan/barcode', label: t('nav_barcode'), icon: Barcode },
         { path: '/chat', label: t('nav_chat'), icon: MessageSquare, badge: 'PRO' },

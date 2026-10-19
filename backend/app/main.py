@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .database import engine, SessionLocal, Base
 from . import models
-from .api import profile, foods, meals, diet_plan, chat, photo, barcode, nutrilens, auth
+from .api import profile, foods, meals, diet_plan, chat, photo, barcode, nutrilens, auth, moods
 from .utils.security import hash_password
 
 # Create all tables
@@ -24,6 +24,11 @@ def seed_initial_data():
                         conn.commit()
                     except Exception:
                         pass
+                try:
+                    conn.execute(sqlalchemy.text("ALTER TABLE meals ADD COLUMN mood VARCHAR DEFAULT NULL"))
+                    conn.commit()
+                except Exception:
+                    pass
     except Exception as e:
         print(f"[Migration Warning]: {e}")
 
@@ -143,6 +148,7 @@ app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 app.include_router(photo.router, prefix="/api/photo", tags=["photo"])
 app.include_router(barcode.router, prefix="/api/barcode", tags=["barcode"])
 app.include_router(nutrilens.router, prefix="/api/nutrilens", tags=["nutrilens"])
+app.include_router(moods.router, prefix="/api/moods", tags=["moods"])
 
 if __name__ == "__main__":
     uvicorn.run("backend.app.main:app", host="0.0.0.0", port=8000, reload=True)

@@ -18,6 +18,7 @@ def create_meal(meal_in: schemas.MealCreate, db: Session = Depends(get_db), user
         user_id=user.id,
         meal_type=meal_in.meal_type,
         date=meal_in.date if meal_in.date else None,
+        mood=meal_in.mood,
     )
     db.add(new_meal)
     db.flush()  # get new_meal.id

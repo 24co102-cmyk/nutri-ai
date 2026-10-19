@@ -49,6 +49,7 @@ const AddMeal: React.FC = () => {
   const [quantity, setQuantity] = useState<number>(150); // 150g
   const [mealType, setMealType] = useState('Lunch');
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 16));
+  const [mealMood, setMealMood] = useState<string>('');
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [successNotice, setSuccessNotice] = useState(false);
@@ -139,6 +140,7 @@ const AddMeal: React.FC = () => {
       const payload = {
         meal_type: mealType,
         date: date,
+        mood: mealMood || undefined,
         items: [
           {
             food_id: activeTab === 'manual' ? 1 : selectedFood?.id || 1,
@@ -568,6 +570,49 @@ const AddMeal: React.FC = () => {
                   onChange={(e) => setDate(e.target.value)}
                   className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl bg-[#faf9f8] border border-neutral-200 focus:border-emerald-500 font-medium"
                 />
+              </div>
+            </div>
+
+            {/* Associate Current Mood (Optional) */}
+            <div className="pt-3 border-t border-neutral-100">
+              <label className="block text-[11px] font-bold text-neutral-400 uppercase tracking-wider mb-2">
+                Associate with Current Mood (Optional)
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { label: 'Happy', emoji: '😊' },
+                  { label: 'Calm', emoji: '😌' },
+                  { label: 'Energetic', emoji: '⚡' },
+                  { label: 'Neutral', emoji: '😐' },
+                  { label: 'Sad', emoji: '😢' },
+                  { label: 'Stressed', emoji: '😫' },
+                  { label: 'Anxious', emoji: '😰' },
+                  { label: 'Tired', emoji: '🥱' },
+                  { label: 'Frustrated', emoji: '😤' },
+                ].map((m) => (
+                  <button
+                    key={m.label}
+                    type="button"
+                    onClick={() => setMealMood(mealMood === m.label ? '' : m.label)}
+                    className={`px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
+                      mealMood === m.label
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
+                        : 'bg-[#faf9f8] text-neutral-700 border-neutral-200 hover:border-neutral-300'
+                    }`}
+                  >
+                    <span>{m.emoji}</span>
+                    <span>{m.label}</span>
+                  </button>
+                ))}
+                {mealMood && (
+                  <button
+                    type="button"
+                    onClick={() => setMealMood('')}
+                    className="px-2 py-1.5 text-xs text-neutral-400 hover:text-neutral-600"
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
             </div>
           </div>
